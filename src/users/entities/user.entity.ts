@@ -12,8 +12,14 @@ export enum ECurrency {
   SEK = 'SEK',
 }
 
+export enum ELanguage {
+  EN = 'EN',
+  UA = 'UA',
+}
+
 export class User {
   id: string;
   nickname: string;
   defaultCurrency: ECurrency;
+  language: ELanguage;
 }
