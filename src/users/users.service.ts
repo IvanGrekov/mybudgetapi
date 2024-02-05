@@ -1,25 +1,27 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { User, ECurrency, ELanguage } from './entities/user.entity';
+
+import { User, ELanguage } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user-dto/create-user.dto';
 import { EditUserDto } from './dto/create-user-dto/edit-user.dto';
+import { ECurrency } from '../shared/enums/currency.enum';
 
 @Injectable()
 export class UsersService {
   private readonly users: User[] = [
     {
-      id: '1',
+      id: 1,
       nickname: 'john',
       defaultCurrency: ECurrency.USD,
       language: ELanguage.EN,
     },
     {
-      id: '2',
+      id: 2,
       nickname: 'chris',
       defaultCurrency: ECurrency.EUR,
       language: ELanguage.EN,
     },
     {
-      id: '3',
+      id: 3,
       nickname: 'maria',
       defaultCurrency: ECurrency.UAH,
       language: ELanguage.UA,
@@ -30,7 +32,7 @@ export class UsersService {
     return this.users.slice((page - 1) * limit, page * limit);
   }
 
-  findOne(id: string): User {
+  findOne(id: User['id']): User {
     const user = this.users.find((user) => user.id === id);
 
     if (!user) {
@@ -42,7 +44,7 @@ export class UsersService {
 
   create(createUserDto: CreateUserDto): User {
     const newUser = {
-      id: `${this.users.length + 1}`,
+      id: this.users.length + 1,
       ...createUserDto,
     };
     this.users.push(newUser);
@@ -50,7 +52,7 @@ export class UsersService {
     return newUser;
   }
 
-  edit(id: string, editUserDto: EditUserDto): User {
+  edit(id: User['id'], editUserDto: EditUserDto): User {
     const index = this.users.findIndex((user) => user.id === id);
 
     if (index === -1) {
@@ -65,7 +67,7 @@ export class UsersService {
     return this.users[index];
   }
 
-  delete(id: string): User {
+  delete(id: User['id']): User {
     const index = this.users.findIndex((user) => user.id === id);
 
     if (index === -1) {
