@@ -1,6 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  JoinTable,
+  OneToMany,
+} from 'typeorm';
 
-import { ECurrency } from '../../shared/enums/currency.enum';
+import { ECurrency } from '../enums/currency.enum';
+import { Account } from './account.entity';
 
 export enum ELanguage {
   EN = 'EN',
@@ -26,4 +33,8 @@ export class User {
     enum: ELanguage,
   })
   language: ELanguage;
+
+  @JoinTable()
+  @OneToMany(() => Account, (account) => account.user)
+  accounts: Account[];
 }

@@ -9,10 +9,11 @@ import {
   Delete,
 } from '@nestjs/common';
 
+import { User } from '../shared/entities/user.entity';
+
 import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/create-user-dto/create-user.dto';
-import { EditUserDto } from './dto/create-user-dto/edit-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { EditUserDto } from './dto/edit-user.dto';
 
 @Controller('users')
 export class UsersController {
