@@ -9,8 +9,7 @@ import {
   Param,
 } from '@nestjs/common';
 
-import { Account } from '../shared/entities/account.entity';
-
+import { Account } from './entities/account.entity';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { EditAccountDto } from './dto/edit-account.dto';

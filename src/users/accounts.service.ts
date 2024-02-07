@@ -2,12 +2,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Account } from '../shared/entities/account.entity';
 import {
   DEFAULT_LIMIT,
   DEFAULT_PAGE,
 } from '../shared/constants/pagination.constant';
 
+import { Account } from './entities/account.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { EditAccountDto } from './dto/edit-account.dto';
 

@@ -6,9 +6,10 @@ import {
   MaxLength,
 } from 'class-validator';
 
-import { ECurrency } from '../../shared/enums/currency.enum';
-import { EAccountType } from '../../shared/entities/account.entity';
 import { DEFAULT_MAX_LENGTH } from '../../shared/constants/stringFields.constant';
+
+import { ECurrency } from '../enums/currency.enum';
+import { EAccountType } from '../entities/account.entity';
 
 export class CreateAccountDto {
   @MinLength(1)
