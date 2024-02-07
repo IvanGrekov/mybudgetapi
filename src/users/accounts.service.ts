@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -6,6 +10,7 @@ import { Account } from './entities/account.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { EditAccountDto } from './dto/edit-account.dto';
 import { UsersService } from './users.service';
+import { MAX_ACCOUNTS_PER_USER } from './constants/accounts.constant';
 
 @Injectable()
 export class AccountsService {
@@ -28,13 +33,20 @@ export class AccountsService {
   }
 
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
-    const user = await this.usersService.findOne(
-      createAccountDto.userId,
-      false,
-    );
+    const user = await this.usersService.findOne(createAccountDto.userId);
+
+    if (user.accounts.length >= MAX_ACCOUNTS_PER_USER) {
+      throw new ForbiddenException(
+        `User #${user.id} already has the maximum number of accounts`,
+      );
+    }
+
     const account = this.accountRepository.create({
       ...createAccountDto,
-      user,
+      user: {
+        ...user,
+        accounts: undefined,
+      },
     });
 
     return this.accountRepository.save(account);

@@ -35,11 +35,11 @@ export class UsersService {
     return users;
   }
 
-  async findOne(id: User['id'], shouldLoadAccounts = true): Promise<User> {
+  async findOne(id: User['id']): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: {
-        accounts: shouldLoadAccounts,
+        accounts: true,
       },
     });
 
