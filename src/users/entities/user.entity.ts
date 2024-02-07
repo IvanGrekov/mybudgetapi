@@ -35,6 +35,8 @@ export class User {
   language: ELanguage;
 
   @JoinTable()
-  @OneToMany(() => Account, (account) => account.user)
+  @OneToMany(() => Account, (account) => account.user, {
+    cascade: true,
+  })
   accounts: Account[];
 }

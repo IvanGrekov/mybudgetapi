@@ -1,19 +1,17 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 
 import { ECurrency } from '../enums/currency.enum';
+import { EAccountType } from '../enums/accountType.enum';
 import { User } from './user.entity';
-
-export enum EAccountType {
-  REGULAR = 'regular',
-  SAVINGS = 'savings',
-}
 
 @Entity()
 export class Account {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.accounts)
+  @ManyToOne(() => User, (user) => user.accounts, {
+    onDelete: 'CASCADE',
+  })
   user: User;
 
   @Column()

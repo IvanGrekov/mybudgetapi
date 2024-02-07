@@ -2,38 +2,22 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import {
-  DEFAULT_LIMIT,
-  DEFAULT_PAGE,
-} from '../shared/constants/pagination.constant';
-
 import { Account } from './entities/account.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { EditAccountDto } from './dto/edit-account.dto';
+import { UsersService } from './users.service';
 
 @Injectable()
 export class AccountsService {
   constructor(
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
+    private readonly usersService: UsersService,
   ) {}
 
-  findAll({
-    limit = DEFAULT_LIMIT,
-    page = DEFAULT_PAGE,
-    userId,
-  }): Promise<Account[]> {
-    userId;
-
-    return this.accountRepository.find({
-      take: limit,
-      skip: (page - 1) * limit,
-    });
-  }
-
   async findOne(id: Account['id']): Promise<Account> {
-    const account = await this.accountRepository.findOneBy({
-      id,
+    const account = await this.accountRepository.findOne({
+      where: { id },
     });
 
     if (!account) {
@@ -44,7 +28,14 @@ export class AccountsService {
   }
 
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
-    const account = this.accountRepository.create(createAccountDto);
+    const user = await this.usersService.findOne(
+      createAccountDto.userId,
+      false,
+    );
+    const account = this.accountRepository.create({
+      ...createAccountDto,
+      user,
+    });
 
     return this.accountRepository.save(account);
   }

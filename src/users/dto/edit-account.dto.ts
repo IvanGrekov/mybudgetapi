@@ -1,7 +1,5 @@
-import { PartialType, OmitType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/mapped-types';
 
-import { CreateAccountDto } from './create-account.dto';
+import { PreloadAccountDto } from './preload-account.dto';
 
-export class EditAccountDto extends PartialType(
-  OmitType(CreateAccountDto, ['userId'] as const),
-) {}
+export class EditAccountDto extends PartialType(PreloadAccountDto) {}

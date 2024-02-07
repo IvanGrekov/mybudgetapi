@@ -2,10 +2,9 @@ import {
   Controller,
   Get,
   Post,
-  Body,
   Patch,
   Delete,
-  Query,
+  Body,
   Param,
 } from '@nestjs/common';
 
@@ -18,20 +17,9 @@ import { EditAccountDto } from './dto/edit-account.dto';
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
-  @Get()
-  findAll(@Query() query): Promise<Account[]> {
-    const { limit, page, userId } = query || {};
-
-    return this.accountsService.findAll({
-      limit,
-      page,
-      userId,
-    });
-  }
-
   @Get(':id')
   findOne(@Param('id') id: number): Promise<Account> {
-    return this.accountsService.findOne(+id);
+    return this.accountsService.findOne(id);
   }
 
   @Post()
@@ -48,7 +36,7 @@ export class AccountsController {
   }
 
   @Delete(':id')
-  deleteOne(@Param('id') id: number): Promise<Account> {
+  delete(@Param('id') id: number): Promise<Account> {
     return this.accountsService.delete(id);
   }
 }
