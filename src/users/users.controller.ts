@@ -9,6 +9,8 @@ import {
   Delete,
 } from '@nestjs/common';
 
+import { PaginationQueryDto } from '../shared/dto/pagination-query.dto';
+
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -19,10 +21,8 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  findAll(@Query() query): Promise<User[]> {
-    const { limit, page } = query || {};
-
-    return this.usersService.findAll(limit, page);
+  findAll(@Query() paginationQuery: PaginationQueryDto): Promise<User[]> {
+    return this.usersService.findAll(paginationQuery);
   }
 
   @Get(':id')

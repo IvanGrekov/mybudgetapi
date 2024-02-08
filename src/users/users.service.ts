@@ -2,14 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import {
-  DEFAULT_LIMIT,
-  DEFAULT_PAGE,
-} from '../shared/constants/pagination.constant';
+import { PaginationQueryDto } from '../shared/dto/pagination-query.dto';
 
 import { User } from './entities/user.entity';
 import { Account } from './entities/account.entity';
-import { getDefaultAccountDtos } from './utils/defaultAccountDtos.util';
+import { getDefaultAccountsDto } from './utils/defaultAccountsDto.util';
 import { CreateUserDto } from './dto/create-user.dto';
 import { EditUserDto } from './dto/edit-user.dto';
 import { PreloadAccountDto } from './dto/preload-account.dto';
@@ -23,10 +20,10 @@ export class UsersService {
     private readonly accountRepository: Repository<Account>,
   ) {}
 
-  async findAll(limit = DEFAULT_LIMIT, page = DEFAULT_PAGE): Promise<User[]> {
+  async findAll({ limit, offset }: PaginationQueryDto): Promise<User[]> {
     const users = await this.userRepository.find({
       take: limit,
-      skip: (page - 1) * limit,
+      skip: (offset - 1) * limit,
       relations: {
         accounts: true,
       },
@@ -51,7 +48,7 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const accounts = getDefaultAccountDtos(createUserDto.defaultCurrency).map(
+    const accounts = getDefaultAccountsDto(createUserDto.defaultCurrency).map(
       (accountDto) => this.preloadAccount(accountDto),
     );
 

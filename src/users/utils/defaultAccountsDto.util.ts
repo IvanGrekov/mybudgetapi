@@ -2,9 +2,9 @@ import { PreloadAccountDto } from '../dto/preload-account.dto';
 import { EAccountType } from '../enums/accountType.enum';
 import { ECurrency } from '../enums/currency.enum';
 
-type TGetDefaultAccountDtos = (currency: ECurrency) => PreloadAccountDto[];
+type TGetDefaultAccountsDto = (currency: ECurrency) => PreloadAccountDto[];
 
-export const getDefaultAccountDtos: TGetDefaultAccountDtos = (currency) => {
+export const getDefaultAccountsDto: TGetDefaultAccountsDto = (currency) => {
   return [
     {
       currency,
