@@ -1,5 +1,5 @@
 import { PreloadAccountDto } from '../dto/preload-account.dto';
-import { EAccountType } from '../enums/accountType.enum';
+import { EAccountType } from '../enums/account-type.enum';
 import { ECurrency } from '../enums/currency.enum';
 
 type TGetDefaultAccountsDto = (currency: ECurrency) => PreloadAccountDto[];
@@ -7,21 +7,21 @@ type TGetDefaultAccountsDto = (currency: ECurrency) => PreloadAccountDto[];
 export const getDefaultAccountsDto: TGetDefaultAccountsDto = (currency) => {
   return [
     {
-      currency,
       name: 'Cache',
       type: EAccountType.REGULAR,
+      currency,
       balance: 0,
     },
     {
-      currency,
       name: 'Bank Account',
       type: EAccountType.REGULAR,
+      currency,
       balance: 0,
     },
     {
-      currency,
       name: 'Savings',
       type: EAccountType.SAVINGS,
+      currency,
       balance: 0,
     },
   ];

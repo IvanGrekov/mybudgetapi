@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 
 import { ECurrency } from '../enums/currency.enum';
-import { EAccountType } from '../enums/accountType.enum';
+import { EAccountType } from '../enums/account-type.enum';
 import { User } from './user.entity';
 
 @Entity()
@@ -19,15 +19,15 @@ export class Account {
 
   @Column({
     type: 'enum',
-    enum: ECurrency,
-  })
-  currency: ECurrency;
-
-  @Column({
-    type: 'enum',
     enum: EAccountType,
   })
   type: EAccountType;
+
+  @Column({
+    type: 'enum',
+    enum: ECurrency,
+  })
+  currency: ECurrency;
 
   @Column()
   balance: number;

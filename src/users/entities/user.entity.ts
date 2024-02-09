@@ -1,13 +1,9 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  JoinTable,
-  OneToMany,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
 import { ECurrency } from '../enums/currency.enum';
 import { Account } from './account.entity';
+import { Transaction } from './transaction.entity';
+import { TransactionCategory } from './transaction-category.entity';
 
 export enum ELanguage {
   EN = 'EN',
@@ -34,9 +30,22 @@ export class User {
   })
   language: ELanguage;
 
-  @JoinTable()
   @OneToMany(() => Account, (account) => account.user, {
     cascade: true,
   })
   accounts: Account[];
+
+  @OneToMany(
+    () => TransactionCategory,
+    (transactionCategory) => transactionCategory.user,
+    {
+      cascade: true,
+    },
+  )
+  transactionCategories: TransactionCategory[];
+
+  @OneToMany(() => Account, (transaction) => transaction.user, {
+    cascade: true,
+  })
+  transactions: Transaction[];
 }

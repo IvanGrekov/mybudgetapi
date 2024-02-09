@@ -6,10 +6,13 @@ import { PaginationQueryDto } from '../shared/dto/pagination-query.dto';
 
 import { User } from './entities/user.entity';
 import { Account } from './entities/account.entity';
-import { getDefaultAccountsDto } from './utils/defaultAccountsDto.util';
+import { TransactionCategory } from './entities/transaction-category.entity';
+import { getDefaultAccountsDto } from './utils/account.utils';
+import { getDefaultTransactionCategoriesDto } from './utils/transaction-category.utils';
 import { CreateUserDto } from './dto/create-user.dto';
 import { EditUserDto } from './dto/edit-user.dto';
 import { PreloadAccountDto } from './dto/preload-account.dto';
+import { PreloadTransactionCategoryDto } from './dto/preload-transaction-category.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +21,8 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
+    @InjectRepository(TransactionCategory)
+    private readonly transactionCategoryRepository: Repository<TransactionCategory>,
   ) {}
 
   async findAll({ limit, offset }: PaginationQueryDto): Promise<User[]> {
@@ -51,10 +56,16 @@ export class UsersService {
     const accounts = getDefaultAccountsDto(createUserDto.defaultCurrency).map(
       (accountDto) => this.preloadAccount(accountDto),
     );
+    const transactionCategories = getDefaultTransactionCategoriesDto(
+      createUserDto.defaultCurrency,
+    ).map((transactionCategory) =>
+      this.preloadTransactionCategory(transactionCategory),
+    );
 
     const user = this.userRepository.create({
       ...createUserDto,
       accounts,
+      transactionCategories,
     });
 
     return this.userRepository.save(user);
@@ -81,5 +92,13 @@ export class UsersService {
 
   preloadAccount(preloadAccountDto: PreloadAccountDto): Account {
     return this.accountRepository.create(preloadAccountDto);
+  }
+
+  preloadTransactionCategory(
+    preloadTransactionCategoryDto: PreloadTransactionCategoryDto,
+  ): TransactionCategory {
+    return this.transactionCategoryRepository.create(
+      preloadTransactionCategoryDto,
+    );
   }
 }

@@ -1,15 +1,15 @@
 import {
   IsEnum,
-  IsString,
-  IsNumber,
   MinLength,
   MaxLength,
+  IsString,
+  IsNumber,
 } from 'class-validator';
 
 import { DEFAULT_MAX_LENGTH } from '../../shared/constants/stringFields.constant';
 
 import { ECurrency } from '../enums/currency.enum';
-import { EAccountType } from '../enums/accountType.enum';
+import { EAccountType } from '../enums/account-type.enum';
 
 export class PreloadAccountDto {
   @MinLength(1)
