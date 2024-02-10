@@ -31,11 +31,14 @@ export class UsersService {
       skip: (offset - 1) * limit,
       relations: {
         accounts: true,
-        transactionCategories: true,
+        transactionCategories: {
+          parent: true,
+          children: true,
+        },
       },
     });
 
-    return users;
+    return users.map(this.filterTransactionCategories);
   }
 
   async findOne(id: User['id']): Promise<User> {
@@ -43,7 +46,10 @@ export class UsersService {
       where: { id },
       relations: {
         accounts: true,
-        transactionCategories: true,
+        transactionCategories: {
+          parent: true,
+          children: true,
+        },
       },
     });
 
@@ -51,7 +57,7 @@ export class UsersService {
       throw new NotFoundException(`User #${id} not found`);
     }
 
-    return user;
+    return this.filterTransactionCategories(user);
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -102,5 +108,17 @@ export class UsersService {
     return this.transactionCategoryRepository.create(
       preloadTransactionCategoryDto,
     );
+  }
+
+  filterTransactionCategories(user: User): User {
+    const { transactionCategories } = user;
+    const transactionCategoriesWithoutChildren = transactionCategories.filter(
+      ({ parent }) => !parent,
+    );
+
+    return {
+      ...user,
+      transactionCategories: transactionCategoriesWithoutChildren,
+    };
   }
 }

@@ -14,10 +14,7 @@ import { TransactionCategoriesService } from './transaction-categories/transacti
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
-    TypeOrmModule.forFeature([Account]),
-    TypeOrmModule.forFeature([TransactionCategory]),
-    TypeOrmModule.forFeature([Transaction]),
+    TypeOrmModule.forFeature([User, Account, TransactionCategory, Transaction]),
   ],
   controllers: [
     UsersController,
