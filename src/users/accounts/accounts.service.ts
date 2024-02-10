@@ -46,6 +46,7 @@ export class AccountsService {
       user: {
         ...user,
         accounts: undefined,
+        transactionCategories: undefined,
       },
     });
 
