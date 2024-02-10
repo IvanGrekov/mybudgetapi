@@ -2,9 +2,10 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsRelations, Repository } from 'typeorm';
 
 import { TransactionCategory } from '../entities/transaction-category.entity';
 import { CreateTransactionCategoryDto } from '../dto/create-transaction-category.dto';
@@ -20,10 +21,14 @@ export class TransactionCategoriesService {
     private readonly usersService: UsersService,
   ) {}
 
-  async findOne(id: TransactionCategory['id']): Promise<TransactionCategory> {
+  async findOne(
+    id: TransactionCategory['id'],
+    relations?: FindOptionsRelations<TransactionCategory>,
+  ): Promise<TransactionCategory> {
     const transactionCategory =
       await this.transactionCategoryRepository.findOne({
         where: { id },
+        relations,
       });
 
     if (!transactionCategory) {
@@ -52,9 +57,35 @@ export class TransactionCategoriesService {
       ...createTransactionCategoryDto,
       user: {
         ...user,
+        accounts: undefined,
         transactionCategories: undefined,
       },
     });
+    const { parentId, type } = createTransactionCategoryDto;
+
+    if (typeof parentId === 'number') {
+      const parentTransactionCategory = await this.findOne(parentId, {
+        user: true,
+      });
+      const { type: parentType, user: parentUser } = parentTransactionCategory;
+
+      if (type !== parentType) {
+        throw new ConflictException(
+          `Parent Transaction Category #${parentId} type is different from the new Transaction Category type`,
+        );
+      }
+
+      if (parentUser.id !== user.id) {
+        throw new ConflictException(
+          `Parent Transaction Category #${parentId} does not belong to User #${user.id}`,
+        );
+      }
+
+      transactionCategory.parent = {
+        ...parentTransactionCategory,
+        user: undefined,
+      };
+    }
 
     return this.transactionCategoryRepository.save(transactionCategory);
   }

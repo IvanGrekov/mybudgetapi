@@ -4,6 +4,7 @@ import {
   MaxLength,
   IsString,
   IsNumber,
+  IsOptional,
 } from 'class-validator';
 
 import { DEFAULT_MAX_LENGTH } from '../../shared/constants/stringFields.constant';
@@ -25,4 +26,8 @@ export class PreloadTransactionCategoryDto {
 
   @IsNumber()
   readonly order: number;
+
+  @IsOptional()
+  @IsNumber()
+  readonly parentId?: number;
 }
