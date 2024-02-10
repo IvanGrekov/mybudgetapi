@@ -15,6 +15,7 @@ import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { EditUserDto } from './dto/edit-user.dto';
+import { EditUserCurrencyDto } from './dto/edit-user-currency.dto';
 
 @Controller('users')
 export class UsersController {
@@ -41,6 +42,14 @@ export class UsersController {
     @Body() editUserDto: EditUserDto,
   ): Promise<User> {
     return this.usersService.edit(id, editUserDto);
+  }
+
+  @Patch('currency/:id')
+  editOnesCurrency(
+    @Param('id') id: number,
+    @Body() editUserCurrencyDto: EditUserCurrencyDto,
+  ): Promise<User> {
+    return this.usersService.editUserCurrency(id, editUserCurrencyDto);
   }
 
   @Delete(':id')
