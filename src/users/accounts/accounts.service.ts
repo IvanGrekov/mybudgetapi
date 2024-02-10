@@ -6,11 +6,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Account } from './entities/account.entity';
-import { CreateAccountDto } from './dto/create-account.dto';
-import { EditAccountDto } from './dto/edit-account.dto';
-import { UsersService } from './users.service';
-import { MAX_ACCOUNTS_PER_USER } from './constants/accounts.constant';
+import { Account } from '../entities/account.entity';
+import { CreateAccountDto } from '../dto/create-account.dto';
+import { EditAccountDto } from '../dto/edit-account.dto';
+import { UsersService } from '../users.service';
+import { MAX_ACCOUNTS_PER_USER } from '../constants/accounts.constant';
 
 @Injectable()
 export class AccountsService {

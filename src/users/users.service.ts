@@ -31,6 +31,7 @@ export class UsersService {
       skip: (offset - 1) * limit,
       relations: {
         accounts: true,
+        transactionCategories: true,
       },
     });
 
@@ -42,6 +43,7 @@ export class UsersService {
       where: { id },
       relations: {
         accounts: true,
+        transactionCategories: true,
       },
     });
 

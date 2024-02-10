@@ -7,8 +7,10 @@ import { TransactionCategory } from './entities/transaction-category.entity';
 import { Transaction } from './entities/transaction.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { AccountsController } from './accounts.controller';
-import { AccountsService } from './accounts.service';
+import { AccountsController } from './accounts/accounts.controller';
+import { AccountsService } from './accounts/accounts.service';
+import { TransactionCategoriesController } from './transaction-categories/transaction-categories.controller';
+import { TransactionCategoriesService } from './transaction-categories/transaction-categories.service';
 
 @Module({
   imports: [
@@ -17,7 +19,11 @@ import { AccountsService } from './accounts.service';
     TypeOrmModule.forFeature([TransactionCategory]),
     TypeOrmModule.forFeature([Transaction]),
   ],
-  controllers: [UsersController, AccountsController],
-  providers: [UsersService, AccountsService],
+  controllers: [
+    UsersController,
+    AccountsController,
+    TransactionCategoriesController,
+  ],
+  providers: [UsersService, AccountsService, TransactionCategoriesService],
 })
 export class UsersModule {}
