@@ -68,12 +68,17 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const accounts = getDefaultAccountsDto(createUserDto.defaultCurrency).map(
-      (accountDto) => this.preloadAccount(accountDto),
-    );
-    const transactionCategories = getDefaultTransactionCategoriesDto(
-      createUserDto.defaultCurrency,
-    ).map((transactionCategory) =>
+    const { defaultCurrency, language } = createUserDto;
+
+    const accounts = getDefaultAccountsDto({
+      currency: defaultCurrency,
+      language,
+    }).map((accountDto) => this.preloadAccount(accountDto));
+
+    const transactionCategories = getDefaultTransactionCategoriesDto({
+      currency: defaultCurrency,
+      language,
+    }).map((transactionCategory) =>
       this.preloadTransactionCategory(transactionCategory),
     );
 

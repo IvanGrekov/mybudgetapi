@@ -3,7 +3,7 @@ import { IsEnum, IsString, MinLength, MaxLength } from 'class-validator';
 import { DEFAULT_MAX_LENGTH } from '../../shared/constants/stringFields.constant';
 
 import { ECurrency } from '../enums/currency.enum';
-import { ELanguage } from '../entities/user.entity';
+import { ELanguage } from '../enums/language.enum';
 
 export class CreateUserDto {
   @MinLength(3)
