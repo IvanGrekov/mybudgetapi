@@ -18,18 +18,21 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({
       type: EAccountType.REGULAR,
       currency,
       balance: 0,
+      shouldHideFromOverallBalance: false,
     },
     {
       name: language === ELanguage.UA ? 'Банківський рахунок' : 'Bank Account',
       type: EAccountType.REGULAR,
       currency,
       balance: 0,
+      shouldHideFromOverallBalance: false,
     },
     {
       name: language === ELanguage.UA ? 'Збереження' : 'Savings',
       type: EAccountType.SAVINGS,
       currency,
       balance: 0,
+      shouldHideFromOverallBalance: true,
     },
   ];
 };

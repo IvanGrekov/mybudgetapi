@@ -4,6 +4,7 @@ import {
   MaxLength,
   IsString,
   IsNumber,
+  IsBoolean,
 } from 'class-validator';
 
 import { DEFAULT_MAX_LENGTH } from '../../shared/constants/stringFields.constant';
@@ -25,4 +26,7 @@ export class PreloadAccountDto {
 
   @IsNumber()
   readonly balance: number;
+
+  @IsBoolean()
+  readonly shouldHideFromOverallBalance: boolean;
 }

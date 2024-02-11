@@ -52,7 +52,6 @@ export class UsersService {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: {
-        accounts: true,
         transactionCategories: {
           parent: true,
           children: true,
@@ -64,7 +63,18 @@ export class UsersService {
       throw new NotFoundException(`User #${id} not found`);
     }
 
-    return this.filterTransactionCategories(user);
+    const accounts = await this.getUserAccounts(id);
+    const overallBalance = accounts.reduce(
+      (sum, { balance, shouldHideFromOverallBalance }) =>
+        shouldHideFromOverallBalance ? sum : sum + balance,
+      0,
+    );
+
+    return this.filterTransactionCategories({
+      ...user,
+      overallBalance,
+      accounts,
+    });
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -167,6 +177,14 @@ export class UsersService {
     return this.userRepository.remove(user);
   }
 
+  async getUserAccounts(id: User['id']): Promise<Account[]> {
+    return this.accountRepository.find({
+      where: {
+        user: { id },
+      },
+    });
+  }
+
   updateRelationsCurrency({
     queryRunner,
     userId,
@@ -203,16 +221,6 @@ export class UsersService {
         { currency },
       );
     }
-  }
-
-  async getUserTransactionCategories(
-    userId: User['id'],
-  ): Promise<TransactionCategory[]> {
-    return this.transactionCategoryRepository.find({
-      where: {
-        user: { id: userId },
-      },
-    });
   }
 
   preloadAccount(preloadAccountDto: PreloadAccountDto): Account {

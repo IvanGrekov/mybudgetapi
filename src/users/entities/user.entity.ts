@@ -26,6 +26,9 @@ export class User {
   })
   language: ELanguage;
 
+  @Column({ default: null })
+  overallBalance: number | null;
+
   @OneToMany(() => Account, (account) => account.user, {
     cascade: true,
   })

@@ -31,4 +31,7 @@ export class Account {
 
   @Column()
   balance: number;
+
+  @Column()
+  shouldHideFromOverallBalance: boolean;
 }
