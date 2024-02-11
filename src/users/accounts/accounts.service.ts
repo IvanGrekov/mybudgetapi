@@ -2,10 +2,13 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { EAccountType } from '../enums/account-type.enum';
+import { EDebtType } from '../enums/debt-type.enum';
 import { Account } from '../entities/account.entity';
 import { CreateAccountDto } from '../dto/create-account.dto';
 import { EditAccountDto } from '../dto/edit-account.dto';
@@ -33,6 +36,8 @@ export class AccountsService {
   }
 
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
+    this.validateAccountType(createAccountDto);
+
     const user = await this.usersService.findOne(createAccountDto.userId);
 
     if (user.accounts.length >= MAX_ACCOUNTS_PER_USER) {
@@ -57,6 +62,8 @@ export class AccountsService {
     id: Account['id'],
     editAccountDto: EditAccountDto,
   ): Promise<Account> {
+    this.validateAccountType(editAccountDto);
+
     const account = await this.accountRepository.preload({
       id,
       ...editAccountDto,
@@ -73,5 +80,19 @@ export class AccountsService {
     const account = await this.findOne(id);
 
     return this.accountRepository.remove(account);
+  }
+
+  validateAccountType({
+    type,
+    debtType,
+  }: {
+    type?: EAccountType;
+    debtType?: EDebtType;
+  }): void {
+    if (type === EAccountType.DEBT && !debtType) {
+      throw new BadRequestException(
+        `Account of type 'debt' must have a 'debtType'`,
+      );
+    }
   }
 }
