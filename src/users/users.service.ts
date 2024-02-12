@@ -19,6 +19,7 @@ import { EditUserCurrencyDto } from './dto/edit-user-currency.dto';
 import { PreloadAccountDto } from './dto/preload-account.dto';
 import { PreloadTransactionCategoryDto } from './dto/preload-transaction-category.dto';
 import { ECurrency } from './enums/currency.enum';
+import { EAccountType } from './enums/account-type.enum';
 
 @Injectable()
 export class UsersService {
@@ -64,11 +65,7 @@ export class UsersService {
     }
 
     const accounts = await this.getUserAccounts(id);
-    const overallBalance = accounts.reduce(
-      (sum, { balance, shouldHideFromOverallBalance }) =>
-        shouldHideFromOverallBalance ? sum : sum + balance,
-      0,
-    );
+    const overallBalance = this.calculateOverallBalance(accounts);
 
     return this.filterTransactionCategories({
       ...user,
@@ -183,6 +180,20 @@ export class UsersService {
         user: { id },
       },
     });
+  }
+
+  calculateOverallBalance(accounts: Account[]): number {
+    const overallBalance = accounts.reduce(
+      (sum, { balance, shouldHideFromOverallBalance, type }) => {
+        const accountBalance =
+          type === EAccountType.I_OWE ? -1 * balance : balance;
+
+        return shouldHideFromOverallBalance ? sum : sum + accountBalance;
+      },
+      0,
+    );
+
+    return overallBalance;
   }
 
   updateRelationsCurrency({

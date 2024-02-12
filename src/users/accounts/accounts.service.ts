@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { EAccountType } from '../enums/account-type.enum';
-import { EDebtType } from '../enums/debt-type.enum';
 import { Account } from '../entities/account.entity';
 import { CreateAccountDto } from '../dto/create-account.dto';
 import { EditAccountDto } from '../dto/edit-account.dto';
@@ -36,9 +35,10 @@ export class AccountsService {
   }
 
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
-    this.validateAccountType(createAccountDto);
+    this.validateAccountProperties(createAccountDto);
 
-    const user = await this.usersService.findOne(createAccountDto.userId);
+    const { userId, balance } = createAccountDto;
+    const user = await this.usersService.findOne(userId);
 
     if (user.accounts.length >= MAX_ACCOUNTS_PER_USER) {
       throw new ForbiddenException(
@@ -48,6 +48,7 @@ export class AccountsService {
 
     const account = this.accountRepository.create({
       ...createAccountDto,
+      initBalance: balance,
       user: {
         ...user,
         accounts: undefined,
@@ -62,12 +63,12 @@ export class AccountsService {
     id: Account['id'],
     editAccountDto: EditAccountDto,
   ): Promise<Account> {
-    this.validateAccountType(editAccountDto);
-
     const account = await this.accountRepository.preload({
       id,
       ...editAccountDto,
     });
+
+    this.validateAccountProperties(account);
 
     if (!account) {
       throw new NotFoundException(`Account #${id} not found`);
@@ -82,16 +83,24 @@ export class AccountsService {
     return this.accountRepository.remove(account);
   }
 
-  validateAccountType({
+  validateAccountProperties({
     type,
-    debtType,
+    shouldShowAsIncome,
+    shouldShowAsExpense,
   }: {
     type?: EAccountType;
-    debtType?: EDebtType;
+    shouldShowAsIncome?: boolean;
+    shouldShowAsExpense?: boolean;
   }): void {
-    if (type === EAccountType.DEBT && !debtType) {
+    if (shouldShowAsExpense && type !== EAccountType.I_OWE) {
       throw new BadRequestException(
-        `Account of type 'debt' must have a 'debtType'`,
+        `Only 'I owe' accounts can have 'shouldShowAsExpense'`,
+      );
+    }
+
+    if (shouldShowAsIncome && type !== EAccountType.OWE_ME) {
+      throw new BadRequestException(
+        `Only 'Owe me' accounts can have 'shouldShowAsIncome'`,
       );
     }
   }
