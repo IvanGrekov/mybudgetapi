@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 
 import { EAccountType } from '../enums/account-type.enum';
 import { Account } from '../entities/account.entity';
+import { User } from '../entities/user.entity';
 import { CreateAccountDto } from '../dto/create-account.dto';
 import { EditAccountDto } from '../dto/edit-account.dto';
 import { UsersService } from '../users.service';
@@ -21,6 +22,16 @@ export class AccountsService {
     private readonly accountRepository: Repository<Account>,
     private readonly usersService: UsersService,
   ) {}
+
+  async findAll(userId: User['id']): Promise<Account[]> {
+    if (!userId) {
+      throw new BadRequestException('userId query parameter is required');
+    }
+
+    return this.accountRepository.find({
+      where: { user: { id: userId } },
+    });
+  }
 
   async findOne(id: Account['id']): Promise<Account> {
     const account = await this.accountRepository.findOne({

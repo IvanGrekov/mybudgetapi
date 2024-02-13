@@ -19,7 +19,6 @@ import { EditUserCurrencyDto } from './dto/edit-user-currency.dto';
 import { PreloadAccountDto } from './dto/preload-account.dto';
 import { PreloadTransactionCategoryDto } from './dto/preload-transaction-category.dto';
 import { ECurrency } from './enums/currency.enum';
-import { EAccountType } from './enums/account-type.enum';
 
 @Injectable()
 export class UsersService {
@@ -34,44 +33,22 @@ export class UsersService {
   ) {}
 
   async findAll({ limit, offset }: PaginationQueryDto): Promise<User[]> {
-    const users = await this.userRepository.find({
+    return this.userRepository.find({
       take: limit,
       skip: (offset - 1) * limit,
-      relations: {
-        accounts: true,
-        transactionCategories: {
-          parent: true,
-          children: true,
-        },
-      },
     });
-
-    return users.map(this.filterTransactionCategories);
   }
 
   async findOne(id: User['id']): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: {
-        transactionCategories: {
-          parent: true,
-          children: true,
-        },
-      },
     });
 
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
     }
 
-    const accounts = await this.getUserAccounts(id);
-    const overallBalance = this.calculateOverallBalance(accounts);
-
-    return this.filterTransactionCategories({
-      ...user,
-      overallBalance,
-      accounts,
-    });
+    return user;
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -89,13 +66,14 @@ export class UsersService {
       this.preloadTransactionCategory(transactionCategory),
     );
 
-    const user = this.userRepository.create({
+    const userTemplate = this.userRepository.create({
       ...createUserDto,
       accounts,
       transactionCategories,
     });
+    const user = await this.userRepository.save(userTemplate);
 
-    return this.userRepository.save(user);
+    return this.findOne(user.id);
   }
 
   async edit(id: User['id'], editUserDto: EditUserDto): Promise<User> {
@@ -117,6 +95,7 @@ export class UsersService {
       defaultCurrency,
       isForceCurrencyUpdate,
       isSoftCurrencyUpdate,
+      rate,
     }: EditUserCurrencyDto,
   ): Promise<User> {
     if (isForceCurrencyUpdate && isSoftCurrencyUpdate) {
@@ -152,9 +131,10 @@ export class UsersService {
       this.updateRelationsCurrency({
         queryRunner,
         userId: id,
+        isForceCurrencyUpdate,
         oldCurrency: oldDefaultCurrency,
         currency: defaultCurrency,
-        isForceCurrencyUpdate,
+        rate,
       });
 
       await queryRunner.commitTransaction();
@@ -174,47 +154,30 @@ export class UsersService {
     return this.userRepository.remove(user);
   }
 
-  async getUserAccounts(id: User['id']): Promise<Account[]> {
-    return this.accountRepository.find({
-      where: {
-        user: { id },
-      },
-    });
-  }
-
-  calculateOverallBalance(accounts: Account[]): number {
-    const overallBalance = accounts.reduce(
-      (sum, { balance, shouldHideFromOverallBalance, type }) => {
-        const accountBalance =
-          type === EAccountType.I_OWE ? -1 * balance : balance;
-
-        return shouldHideFromOverallBalance ? sum : sum + accountBalance;
-      },
-      0,
-    );
-
-    return overallBalance;
-  }
-
   updateRelationsCurrency({
     queryRunner,
     userId,
+    isForceCurrencyUpdate,
     currency,
     oldCurrency,
-    isForceCurrencyUpdate,
+    rate = 1,
   }: {
     queryRunner: QueryRunner;
     userId: User['id'];
     currency: ECurrency;
     oldCurrency: ECurrency;
+    rate?: number;
     isForceCurrencyUpdate: boolean;
   }): void {
+    const calculateBalance = () => `balance * ${rate}`;
+
     if (isForceCurrencyUpdate) {
       queryRunner.manager.update(
         Account,
         { user: { id: userId } },
-        { currency },
+        { currency, balance: calculateBalance },
       );
+
       queryRunner.manager.update(
         TransactionCategory,
         { user: { id: userId } },
@@ -224,8 +187,9 @@ export class UsersService {
       queryRunner.manager.update(
         Account,
         { user: { id: userId }, currency: oldCurrency },
-        { currency },
+        { currency, balance: calculateBalance },
       );
+
       queryRunner.manager.update(
         TransactionCategory,
         { user: { id: userId }, currency: oldCurrency },
@@ -235,7 +199,10 @@ export class UsersService {
   }
 
   preloadAccount(preloadAccountDto: PreloadAccountDto): Account {
-    return this.accountRepository.create(preloadAccountDto);
+    return this.accountRepository.create({
+      ...preloadAccountDto,
+      initBalance: preloadAccountDto.balance,
+    });
   }
 
   preloadTransactionCategory(
@@ -244,17 +211,5 @@ export class UsersService {
     return this.transactionCategoryRepository.create(
       preloadTransactionCategoryDto,
     );
-  }
-
-  filterTransactionCategories(user: User): User {
-    const { transactionCategories } = user;
-    const transactionCategoriesWithoutChildren = transactionCategories.filter(
-      ({ parent }) => !parent,
-    );
-
-    return {
-      ...user,
-      transactionCategories: transactionCategoriesWithoutChildren,
-    };
   }
 }

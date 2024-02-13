@@ -4,6 +4,7 @@ import {
   Post,
   Patch,
   Delete,
+  Query,
   Param,
   Body,
 } from '@nestjs/common';
@@ -16,6 +17,11 @@ import { EditAccountDto } from '../dto/edit-account.dto';
 @Controller('accounts')
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
+
+  @Get()
+  findAll(@Query('userId') userId: number): Promise<Account[]> {
+    return this.accountsService.findAll(userId);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: number): Promise<Account> {

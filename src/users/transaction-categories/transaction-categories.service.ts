@@ -1,5 +1,6 @@
 import {
   Injectable,
+  BadRequestException,
   NotFoundException,
   ForbiddenException,
   ConflictException,
@@ -8,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, Repository } from 'typeorm';
 
 import { TransactionCategory } from '../entities/transaction-category.entity';
+import { User } from '../entities/user.entity';
 import { CreateTransactionCategoryDto } from '../dto/create-transaction-category.dto';
 import { EditTransactionCategoryDto } from '../dto/edit-transaction-category.dto';
 import { UsersService } from '../users.service';
@@ -20,6 +22,16 @@ export class TransactionCategoriesService {
     private readonly transactionCategoryRepository: Repository<TransactionCategory>,
     private readonly usersService: UsersService,
   ) {}
+
+  async findAll(userId: User['id']): Promise<TransactionCategory[]> {
+    if (!userId) {
+      throw new BadRequestException('userId query parameter is required');
+    }
+
+    return this.transactionCategoryRepository.find({
+      where: { user: { id: userId } },
+    });
+  }
 
   async findOne(
     id: TransactionCategory['id'],

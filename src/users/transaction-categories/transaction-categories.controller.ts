@@ -4,6 +4,7 @@ import {
   Post,
   Patch,
   Delete,
+  Query,
   Param,
   Body,
 } from '@nestjs/common';
@@ -18,6 +19,11 @@ export class TransactionCategoriesController {
   constructor(
     private readonly transactionCategoriesService: TransactionCategoriesService,
   ) {}
+
+  @Get()
+  findAll(@Query('userId') userId: number): Promise<TransactionCategory[]> {
+    return this.transactionCategoriesService.findAll(userId);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: number): Promise<TransactionCategory> {
