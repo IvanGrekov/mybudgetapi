@@ -1,10 +1,8 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 
-import { ECurrency } from '../shared/enums/currency.enums';
-
-import { User } from '../users/user.entity';
-
-import { EAccountType } from './accounts.enums';
+import { User } from './user.entity';
+import { ECurrency } from '../enums/currency.enums';
+import { EAccountType } from '../enums/accounts.enums';
 
 @Entity()
 export class Account {

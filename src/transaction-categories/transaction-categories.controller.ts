@@ -9,7 +9,8 @@ import {
   Body,
 } from '@nestjs/common';
 
-import { TransactionCategory } from './transaction-category.entity';
+import { TransactionCategory } from '../shared/entities/transaction-category.entity';
+
 import { TransactionCategoriesService } from './transaction-categories.service';
 import {
   CreateTransactionCategoryDto,

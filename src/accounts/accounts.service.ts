@@ -7,11 +7,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { User } from '../users/user.entity';
+import { User } from '../shared/entities/user.entity';
+import { Account } from '../shared/entities/account.entity';
+import { EAccountType } from '../shared/enums/accounts.enums';
 import { UsersService } from '../users/users.service';
 
-import { EAccountType } from './accounts.enums';
-import { Account } from './account.entity';
 import { CreateAccountDto } from './accounts.dto';
 import { EditAccountDto } from './accounts.dto';
 import { MAX_ACCOUNTS_PER_USER } from './accounts.constants';

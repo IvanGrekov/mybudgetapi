@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { User } from '../users/user.entity';
+import { User } from '../shared/entities/user.entity';
+import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { UsersModule } from '../users/users.module';
 
-import { TransactionCategory } from './transaction-category.entity';
 import { TransactionCategoriesController } from './transaction-categories.controller';
 import { TransactionCategoriesService } from './transaction-categories.service';
 

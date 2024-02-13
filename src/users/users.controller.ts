@@ -9,9 +9,9 @@ import {
   Delete,
 } from '@nestjs/common';
 
+import { User } from '../shared/entities/user.entity';
 import { PaginationQueryDto } from '../shared/dto/pagination.dto';
 
-import { User } from './user.entity';
 import { UsersService } from './users.service';
 import { CreateUserDto, EditUserDto, EditUserCurrencyDto } from './users.dto';
 

@@ -9,7 +9,8 @@ import {
   Body,
 } from '@nestjs/common';
 
-import { Account } from './account.entity';
+import { Account } from '../shared/entities/account.entity';
+
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './accounts.dto';
 import { EditAccountDto } from './accounts.dto';

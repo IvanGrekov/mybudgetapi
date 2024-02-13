@@ -8,10 +8,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, Repository } from 'typeorm';
 
-import { User } from '../users/user.entity';
+import { User } from '../shared/entities/user.entity';
+import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { UsersService } from '../users/users.service';
 
-import { TransactionCategory } from './transaction-category.entity';
 import {
   CreateTransactionCategoryDto,
   EditTransactionCategoryDto,

@@ -11,18 +11,16 @@ import {
   Repository,
 } from 'typeorm';
 
+import { User } from '../shared/entities/user.entity';
+import { Account } from '../shared/entities/account.entity';
+import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { PaginationQueryDto } from '../shared/dto/pagination.dto';
+import { PreloadAccountDto } from '../shared/dto/preload-account.dto';
+import { PreloadTransactionCategoryDto } from '../shared/dto/preload-transaction-category.dto';
+import { getDefaultAccountsDto } from '../shared/utils/accounts.utils';
+import { getDefaultTransactionCategoriesDto } from '../shared/utils/transaction-categories.utils';
 import { ECurrency } from '../shared/enums/currency.enums';
 
-import { Account } from '../accounts/account.entity';
-import { PreloadAccountDto } from '../accounts/accounts.dto';
-import { getDefaultAccountsDto } from '../accounts/accounts.utils';
-
-import { getDefaultTransactionCategoriesDto } from '../transaction-categories/transaction-categories.utils';
-import { TransactionCategory } from '../transaction-categories/transaction-category.entity';
-import { PreloadTransactionCategoryDto } from '../transaction-categories/transaction-categories.dto';
-
-import { User } from './user.entity';
 import { CreateUserDto, EditUserDto, EditUserCurrencyDto } from './users.dto';
 
 @Injectable()
