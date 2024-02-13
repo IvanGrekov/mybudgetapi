@@ -4,7 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import {
+  DataSource,
+  FindOptionsRelations,
+  QueryRunner,
+  Repository,
+} from 'typeorm';
 
 import { PaginationQueryDto } from '../shared/dto/pagination-query.dto';
 
@@ -39,9 +44,13 @@ export class UsersService {
     });
   }
 
-  async findOne(id: User['id']): Promise<User> {
+  async findOne(
+    id: User['id'],
+    relations?: FindOptionsRelations<User>,
+  ): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
+      relations,
     });
 
     if (!user) {

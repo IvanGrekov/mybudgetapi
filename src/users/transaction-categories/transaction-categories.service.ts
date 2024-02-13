@@ -28,9 +28,17 @@ export class TransactionCategoriesService {
       throw new BadRequestException('userId query parameter is required');
     }
 
-    return this.transactionCategoryRepository.find({
-      where: { user: { id: userId } },
-    });
+    const transactionCategories = await this.transactionCategoryRepository.find(
+      {
+        where: { user: { id: userId } },
+        relations: {
+          parent: true,
+          children: true,
+        },
+      },
+    );
+
+    return this.filterChildTransactionCategories(transactionCategories);
   }
 
   async findOne(
@@ -55,6 +63,7 @@ export class TransactionCategoriesService {
   ): Promise<TransactionCategory> {
     const user = await this.usersService.findOne(
       createTransactionCategoryDto.userId,
+      { transactionCategories: true },
     );
 
     if (
@@ -65,14 +74,11 @@ export class TransactionCategoriesService {
       );
     }
 
-    const transactionCategory = this.transactionCategoryRepository.create({
-      ...createTransactionCategoryDto,
-      user: {
-        ...user,
-        accounts: undefined,
-        transactionCategories: undefined,
-      },
-    });
+    const transactionCategoryTemplate =
+      this.transactionCategoryRepository.create({
+        ...createTransactionCategoryDto,
+        user,
+      });
     const { parentId, type } = createTransactionCategoryDto;
 
     if (typeof parentId === 'number') {
@@ -87,19 +93,20 @@ export class TransactionCategoriesService {
         );
       }
 
-      if (parentUser.id !== user.id) {
+      if (user.id !== parentUser.id) {
         throw new ConflictException(
           `Parent Transaction Category #${parentId} does not belong to User #${user.id}`,
         );
       }
 
-      transactionCategory.parent = {
-        ...parentTransactionCategory,
-        user: undefined,
-      };
+      transactionCategoryTemplate.parent = parentTransactionCategory;
     }
 
-    return this.transactionCategoryRepository.save(transactionCategory);
+    const transactionCategory = await this.transactionCategoryRepository.save(
+      transactionCategoryTemplate,
+    );
+
+    return this.findOne(transactionCategory.id, { parent: true });
   }
 
   async edit(
@@ -123,5 +130,11 @@ export class TransactionCategoriesService {
     const transactionCategory = await this.findOne(id);
 
     return this.transactionCategoryRepository.remove(transactionCategory);
+  }
+
+  filterChildTransactionCategories(
+    transactionCategories: TransactionCategory[],
+  ): TransactionCategory[] {
+    return transactionCategories.filter(({ parent }) => !parent);
   }
 }

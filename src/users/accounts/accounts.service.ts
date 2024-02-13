@@ -57,17 +57,15 @@ export class AccountsService {
       );
     }
 
-    const account = this.accountRepository.create({
+    const accountTemplate = this.accountRepository.create({
       ...createAccountDto,
       initBalance: balance,
-      user: {
-        ...user,
-        accounts: undefined,
-        transactionCategories: undefined,
-      },
+      user,
     });
 
-    return this.accountRepository.save(account);
+    const account = await this.accountRepository.save(accountTemplate);
+
+    return this.findOne(account.id);
   }
 
   async edit(
