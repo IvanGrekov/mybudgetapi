@@ -1,10 +1,12 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
-import { ECurrency } from '../enums/currency.enum';
-import { ELanguage } from '../enums/language.enum';
-import { Account } from './account.entity';
+import { ECurrency } from '../shared/enums/currency.enums';
+import { ELanguage } from '../shared/enums/language.enums';
+
+import { Account } from '../accounts/account.entity';
+import { TransactionCategory } from '../transaction-categories/transaction-category.entity';
+
 import { Transaction } from './transaction.entity';
-import { TransactionCategory } from './transaction-category.entity';
 
 @Entity()
 export class User {

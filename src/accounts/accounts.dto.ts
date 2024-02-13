@@ -7,11 +7,12 @@ import {
   IsBoolean,
   IsOptional,
 } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
 
-import { DEFAULT_MAX_LENGTH } from '../../shared/constants/stringFields.constant';
+import { DEFAULT_MAX_LENGTH } from '../shared/constants/string-fields.constants';
+import { ECurrency } from '../shared/enums/currency.enums';
 
-import { ECurrency } from '../enums/currency.enum';
-import { EAccountType } from '../enums/account-type.enum';
+import { EAccountType } from './accounts.enums';
 
 export class PreloadAccountDto {
   @MinLength(1)
@@ -39,3 +40,10 @@ export class PreloadAccountDto {
   @IsBoolean()
   readonly shouldShowAsExpense?: boolean;
 }
+
+export class CreateAccountDto extends PreloadAccountDto {
+  @IsNumber()
+  readonly userId: number;
+}
+
+export class EditAccountDto extends PartialType(PreloadAccountDto) {}

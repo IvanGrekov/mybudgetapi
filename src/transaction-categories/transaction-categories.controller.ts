@@ -9,10 +9,12 @@ import {
   Body,
 } from '@nestjs/common';
 
-import { TransactionCategory } from '../entities/transaction-category.entity';
+import { TransactionCategory } from './transaction-category.entity';
 import { TransactionCategoriesService } from './transaction-categories.service';
-import { CreateTransactionCategoryDto } from '../dto/create-transaction-category.dto';
-import { EditTransactionCategoryDto } from '../dto/edit-transaction-category.dto';
+import {
+  CreateTransactionCategoryDto,
+  EditTransactionCategoryDto,
+} from './transaction-categories.dto';
 
 @Controller('transaction-categories')
 export class TransactionCategoriesController {

@@ -11,19 +11,19 @@ import {
   Repository,
 } from 'typeorm';
 
-import { PaginationQueryDto } from '../shared/dto/pagination-query.dto';
+import { PaginationQueryDto } from '../shared/dto/pagination.dto';
+import { ECurrency } from '../shared/enums/currency.enums';
 
-import { User } from './entities/user.entity';
-import { Account } from './entities/account.entity';
-import { TransactionCategory } from './entities/transaction-category.entity';
-import { getDefaultAccountsDto } from './utils/account.utils';
-import { getDefaultTransactionCategoriesDto } from './utils/transaction-category.utils';
-import { CreateUserDto } from './dto/create-user.dto';
-import { EditUserDto } from './dto/edit-user.dto';
-import { EditUserCurrencyDto } from './dto/edit-user-currency.dto';
-import { PreloadAccountDto } from './dto/preload-account.dto';
-import { PreloadTransactionCategoryDto } from './dto/preload-transaction-category.dto';
-import { ECurrency } from './enums/currency.enum';
+import { Account } from '../accounts/account.entity';
+import { PreloadAccountDto } from '../accounts/accounts.dto';
+import { getDefaultAccountsDto } from '../accounts/accounts.utils';
+
+import { getDefaultTransactionCategoriesDto } from '../transaction-categories/transaction-categories.utils';
+import { TransactionCategory } from '../transaction-categories/transaction-category.entity';
+import { PreloadTransactionCategoryDto } from '../transaction-categories/transaction-categories.dto';
+
+import { User } from './user.entity';
+import { CreateUserDto, EditUserDto, EditUserCurrencyDto } from './users.dto';
 
 @Injectable()
 export class UsersService {

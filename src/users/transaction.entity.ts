@@ -1,12 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 
 import { User } from './user.entity';
-
-enum ETransactionType {
-  INCOME = 'income',
-  EXPENSE = 'expense',
-  TRANSFER = 'transfer',
-}
+import { ETransactionType } from './transactions.enums';
 
 @Entity()
 export class Transaction {

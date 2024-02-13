@@ -7,13 +7,14 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { EAccountType } from '../enums/account-type.enum';
-import { Account } from '../entities/account.entity';
-import { User } from '../entities/user.entity';
-import { CreateAccountDto } from '../dto/create-account.dto';
-import { EditAccountDto } from '../dto/edit-account.dto';
-import { UsersService } from '../users.service';
-import { MAX_ACCOUNTS_PER_USER } from '../constants/accounts.constant';
+import { User } from '../users/user.entity';
+import { UsersService } from '../users/users.service';
+
+import { EAccountType } from './accounts.enums';
+import { Account } from './account.entity';
+import { CreateAccountDto } from './accounts.dto';
+import { EditAccountDto } from './accounts.dto';
+import { MAX_ACCOUNTS_PER_USER } from './accounts.constants';
 
 @Injectable()
 export class AccountsService {

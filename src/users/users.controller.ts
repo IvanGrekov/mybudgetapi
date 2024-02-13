@@ -9,13 +9,11 @@ import {
   Delete,
 } from '@nestjs/common';
 
-import { PaginationQueryDto } from '../shared/dto/pagination-query.dto';
+import { PaginationQueryDto } from '../shared/dto/pagination.dto';
 
-import { User } from './entities/user.entity';
+import { User } from './user.entity';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { EditUserDto } from './dto/edit-user.dto';
-import { EditUserCurrencyDto } from './dto/edit-user-currency.dto';
+import { CreateUserDto, EditUserDto, EditUserCurrencyDto } from './users.dto';
 
 @Controller('users')
 export class UsersController {

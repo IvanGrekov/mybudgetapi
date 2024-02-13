@@ -8,12 +8,15 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, Repository } from 'typeorm';
 
-import { TransactionCategory } from '../entities/transaction-category.entity';
-import { User } from '../entities/user.entity';
-import { CreateTransactionCategoryDto } from '../dto/create-transaction-category.dto';
-import { EditTransactionCategoryDto } from '../dto/edit-transaction-category.dto';
-import { UsersService } from '../users.service';
-import { MAX_TRANSACTION_CATEGORIES_PER_USER } from '../constants/transaction-categories.constant';
+import { User } from '../users/user.entity';
+import { UsersService } from '../users/users.service';
+
+import { TransactionCategory } from './transaction-category.entity';
+import {
+  CreateTransactionCategoryDto,
+  EditTransactionCategoryDto,
+} from './transaction-categories.dto';
+import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './transaction-categories.constants';
 
 @Injectable()
 export class TransactionCategoriesService {

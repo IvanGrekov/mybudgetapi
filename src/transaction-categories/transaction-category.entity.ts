@@ -6,9 +6,11 @@ import {
   ManyToOne,
 } from 'typeorm';
 
-import { User } from './user.entity';
-import { ECurrency } from '../enums/currency.enum';
-import { ETransactionCategoryType } from '../enums/transaction-category-type.enum';
+import { ECurrency } from '../shared/enums/currency.enums';
+
+import { User } from '../users/user.entity';
+
+import { ETransactionCategoryType } from './transaction-categories.enums';
 
 @Entity()
 export class TransactionCategory {

@@ -9,10 +9,10 @@ import {
   Body,
 } from '@nestjs/common';
 
-import { Account } from '../entities/account.entity';
+import { Account } from './account.entity';
 import { AccountsService } from './accounts.service';
-import { CreateAccountDto } from '../dto/create-account.dto';
-import { EditAccountDto } from '../dto/edit-account.dto';
+import { CreateAccountDto } from './accounts.dto';
+import { EditAccountDto } from './accounts.dto';
 
 @Controller('accounts')
 export class AccountsController {

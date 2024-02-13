@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { SharedModule } from './shared/shared.module';
 import { UsersModule } from './users/users.module';
+import { AccountsModule } from './accounts/accounts.module';
+import { TransactionCategoriesModule } from './transaction-categories/transaction-categories.module';
+
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -20,6 +23,8 @@ import { UsersModule } from './users/users.module';
     }),
     SharedModule,
     UsersModule,
+    AccountsModule,
+    TransactionCategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
