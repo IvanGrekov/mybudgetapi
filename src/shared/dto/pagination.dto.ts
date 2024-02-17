@@ -8,9 +8,9 @@ import {
 export class PaginationQueryDto {
   @IsOptional()
   @IsPositive()
-  limit: number = DEFAULT_LIMIT;
+  readonly limit: number = DEFAULT_LIMIT;
 
   @IsOptional()
   @IsPositive()
-  offset: number = DEFAULT_OFFSET;
+  readonly offset: number = DEFAULT_OFFSET;
 }

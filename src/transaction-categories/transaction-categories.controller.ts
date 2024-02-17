@@ -13,6 +13,7 @@ import { TransactionCategory } from '../shared/entities/transaction-category.ent
 
 import { TransactionCategoriesService } from './transaction-categories.service';
 import {
+  FindAllTransactionCategoriesDto,
   CreateTransactionCategoryDto,
   EditTransactionCategoryDto,
 } from './transaction-categories.dto';
@@ -24,8 +25,10 @@ export class TransactionCategoriesController {
   ) {}
 
   @Get()
-  findAll(@Query('userId') userId: number): Promise<TransactionCategory[]> {
-    return this.transactionCategoriesService.findAll(userId);
+  findAll(
+    @Query() query: FindAllTransactionCategoriesDto,
+  ): Promise<TransactionCategory[]> {
+    return this.transactionCategoriesService.findAll(query);
   }
 
   @Get(':id')

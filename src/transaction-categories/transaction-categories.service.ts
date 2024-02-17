@@ -8,11 +8,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, Repository } from 'typeorm';
 
-import { User } from '../shared/entities/user.entity';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { UsersService } from '../users/users.service';
 
 import {
+  FindAllTransactionCategoriesDto,
   CreateTransactionCategoryDto,
   EditTransactionCategoryDto,
 } from './transaction-categories.dto';
@@ -26,14 +26,17 @@ export class TransactionCategoriesService {
     private readonly usersService: UsersService,
   ) {}
 
-  async findAll(userId: User['id']): Promise<TransactionCategory[]> {
+  async findAll({
+    userId,
+    type,
+  }: FindAllTransactionCategoriesDto): Promise<TransactionCategory[]> {
     if (!userId) {
       throw new BadRequestException('userId query parameter is required');
     }
 
     const transactionCategories = await this.transactionCategoryRepository.find(
       {
-        where: { user: { id: userId } },
+        where: { user: { id: userId }, type },
         relations: {
           parent: true,
           children: true,

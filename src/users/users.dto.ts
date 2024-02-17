@@ -3,9 +3,10 @@ import {
   IsString,
   MinLength,
   MaxLength,
+  IsNumber,
+  IsPositive,
   IsOptional,
   IsBoolean,
-  IsNumber,
 } from 'class-validator';
 import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
 
@@ -33,6 +34,10 @@ export class EditUserDto extends PartialType(
 export class EditUserCurrencyDto extends PickType(CreateUserDto, [
   'defaultCurrency',
 ]) {
+  @IsNumber()
+  @IsPositive()
+  rate: number;
+
   @IsOptional()
   @IsBoolean()
   isForceCurrencyUpdate?: boolean;
@@ -40,8 +45,4 @@ export class EditUserCurrencyDto extends PickType(CreateUserDto, [
   @IsOptional()
   @IsBoolean()
   isSoftCurrencyUpdate?: boolean;
-
-  @IsOptional()
-  @IsNumber()
-  rate?: number;
 }

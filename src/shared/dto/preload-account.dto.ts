@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsBoolean,
   IsOptional,
+  Min,
 } from 'class-validator';
 
 import { DEFAULT_MAX_LENGTH } from '../constants/string-fields.constants';
@@ -18,17 +19,19 @@ export class PreloadAccountDto {
   @IsString()
   readonly name: string;
 
-  @IsEnum(ECurrency)
-  readonly currency: ECurrency;
-
   @IsEnum(EAccountType)
   readonly type: EAccountType;
 
+  @IsEnum(ECurrency)
+  readonly currency: ECurrency;
+
+  @Min(0)
   @IsNumber()
   readonly balance: number;
 
+  @IsOptional()
   @IsBoolean()
-  readonly shouldHideFromOverallBalance: boolean;
+  readonly shouldHideFromOverallBalance?: boolean;
 
   @IsOptional()
   @IsBoolean()

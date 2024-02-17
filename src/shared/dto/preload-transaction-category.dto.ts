@@ -5,6 +5,7 @@ import {
   IsString,
   IsNumber,
   IsOptional,
+  Min,
 } from 'class-validator';
 
 import { DEFAULT_MAX_LENGTH } from '../constants/string-fields.constants';
@@ -24,6 +25,7 @@ export class PreloadTransactionCategoryDto {
   readonly name: string;
 
   @IsNumber()
+  @Min(0)
   readonly order: number;
 
   @IsOptional()

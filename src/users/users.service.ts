@@ -111,6 +111,12 @@ export class UsersService {
       );
     }
 
+    if (!isForceCurrencyUpdate && !isSoftCurrencyUpdate) {
+      throw new BadRequestException(
+        'isForceCurrencyUpdate or isSoftCurrencyUpdate must be true',
+      );
+    }
+
     const oldUser = await this.findOne(id);
     const oldDefaultCurrency = oldUser.defaultCurrency;
 
@@ -118,15 +124,6 @@ export class UsersService {
       throw new BadRequestException(
         `The new currency is the same as the old one: ${defaultCurrency}`,
       );
-    }
-
-    if (!isForceCurrencyUpdate && !isSoftCurrencyUpdate) {
-      const user = await this.userRepository.preload({
-        id,
-        defaultCurrency,
-      });
-
-      return this.userRepository.save(user);
     }
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -167,22 +164,27 @@ export class UsersService {
     isForceCurrencyUpdate,
     currency,
     oldCurrency,
-    rate = 1,
+    rate,
   }: {
     queryRunner: QueryRunner;
     userId: User['id'];
     currency: ECurrency;
     oldCurrency: ECurrency;
-    rate?: number;
+    rate: number;
     isForceCurrencyUpdate: boolean;
   }): void {
     const calculateBalance = () => `balance * ${rate}`;
+    const calculateInitBalance = () => `initBalance * ${rate}`;
 
     if (isForceCurrencyUpdate) {
       queryRunner.manager.update(
         Account,
         { user: { id: userId } },
-        { currency, balance: calculateBalance },
+        {
+          currency,
+          balance: calculateBalance,
+          initBalance: calculateInitBalance,
+        },
       );
 
       queryRunner.manager.update(
@@ -194,7 +196,11 @@ export class UsersService {
       queryRunner.manager.update(
         Account,
         { user: { id: userId }, currency: oldCurrency },
-        { currency, balance: calculateBalance },
+        {
+          currency,
+          balance: calculateBalance,
+          initBalance: calculateInitBalance,
+        },
       );
 
       queryRunner.manager.update(

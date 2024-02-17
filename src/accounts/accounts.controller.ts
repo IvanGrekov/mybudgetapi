@@ -12,16 +12,19 @@ import {
 import { Account } from '../shared/entities/account.entity';
 
 import { AccountsService } from './accounts.service';
-import { CreateAccountDto } from './accounts.dto';
-import { EditAccountDto } from './accounts.dto';
+import {
+  FindAllAccountsDto,
+  CreateAccountDto,
+  EditAccountDto,
+} from './accounts.dto';
 
 @Controller('accounts')
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
   @Get()
-  findAll(@Query('userId') userId: number): Promise<Account[]> {
-    return this.accountsService.findAll(userId);
+  findAll(@Query() query: FindAllAccountsDto): Promise<Account[]> {
+    return this.accountsService.findAll(query);
   }
 
   @Get(':id')

@@ -7,13 +7,15 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { User } from '../shared/entities/user.entity';
 import { Account } from '../shared/entities/account.entity';
-import { EAccountType } from '../shared/enums/accounts.enums';
+import { EAccountStatus, EAccountType } from '../shared/enums/accounts.enums';
 import { UsersService } from '../users/users.service';
 
-import { CreateAccountDto } from './accounts.dto';
-import { EditAccountDto } from './accounts.dto';
+import {
+  FindAllAccountsDto,
+  CreateAccountDto,
+  EditAccountDto,
+} from './accounts.dto';
 import { MAX_ACCOUNTS_PER_USER } from './accounts.constants';
 
 @Injectable()
@@ -24,13 +26,17 @@ export class AccountsService {
     private readonly usersService: UsersService,
   ) {}
 
-  async findAll(userId: User['id']): Promise<Account[]> {
+  async findAll({
+    userId,
+    type,
+    status,
+  }: FindAllAccountsDto): Promise<Account[]> {
     if (!userId) {
       throw new BadRequestException('userId query parameter is required');
     }
 
     return this.accountRepository.find({
-      where: { user: { id: userId } },
+      where: { user: { id: userId }, type, status },
     });
   }
 
@@ -51,10 +57,14 @@ export class AccountsService {
 
     const { userId, balance } = createAccountDto;
     const user = await this.usersService.findOne(userId);
+    const activeAccounts = await this.findAll({
+      userId,
+      status: EAccountStatus.ACTIVE,
+    });
 
-    if (user.accounts.length >= MAX_ACCOUNTS_PER_USER) {
+    if (activeAccounts.length >= MAX_ACCOUNTS_PER_USER) {
       throw new ForbiddenException(
-        `User #${user.id} already has the maximum number of accounts`,
+        `User #${user.id} already has the maximum number of accounts: ${MAX_ACCOUNTS_PER_USER}`,
       );
     }
 
@@ -73,16 +83,27 @@ export class AccountsService {
     id: Account['id'],
     editAccountDto: EditAccountDto,
   ): Promise<Account> {
-    const account = await this.accountRepository.preload({
-      id,
+    const oldAccount = await this.findOne(id);
+    if (!oldAccount) {
+      throw new NotFoundException(`Account #${id} not found`);
+    }
+
+    const { currency, balance, initBalance } = oldAccount;
+
+    this.validateAccountCurrencyEditing({
+      oldCurrency: currency,
       ...editAccountDto,
     });
 
-    this.validateAccountProperties(account);
+    const { rate = 1 } = editAccountDto;
+    const account = await this.accountRepository.preload({
+      id,
+      ...editAccountDto,
+      balance: balance * rate,
+      initBalance: initBalance * rate,
+    });
 
-    if (!account) {
-      throw new NotFoundException(`Account #${id} not found`);
-    }
+    this.validateAccountProperties(account);
 
     return this.accountRepository.save(account);
   }
@@ -104,14 +125,38 @@ export class AccountsService {
   }): void {
     if (shouldShowAsExpense && type !== EAccountType.I_OWE) {
       throw new BadRequestException(
-        `Only 'I owe' accounts can have 'shouldShowAsExpense'`,
+        `Only 'i_owe' accounts can have 'shouldShowAsExpense'`,
       );
     }
 
     if (shouldShowAsIncome && type !== EAccountType.OWE_ME) {
       throw new BadRequestException(
-        `Only 'Owe me' accounts can have 'shouldShowAsIncome'`,
+        `Only 'owe_me' accounts can have 'shouldShowAsIncome'`,
       );
+    }
+  }
+
+  validateAccountCurrencyEditing({
+    oldCurrency,
+    currency,
+    rate,
+  }: {
+    oldCurrency: Account['currency'];
+    currency?: Account['currency'];
+    rate?: number;
+  }): void {
+    if (!currency) {
+      return;
+    }
+
+    if (oldCurrency === currency) {
+      throw new BadRequestException(
+        `The new currency is the same as the old one: ${oldCurrency}`,
+      );
+    }
+
+    if (typeof rate === 'undefined') {
+      throw new BadRequestException('Rate is required for currency change');
     }
   }
 }
