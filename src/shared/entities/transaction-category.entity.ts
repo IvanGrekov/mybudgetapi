@@ -22,6 +22,9 @@ export class TransactionCategory {
   })
   user: User;
 
+  @Column()
+  name: string;
+
   @Column({
     type: 'enum',
     enum: ETransactionCategoryType,
@@ -34,10 +37,7 @@ export class TransactionCategory {
   })
   currency: ECurrency;
 
-  @Column()
-  name: string;
-
-  @Column()
+  @Column({ default: 0 })
   order: number;
 
   @OneToMany(() => TransactionCategory, (category) => category.parent, {

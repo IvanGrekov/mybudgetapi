@@ -19,6 +19,7 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({
       currency,
       balance: 0,
       shouldHideFromOverallBalance: false,
+      order: 0,
     },
     {
       name: language === ELanguage.UA ? 'Банківський рахунок' : 'Bank Account',
@@ -26,6 +27,7 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({
       currency,
       balance: 0,
       shouldHideFromOverallBalance: false,
+      order: 1,
     },
     {
       name: language === ELanguage.UA ? 'Збереження' : 'Savings',
@@ -33,6 +35,7 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({
       currency,
       balance: 0,
       shouldHideFromOverallBalance: true,
+      order: 0,
     },
   ];
 };

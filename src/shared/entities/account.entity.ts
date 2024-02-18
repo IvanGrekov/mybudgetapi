@@ -50,4 +50,7 @@ export class Account {
     default: EAccountStatus.ACTIVE,
   })
   status: EAccountStatus;
+
+  @Column({ default: 0 })
+  order: number;
 }

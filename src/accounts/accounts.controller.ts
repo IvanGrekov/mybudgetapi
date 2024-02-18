@@ -16,6 +16,7 @@ import {
   FindAllAccountsDto,
   CreateAccountDto,
   EditAccountDto,
+  ReorderAccountDto,
 } from './accounts.dto';
 
 @Controller('accounts')
@@ -43,6 +44,14 @@ export class AccountsController {
     @Body() editAccountDto: EditAccountDto,
   ): Promise<Account> {
     return this.accountsService.edit(id, editAccountDto);
+  }
+
+  @Patch('reorder/:id')
+  reorder(
+    @Param('id') id: number,
+    @Body() reorderAccountDto: ReorderAccountDto,
+  ): Promise<Account[]> {
+    return this.accountsService.reorder(id, reorderAccountDto);
   }
 
   @Delete(':id')

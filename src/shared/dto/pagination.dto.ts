@@ -1,4 +1,4 @@
-import { IsOptional, IsPositive } from 'class-validator';
+import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 import {
   DEFAULT_LIMIT,
@@ -6,11 +6,13 @@ import {
 } from '../constants/pagination.constants';
 
 export class PaginationQueryDto {
+  @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly limit: number = DEFAULT_LIMIT;
+  readonly limit?: number = DEFAULT_LIMIT;
 
+  @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly offset: number = DEFAULT_OFFSET;
+  readonly offset?: number = DEFAULT_OFFSET;
 }

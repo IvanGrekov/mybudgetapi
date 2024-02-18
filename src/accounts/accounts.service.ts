@@ -3,9 +3,10 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindOptionsRelations, DataSource } from 'typeorm';
 
 import { Account } from '../shared/entities/account.entity';
 import { EAccountStatus, EAccountType } from '../shared/enums/accounts.enums';
@@ -15,6 +16,7 @@ import {
   FindAllAccountsDto,
   CreateAccountDto,
   EditAccountDto,
+  ReorderAccountDto,
 } from './accounts.dto';
 import { MAX_ACCOUNTS_PER_USER } from './accounts.constants';
 
@@ -24,6 +26,7 @@ export class AccountsService {
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
     private readonly usersService: UsersService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async findAll({
@@ -31,18 +34,19 @@ export class AccountsService {
     type,
     status,
   }: FindAllAccountsDto): Promise<Account[]> {
-    if (!userId) {
-      throw new BadRequestException('userId query parameter is required');
-    }
-
     return this.accountRepository.find({
       where: { user: { id: userId }, type, status },
+      order: { order: 'ASC' },
     });
   }
 
-  async findOne(id: Account['id']): Promise<Account> {
+  async findOne(
+    id: Account['id'],
+    relations?: FindOptionsRelations<Account>,
+  ): Promise<Account> {
     const account = await this.accountRepository.findOne({
       where: { id },
+      relations,
     });
 
     if (!account) {
@@ -55,7 +59,7 @@ export class AccountsService {
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
     this.validateAccountProperties(createAccountDto);
 
-    const { userId, balance } = createAccountDto;
+    const { userId, balance, type } = createAccountDto;
     const user = await this.usersService.findOne(userId);
     const activeAccounts = await this.findAll({
       userId,
@@ -64,13 +68,16 @@ export class AccountsService {
 
     if (activeAccounts.length >= MAX_ACCOUNTS_PER_USER) {
       throw new ForbiddenException(
-        `User #${user.id} already has the maximum number of accounts: ${MAX_ACCOUNTS_PER_USER}`,
+        `User #${userId} already has the maximum number of accounts: ${MAX_ACCOUNTS_PER_USER}`,
       );
     }
+
+    const order = this.getNewAccountNewOrder(activeAccounts, type);
 
     const accountTemplate = this.accountRepository.create({
       ...createAccountDto,
       initBalance: balance,
+      order,
       user,
     });
 
@@ -83,7 +90,7 @@ export class AccountsService {
     id: Account['id'],
     editAccountDto: EditAccountDto,
   ): Promise<Account> {
-    const oldAccount = await this.findOne(id);
+    const oldAccount = await this.findOne(id, { user: true });
     if (!oldAccount) {
       throw new NotFoundException(`Account #${id} not found`);
     }
@@ -96,9 +103,11 @@ export class AccountsService {
     });
 
     const { rate = 1 } = editAccountDto;
+    const order = await this.getOldAccountNewOrder(oldAccount, editAccountDto);
     const account = await this.accountRepository.preload({
       id,
       ...editAccountDto,
+      order,
       balance: balance * rate,
       initBalance: initBalance * rate,
     });
@@ -106,6 +115,50 @@ export class AccountsService {
     this.validateAccountProperties(account);
 
     return this.accountRepository.save(account);
+  }
+
+  async reorder(
+    id: Account['id'],
+    { order }: ReorderAccountDto,
+  ): Promise<Account[]> {
+    const account = await this.findOne(id, { user: true });
+
+    if (account.status === EAccountStatus.ARCHIVED) {
+      throw new BadRequestException(`Account #${id} is archived`);
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const { user, type } = account;
+      const accountsByType = await this.findAll({
+        userId: user.id,
+        type,
+        status: EAccountStatus.ACTIVE,
+      });
+      const newAccounts = accountsByType.filter(
+        ({ id: accountId }) => accountId !== id,
+      );
+      newAccounts.splice(order, 0, account);
+      newAccounts.forEach(({ id: accountId }, i) => {
+        queryRunner.manager.update(Account, accountId, { order: i });
+      });
+
+      await queryRunner.commitTransaction();
+
+      return this.findAll({
+        userId: user.id,
+        type,
+        status: EAccountStatus.ACTIVE,
+      });
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async delete(id: Account['id']): Promise<Account> {
@@ -158,5 +211,37 @@ export class AccountsService {
     if (typeof rate === 'undefined') {
       throw new BadRequestException('Rate is required for currency change');
     }
+  }
+
+  getNewAccountNewOrder(activeAccounts: Account[], type: EAccountType): number {
+    const filteredAccounts = activeAccounts.filter(
+      (account) => account.type === type,
+    );
+
+    return filteredAccounts.length;
+  }
+
+  async getOldAccountNewOrder(
+    oldAccount: Account,
+    editAccountDto: EditAccountDto,
+  ): Promise<number> {
+    const { user, order } = oldAccount;
+    const { type: newType } = editAccountDto;
+
+    if (typeof newType === 'undefined') {
+      return order;
+    }
+
+    if (!user) {
+      throw new InternalServerErrorException('Old account has no user');
+    }
+
+    const accountsByType = await this.findAll({
+      userId: user.id,
+      type: newType,
+      status: EAccountStatus.ACTIVE,
+    });
+
+    return accountsByType.length;
   }
 }

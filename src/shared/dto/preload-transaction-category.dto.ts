@@ -24,9 +24,10 @@ export class PreloadTransactionCategoryDto {
   @IsString()
   readonly name: string;
 
+  @IsOptional()
   @IsNumber()
   @Min(0)
-  readonly order: number;
+  readonly order?: number;
 
   @IsOptional()
   @IsNumber()

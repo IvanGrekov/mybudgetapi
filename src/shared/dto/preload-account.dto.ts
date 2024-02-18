@@ -40,4 +40,9 @@ export class PreloadAccountDto {
   @IsOptional()
   @IsBoolean()
   readonly shouldShowAsExpense?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  readonly order?: number;
 }
