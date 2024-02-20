@@ -6,10 +6,8 @@ import {
   ManyToOne,
 } from 'typeorm';
 
-import { ECurrency } from '../enums/currency.enums';
-
 import { User } from './user.entity';
-
+import { ECurrency } from '../enums/currency.enums';
 import { ETransactionCategoryType } from '../enums/transaction-categories.enums';
 
 @Entity()
@@ -37,9 +35,6 @@ export class TransactionCategory {
   })
   currency: ECurrency;
 
-  @Column({ default: 0 })
-  order: number;
-
   @OneToMany(() => TransactionCategory, (category) => category.parent, {
     cascade: true,
     nullable: true,
@@ -51,4 +46,7 @@ export class TransactionCategory {
     onDelete: 'CASCADE',
   })
   parent: TransactionCategory;
+
+  @Column({ default: 0 })
+  order: number;
 }

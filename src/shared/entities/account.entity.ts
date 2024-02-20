@@ -25,6 +25,13 @@ export class Account {
 
   @Column({
     type: 'enum',
+    enum: EAccountStatus,
+    default: EAccountStatus.ACTIVE,
+  })
+  status: EAccountStatus;
+
+  @Column({
+    type: 'enum',
     enum: ECurrency,
   })
   currency: ECurrency;
@@ -43,13 +50,6 @@ export class Account {
 
   @Column({ default: false })
   shouldShowAsExpense: boolean;
-
-  @Column({
-    type: 'enum',
-    enum: EAccountStatus,
-    default: EAccountStatus.ACTIVE,
-  })
-  status: EAccountStatus;
 
   @Column({ default: 0 })
   order: number;

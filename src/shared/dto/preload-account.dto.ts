@@ -1,21 +1,10 @@
-import {
-  IsEnum,
-  MinLength,
-  MaxLength,
-  IsString,
-  IsNumber,
-  IsBoolean,
-  IsOptional,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsNumber, IsBoolean, IsOptional, Min } from 'class-validator';
 
-import { DEFAULT_MAX_LENGTH } from '../constants/string-fields.constants';
+import IsString from '../property-decorators/is-string.decorator';
 import { ECurrency } from '../enums/currency.enums';
 import { EAccountType } from '../enums/accounts.enums';
 
 export class PreloadAccountDto {
-  @MinLength(1)
-  @MaxLength(DEFAULT_MAX_LENGTH)
   @IsString()
   readonly name: string;
 

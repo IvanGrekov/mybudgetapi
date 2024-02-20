@@ -1,8 +1,5 @@
 import {
   IsEnum,
-  IsString,
-  MinLength,
-  MaxLength,
   IsNumber,
   IsPositive,
   IsOptional,
@@ -10,14 +7,17 @@ import {
 } from 'class-validator';
 import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
 
-import { DEFAULT_MAX_LENGTH } from '../shared/constants/string-fields.constants';
+import IsString from '../shared/property-decorators/is-string.decorator';
 import { ECurrency } from '../shared/enums/currency.enums';
 import { ELanguage } from '../shared/enums/language.enums';
 
+import { NICKNAME_MIN_LENGTH, NICKNAME_MAX_LENGTH } from './users.constants';
+
 export class CreateUserDto {
-  @MinLength(3)
-  @MaxLength(DEFAULT_MAX_LENGTH)
-  @IsString()
+  @IsString({
+    minLength: NICKNAME_MIN_LENGTH,
+    maxLength: NICKNAME_MAX_LENGTH,
+  })
   readonly nickname: string;
 
   @IsEnum(ECurrency)
