@@ -17,7 +17,7 @@ export class FindAllTransactionCategoriesDto {
   @IsNumber()
   readonly userId: number;
 
-  @IsOptional()
   @IsEnum(ETransactionCategoryType)
+  @IsOptional()
   readonly type?: ETransactionCategoryType;
 }

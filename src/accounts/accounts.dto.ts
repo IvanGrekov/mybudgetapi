@@ -1,28 +1,35 @@
 import { PartialType, OmitType } from '@nestjs/mapped-types';
-import { IsNumber, IsEnum, IsOptional, IsPositive, Min } from 'class-validator';
+import {
+  IsNumber as IsNumberBase,
+  IsEnum,
+  IsOptional,
+  IsPositive,
+} from 'class-validator';
+
+import IsNumber from '../shared/property-decorators/is-number.decorator';
 import { PreloadAccountDto } from '../shared/dto/preload-account.dto';
 import { EAccountStatus, EAccountType } from '../shared/enums/accounts.enums';
 
 export class CreateAccountDto extends OmitType(PreloadAccountDto, ['order']) {
-  @IsNumber()
+  @IsNumberBase()
   readonly userId: number;
 }
 
 export class EditAccountDto extends PartialType(
   OmitType(PreloadAccountDto, ['balance', 'order']),
 ) {
-  @IsOptional()
   @IsEnum(EAccountStatus)
+  @IsOptional()
   readonly status?: EAccountStatus;
 
-  @IsOptional()
-  @IsNumber()
+  @IsNumberBase()
   @IsPositive()
+  @IsOptional()
   rate?: number;
 }
 
 export class FindAllAccountsDto {
-  @IsNumber()
+  @IsNumberBase()
   readonly userId: number;
 
   @IsEnum(EAccountType)
@@ -36,6 +43,5 @@ export class FindAllAccountsDto {
 
 export class ReorderAccountDto {
   @IsNumber()
-  @Min(0)
   readonly order: number;
 }

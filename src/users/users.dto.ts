@@ -38,11 +38,11 @@ export class EditUserCurrencyDto extends PickType(CreateUserDto, [
   @IsPositive()
   rate: number;
 
-  @IsOptional()
   @IsBoolean()
+  @IsOptional()
   isForceCurrencyUpdate?: boolean;
 
-  @IsOptional()
   @IsBoolean()
+  @IsOptional()
   isSoftCurrencyUpdate?: boolean;
 }

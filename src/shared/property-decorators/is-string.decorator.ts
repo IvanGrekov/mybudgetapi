@@ -1,9 +1,9 @@
 import { applyDecorators } from '@nestjs/common';
 
 import {
+  IsString as IsStringBase,
   MinLength,
   MaxLength,
-  IsString as IsStringBase,
 } from 'class-validator';
 
 import {

@@ -7,12 +7,12 @@ import {
 
 export class PaginationQueryDto {
   @IsNumber()
-  @IsOptional()
   @IsPositive()
+  @IsOptional()
   readonly limit?: number = DEFAULT_LIMIT;
 
   @IsNumber()
-  @IsOptional()
   @IsPositive()
+  @IsOptional()
   readonly offset?: number = DEFAULT_OFFSET;
 }
