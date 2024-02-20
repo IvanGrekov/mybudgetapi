@@ -46,38 +46,38 @@ const getExpenseTransactionCategoriesDto: TGetTransactionCategoriesDto = ({
       order: 1,
     },
     {
-      name: language === ELanguage.UA ? 'Кафе' : 'Cafe',
+      name: language === ELanguage.UA ? 'Транспорт' : 'Transportation',
       type: ETransactionCategoryType.EXPENSE,
       currency,
       order: 2,
     },
     {
-      name: language === ELanguage.UA ? 'Транспорт' : 'Transportation',
-      type: ETransactionCategoryType.EXPENSE,
-      currency,
-      order: 3,
-    },
-    {
       name: language === ELanguage.UA ? "Здоров'я" : 'Healthcare',
       type: ETransactionCategoryType.EXPENSE,
       currency,
-      order: 4,
+      order: 3,
     },
     {
       name:
         language === ELanguage.UA ? 'Особисті витрати' : 'Personal Expenses',
       type: ETransactionCategoryType.EXPENSE,
       currency,
+      order: 4,
+    },
+    {
+      name: language === ELanguage.UA ? 'Кафе' : 'Cafe',
+      type: ETransactionCategoryType.EXPENSE,
+      currency,
       order: 5,
     },
     {
-      name: language === ELanguage.UA ? 'Хобі' : 'Hobbies',
+      name: language === ELanguage.UA ? 'Підписки' : 'Subscriptions',
       type: ETransactionCategoryType.EXPENSE,
       currency,
       order: 6,
     },
     {
-      name: language === ELanguage.UA ? 'Підписки' : 'Subscriptions',
+      name: language === ELanguage.UA ? 'Хобі' : 'Hobbies',
       type: ETransactionCategoryType.EXPENSE,
       currency,
       order: 7,
