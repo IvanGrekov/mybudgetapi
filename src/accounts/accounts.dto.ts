@@ -1,4 +1,4 @@
-import { PartialType, OmitType } from '@nestjs/mapped-types';
+import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
 import {
   IsNumber as IsNumberBase,
   IsEnum,
@@ -8,25 +8,7 @@ import {
 
 import IsNumber from '../shared/property-decorators/is-number.decorator';
 import { PreloadAccountDto } from '../shared/dto/preload-account.dto';
-import { EAccountStatus, EAccountType } from '../shared/enums/accounts.enums';
-
-export class CreateAccountDto extends OmitType(PreloadAccountDto, ['order']) {
-  @IsNumberBase()
-  readonly userId: number;
-}
-
-export class EditAccountDto extends PartialType(
-  OmitType(PreloadAccountDto, ['balance', 'order']),
-) {
-  @IsEnum(EAccountStatus)
-  @IsOptional()
-  readonly status?: EAccountStatus;
-
-  @IsNumberBase()
-  @IsPositive()
-  @IsOptional()
-  rate?: number;
-}
+import { EAccountType, EAccountStatus } from '../shared/enums/accounts.enums';
 
 export class FindAllAccountsDto {
   @IsNumberBase()
@@ -38,7 +20,28 @@ export class FindAllAccountsDto {
 
   @IsEnum(EAccountStatus)
   @IsOptional()
-  readonly status?: EAccountStatus = EAccountStatus.ACTIVE;
+  readonly status?: EAccountStatus;
+}
+
+export class CreateAccountDto extends OmitType(PreloadAccountDto, ['order']) {
+  @IsNumberBase()
+  readonly userId: number;
+}
+
+export class EditAccountDto extends PartialType(
+  OmitType(PreloadAccountDto, ['balance', 'order', 'currency']),
+) {
+  @IsEnum(EAccountStatus)
+  @IsOptional()
+  readonly status?: EAccountStatus;
+}
+
+export class EditAccountCurrencyDto extends PickType(PreloadAccountDto, [
+  'currency',
+]) {
+  @IsNumberBase()
+  @IsPositive()
+  rate: number;
 }
 
 export class ReorderAccountDto {

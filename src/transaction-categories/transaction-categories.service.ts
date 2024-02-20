@@ -1,13 +1,13 @@
 import {
   Injectable,
   BadRequestException,
-  NotFoundException,
   ForbiddenException,
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, Repository } from 'typeorm';
 
+import NotFoundException from '../shared/exceptions/not-found.exception';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { UsersService } from '../users/users.service';
 
@@ -31,7 +31,7 @@ export class TransactionCategoriesService {
     type,
   }: FindAllTransactionCategoriesDto): Promise<TransactionCategory[]> {
     if (!userId) {
-      throw new BadRequestException('userId query parameter is required');
+      throw new BadRequestException('`userId` query parameter is required');
     }
 
     const transactionCategories = await this.transactionCategoryRepository.find(
@@ -58,7 +58,7 @@ export class TransactionCategoriesService {
       });
 
     if (!transactionCategory) {
-      throw new NotFoundException(`Transaction Category #${id} not found`);
+      throw new NotFoundException('TransactionCategory', id);
     }
 
     return transactionCategory;
@@ -76,7 +76,7 @@ export class TransactionCategoriesService {
       user.transactionCategories.length >= MAX_TRANSACTION_CATEGORIES_PER_USER
     ) {
       throw new ForbiddenException(
-        `User #${user.id} already has the maximum number of transaction categories`,
+        `User #${user.id} already has the maximum number of TransactionCategories`,
       );
     }
 
@@ -95,13 +95,13 @@ export class TransactionCategoriesService {
 
       if (type !== parentType) {
         throw new ConflictException(
-          `Parent Transaction Category #${parentId} type is different from the new Transaction Category type`,
+          `Parent TransactionCategory #${parentId} \`type\` is different from the new TransactionCategory \`type\``,
         );
       }
 
       if (user.id !== parentUser.id) {
         throw new ConflictException(
-          `Parent Transaction Category #${parentId} does not belong to User #${user.id}`,
+          'Parent TransactionCategory #${parentId} belongs to another User',
         );
       }
 
@@ -126,7 +126,7 @@ export class TransactionCategoriesService {
       });
 
     if (!transactionCategory) {
-      throw new NotFoundException(`Transaction Category #${id} not found`);
+      throw new NotFoundException('TransactionCategory', id);
     }
 
     return this.transactionCategoryRepository.save(transactionCategory);

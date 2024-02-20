@@ -16,6 +16,7 @@ import {
   FindAllAccountsDto,
   CreateAccountDto,
   EditAccountDto,
+  EditAccountCurrencyDto,
   ReorderAccountDto,
 } from './accounts.dto';
 
@@ -44,6 +45,14 @@ export class AccountsController {
     @Body() editAccountDto: EditAccountDto,
   ): Promise<Account> {
     return this.accountsService.edit(id, editAccountDto);
+  }
+
+  @Patch('currency/:id')
+  editCurrency(
+    @Param('id') id: number,
+    @Body() editAccountCurrencyDto: EditAccountCurrencyDto,
+  ): Promise<Account> {
+    return this.accountsService.editCurrency(id, editAccountCurrencyDto);
   }
 
   @Patch('reorder/:id')

@@ -4,8 +4,10 @@ import {
   IsPositive,
   IsOptional,
   IsBoolean,
+  IsDefined,
 } from 'class-validator';
 import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
+import { QueryRunner } from 'typeorm';
 
 import IsString from '../shared/property-decorators/is-string.decorator';
 import { ECurrency } from '../shared/enums/currency.enums';
@@ -41,8 +43,21 @@ export class EditUserCurrencyDto extends PickType(CreateUserDto, [
   @IsBoolean()
   @IsOptional()
   isForceCurrencyUpdate?: boolean;
+}
 
-  @IsBoolean()
-  @IsOptional()
-  isSoftCurrencyUpdate?: boolean;
+export class UpdateRelationsCurrencyDto extends PickType(EditUserCurrencyDto, [
+  'rate',
+  'isForceCurrencyUpdate',
+]) {
+  @IsDefined()
+  readonly queryRunner: QueryRunner;
+
+  @IsNumber()
+  readonly userId: number;
+
+  @IsEnum(ECurrency)
+  readonly currency: ECurrency;
+
+  @IsEnum(ECurrency)
+  readonly oldCurrency: ECurrency;
 }

@@ -1,6 +1,5 @@
 import {
   Injectable,
-  NotFoundException,
   ForbiddenException,
   BadRequestException,
   InternalServerErrorException,
@@ -8,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsRelations, DataSource } from 'typeorm';
 
+import NotFoundException from '../shared/exceptions/not-found.exception';
 import { Account } from '../shared/entities/account.entity';
 import { EAccountStatus, EAccountType } from '../shared/enums/accounts.enums';
 import { UsersService } from '../users/users.service';
@@ -16,6 +16,7 @@ import {
   FindAllAccountsDto,
   CreateAccountDto,
   EditAccountDto,
+  EditAccountCurrencyDto,
   ReorderAccountDto,
 } from './accounts.dto';
 import { MAX_ACCOUNTS_PER_USER } from './accounts.constants';
@@ -32,7 +33,7 @@ export class AccountsService {
   async findAll({
     userId,
     type,
-    status,
+    status = EAccountStatus.ACTIVE,
   }: FindAllAccountsDto): Promise<Account[]> {
     return this.accountRepository.find({
       where: { user: { id: userId }, type, status },
@@ -50,7 +51,7 @@ export class AccountsService {
     });
 
     if (!account) {
-      throw new NotFoundException(`Account #${id} not found`);
+      throw new NotFoundException('account', id);
     }
 
     return account;
@@ -63,12 +64,11 @@ export class AccountsService {
     const user = await this.usersService.findOne(userId);
     const activeAccounts = await this.findAll({
       userId,
-      status: EAccountStatus.ACTIVE,
     });
 
     if (activeAccounts.length >= MAX_ACCOUNTS_PER_USER) {
       throw new ForbiddenException(
-        `User #${userId} already has the maximum number of accounts: ${MAX_ACCOUNTS_PER_USER}`,
+        `User #${userId} already has the maximum number of Accounts`,
       );
     }
 
@@ -91,28 +91,38 @@ export class AccountsService {
     editAccountDto: EditAccountDto,
   ): Promise<Account> {
     const oldAccount = await this.findOne(id, { user: true });
-    if (!oldAccount) {
-      throw new NotFoundException(`Account #${id} not found`);
-    }
-
-    const { currency, balance, initBalance } = oldAccount;
-
-    this.validateAccountCurrencyEditing({
-      oldCurrency: currency,
-      ...editAccountDto,
-    });
-
-    const { rate = 1 } = editAccountDto;
     const order = await this.getOldAccountNewOrder(oldAccount, editAccountDto);
     const account = await this.accountRepository.preload({
       id,
       ...editAccountDto,
       order,
-      balance: balance * rate,
-      initBalance: initBalance * rate,
     });
 
     this.validateAccountProperties(account);
+
+    return this.accountRepository.save(account);
+  }
+
+  async editCurrency(
+    id: Account['id'],
+    { currency, rate }: EditAccountCurrencyDto,
+  ): Promise<Account> {
+    const oldAccount = await this.findOne(id);
+    const oldCurrency = oldAccount.currency;
+
+    if (oldCurrency === currency) {
+      throw new BadRequestException(
+        'The new `currency` is the same like current',
+      );
+    }
+
+    const { balance, initBalance } = oldAccount;
+    const account = await this.accountRepository.preload({
+      id,
+      currency,
+      balance: balance * rate,
+      initBalance: initBalance * rate,
+    });
 
     return this.accountRepository.save(account);
   }
@@ -132,26 +142,27 @@ export class AccountsService {
     await queryRunner.startTransaction();
 
     try {
-      const { user, type } = account;
-      const accountsByType = await this.findAll({
-        userId: user.id,
+      const {
+        user: { id: userId },
         type,
-        status: EAccountStatus.ACTIVE,
+      } = account;
+
+      const accountsByType = await this.findAll({
+        userId,
+        type,
       });
-      const newAccounts = accountsByType.filter(
+      const newAccountsByType = accountsByType.filter(
         ({ id: accountId }) => accountId !== id,
       );
-      newAccounts.splice(order, 0, account);
-      newAccounts.forEach(({ id: accountId }, i) => {
+
+      newAccountsByType.splice(order, 0, account);
+      newAccountsByType.forEach(({ id: accountId }, i) => {
         queryRunner.manager.update(Account, accountId, { order: i });
       });
-
       await queryRunner.commitTransaction();
 
       return this.findAll({
-        userId: user.id,
-        type,
-        status: EAccountStatus.ACTIVE,
+        userId,
       });
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -167,7 +178,7 @@ export class AccountsService {
     return this.accountRepository.remove(account);
   }
 
-  validateAccountProperties({
+  private validateAccountProperties({
     type,
     shouldShowAsIncome,
     shouldShowAsExpense,
@@ -178,42 +189,21 @@ export class AccountsService {
   }): void {
     if (shouldShowAsExpense && type !== EAccountType.I_OWE) {
       throw new BadRequestException(
-        `Only 'i_owe' accounts can have 'shouldShowAsExpense'`,
+        'Only `i_owe` Accounts can have `shouldShowAsExpense`',
       );
     }
 
     if (shouldShowAsIncome && type !== EAccountType.OWE_ME) {
       throw new BadRequestException(
-        `Only 'owe_me' accounts can have 'shouldShowAsIncome'`,
+        'Only `owe_me` Accounts can have `shouldShowAsIncome`',
       );
     }
   }
 
-  validateAccountCurrencyEditing({
-    oldCurrency,
-    currency,
-    rate,
-  }: {
-    oldCurrency: Account['currency'];
-    currency?: Account['currency'];
-    rate?: number;
-  }): void {
-    if (!currency) {
-      return;
-    }
-
-    if (oldCurrency === currency) {
-      throw new BadRequestException(
-        `The new currency is the same as the old one: ${oldCurrency}`,
-      );
-    }
-
-    if (typeof rate === 'undefined') {
-      throw new BadRequestException('Rate is required for currency change');
-    }
-  }
-
-  getNewAccountNewOrder(activeAccounts: Account[], type: EAccountType): number {
+  private getNewAccountNewOrder(
+    activeAccounts: Account[],
+    type: EAccountType,
+  ): number {
     const filteredAccounts = activeAccounts.filter(
       (account) => account.type === type,
     );
@@ -221,7 +211,7 @@ export class AccountsService {
     return filteredAccounts.length;
   }
 
-  async getOldAccountNewOrder(
+  private async getOldAccountNewOrder(
     oldAccount: Account,
     editAccountDto: EditAccountDto,
   ): Promise<number> {
@@ -233,13 +223,12 @@ export class AccountsService {
     }
 
     if (!user) {
-      throw new InternalServerErrorException('Old account has no user');
+      throw new InternalServerErrorException('Old Account has no User');
     }
 
     const accountsByType = await this.findAll({
       userId: user.id,
       type: newType,
-      status: EAccountStatus.ACTIVE,
     });
 
     return accountsByType.length;

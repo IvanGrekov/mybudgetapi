@@ -1,27 +1,27 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DataSource,
-  FindOptionsRelations,
-  QueryRunner,
-  Repository,
-} from 'typeorm';
+import { DataSource, FindOptionsRelations, Repository } from 'typeorm';
 
+import NotFoundException from '../shared/exceptions/not-found.exception';
 import { User } from '../shared/entities/user.entity';
 import { Account } from '../shared/entities/account.entity';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { PaginationQueryDto } from '../shared/dto/pagination.dto';
 import { PreloadAccountDto } from '../shared/dto/preload-account.dto';
 import { PreloadTransactionCategoryDto } from '../shared/dto/preload-transaction-category.dto';
-import { getDefaultAccountsDto } from '../shared/utils/accounts.utils';
+import { calculateSkipOption } from '../shared/utils/pagination.utils';
+import {
+  getDefaultAccountsDto,
+  getCalculateNewAccountBalance,
+} from '../shared/utils/accounts.utils';
 import { getDefaultTransactionCategoriesDto } from '../shared/utils/transaction-categories.utils';
-import { ECurrency } from '../shared/enums/currency.enums';
 
-import { CreateUserDto, EditUserDto, EditUserCurrencyDto } from './users.dto';
+import {
+  CreateUserDto,
+  EditUserDto,
+  EditUserCurrencyDto,
+  UpdateRelationsCurrencyDto,
+} from './users.dto';
 
 @Injectable()
 export class UsersService {
@@ -35,10 +35,10 @@ export class UsersService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async findAll({ limit, offset }: PaginationQueryDto): Promise<User[]> {
+  async findAll(query: PaginationQueryDto): Promise<User[]> {
     return this.userRepository.find({
-      take: limit,
-      skip: (offset - 1) * limit,
+      take: query.limit,
+      skip: calculateSkipOption(query),
     });
   }
 
@@ -52,22 +52,22 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException(`User #${id} not found`);
+      throw new NotFoundException('user', id);
     }
 
     return user;
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const { defaultCurrency, language } = createUserDto;
+    const { defaultCurrency: currency, language } = createUserDto;
 
     const accounts = getDefaultAccountsDto({
-      currency: defaultCurrency,
+      currency,
       language,
     }).map((accountDto) => this.preloadAccount(accountDto));
 
     const transactionCategories = getDefaultTransactionCategoriesDto({
-      currency: defaultCurrency,
+      currency,
       language,
     }).map((transactionCategory) =>
       this.preloadTransactionCategory(transactionCategory),
@@ -78,6 +78,7 @@ export class UsersService {
       accounts,
       transactionCategories,
     });
+
     const user = await this.userRepository.save(userTemplate);
 
     return this.findOne(user.id);
@@ -90,7 +91,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException(`User #${id} not found`);
+      throw new NotFoundException('user', id);
     }
 
     return this.userRepository.save(user);
@@ -98,31 +99,14 @@ export class UsersService {
 
   async editUserCurrency(
     id: User['id'],
-    {
-      defaultCurrency,
-      isForceCurrencyUpdate,
-      isSoftCurrencyUpdate,
-      rate,
-    }: EditUserCurrencyDto,
+    { defaultCurrency, rate, isForceCurrencyUpdate }: EditUserCurrencyDto,
   ): Promise<User> {
-    if (isForceCurrencyUpdate && isSoftCurrencyUpdate) {
-      throw new BadRequestException(
-        'isForceCurrencyUpdate and isSoftCurrencyUpdate cannot be true at the same time',
-      );
-    }
-
-    if (!isForceCurrencyUpdate && !isSoftCurrencyUpdate) {
-      throw new BadRequestException(
-        'isForceCurrencyUpdate or isSoftCurrencyUpdate must be true',
-      );
-    }
-
     const oldUser = await this.findOne(id);
     const oldDefaultCurrency = oldUser.defaultCurrency;
 
     if (oldDefaultCurrency === defaultCurrency) {
       throw new BadRequestException(
-        `The new currency is the same as the old one: ${defaultCurrency}`,
+        'The new `defaultCurrency` is the same like current',
       );
     }
 
@@ -132,6 +116,7 @@ export class UsersService {
 
     try {
       queryRunner.manager.update(User, id, { defaultCurrency });
+
       this.updateRelationsCurrency({
         queryRunner,
         userId: id,
@@ -158,71 +143,57 @@ export class UsersService {
     return this.userRepository.remove(user);
   }
 
-  updateRelationsCurrency({
-    queryRunner,
-    userId,
-    isForceCurrencyUpdate,
-    currency,
-    oldCurrency,
-    rate,
-  }: {
-    queryRunner: QueryRunner;
-    userId: User['id'];
-    currency: ECurrency;
-    oldCurrency: ECurrency;
-    rate: number;
-    isForceCurrencyUpdate: boolean;
-  }): void {
-    const calculateBalance = () => `balance * ${rate}`;
-    const calculateInitBalance = () => `initBalance * ${rate}`;
-
-    if (isForceCurrencyUpdate) {
-      queryRunner.manager.update(
-        Account,
-        { user: { id: userId } },
-        {
-          currency,
-          balance: calculateBalance,
-          initBalance: calculateInitBalance,
-        },
-      );
-
-      queryRunner.manager.update(
-        TransactionCategory,
-        { user: { id: userId } },
-        { currency },
-      );
-    } else {
-      queryRunner.manager.update(
-        Account,
-        { user: { id: userId }, currency: oldCurrency },
-        {
-          currency,
-          balance: calculateBalance,
-          initBalance: calculateInitBalance,
-        },
-      );
-
-      queryRunner.manager.update(
-        TransactionCategory,
-        { user: { id: userId }, currency: oldCurrency },
-        { currency },
-      );
-    }
-  }
-
-  preloadAccount(preloadAccountDto: PreloadAccountDto): Account {
+  private preloadAccount(preloadAccountDto: PreloadAccountDto): Account {
     return this.accountRepository.create({
       ...preloadAccountDto,
       initBalance: preloadAccountDto.balance,
     });
   }
 
-  preloadTransactionCategory(
+  private preloadTransactionCategory(
     preloadTransactionCategoryDto: PreloadTransactionCategoryDto,
   ): TransactionCategory {
     return this.transactionCategoryRepository.create(
       preloadTransactionCategoryDto,
     );
+  }
+
+  private updateRelationsCurrency({
+    queryRunner,
+    userId,
+    isForceCurrencyUpdate,
+    currency,
+    oldCurrency,
+    rate,
+  }: UpdateRelationsCurrencyDto): void {
+    const criteria = isForceCurrencyUpdate
+      ? { user: { id: userId } }
+      : { user: { id: userId }, currency: oldCurrency };
+
+    const accountPartialEntity = {
+      currency,
+      balance: getCalculateNewAccountBalance(rate),
+      initBalance: getCalculateNewAccountBalance(rate, true),
+    };
+
+    const transactionCategoryPartialEntity = {
+      currency,
+    };
+
+    if (isForceCurrencyUpdate) {
+      queryRunner.manager.update(Account, criteria, accountPartialEntity);
+      queryRunner.manager.update(
+        TransactionCategory,
+        criteria,
+        transactionCategoryPartialEntity,
+      );
+    } else {
+      queryRunner.manager.update(Account, criteria, accountPartialEntity);
+      queryRunner.manager.update(
+        TransactionCategory,
+        criteria,
+        transactionCategoryPartialEntity,
+      );
+    }
   }
 }
