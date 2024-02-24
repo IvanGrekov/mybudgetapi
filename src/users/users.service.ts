@@ -52,7 +52,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('user', id);
+      throw new NotFoundException('User', id);
     }
 
     return user;
@@ -91,13 +91,13 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('user', id);
+      throw new NotFoundException('User', id);
     }
 
     return this.userRepository.save(user);
   }
 
-  async editUserCurrency(
+  async editCurrency(
     id: User['id'],
     { defaultCurrency, rate, isForceCurrencyUpdate }: EditUserCurrencyDto,
   ): Promise<User> {

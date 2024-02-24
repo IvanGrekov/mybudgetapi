@@ -47,7 +47,7 @@ export class UsersController {
     @Param('id') id: number,
     @Body() editUserCurrencyDto: EditUserCurrencyDto,
   ): Promise<User> {
-    return this.usersService.editUserCurrency(id, editUserCurrencyDto);
+    return this.usersService.editCurrency(id, editUserCurrencyDto);
   }
 
   @Delete(':id')

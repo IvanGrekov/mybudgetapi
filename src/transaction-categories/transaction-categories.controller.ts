@@ -56,6 +56,16 @@ export class TransactionCategoriesController {
     );
   }
 
+  @Patch('currency/:id')
+  editOnesCurrency() {
+    return this.transactionCategoriesService.editCurrency();
+  }
+
+  @Patch('reorder/:id')
+  reorderOne() {
+    return this.transactionCategoriesService.reorder();
+  }
+
   @Delete(':id')
   delete(@Param('id') id: number): Promise<TransactionCategory> {
     return this.transactionCategoriesService.delete(id);

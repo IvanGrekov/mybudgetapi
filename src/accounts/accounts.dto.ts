@@ -4,8 +4,12 @@ import {
   IsEnum,
   IsOptional,
   IsPositive,
+  IsBoolean,
+  IsDefined,
 } from 'class-validator';
+import { QueryRunner } from 'typeorm';
 
+import { Account } from '../shared/entities/account.entity';
 import IsNumber from '../shared/property-decorators/is-number.decorator';
 import { PreloadAccountDto } from '../shared/dto/preload-account.dto';
 import { EAccountType, EAccountStatus } from '../shared/enums/accounts.enums';
@@ -21,6 +25,10 @@ export class FindAllAccountsDto {
   @IsEnum(EAccountStatus)
   @IsOptional()
   readonly status?: EAccountStatus;
+
+  @IsNumberBase()
+  @IsOptional()
+  readonly excludeId?: number;
 }
 
 export class CreateAccountDto extends OmitType(PreloadAccountDto, ['order']) {
@@ -29,7 +37,7 @@ export class CreateAccountDto extends OmitType(PreloadAccountDto, ['order']) {
 }
 
 export class EditAccountDto extends PartialType(
-  OmitType(PreloadAccountDto, ['balance', 'order', 'currency']),
+  OmitType(CreateAccountDto, ['userId', 'balance', 'currency']),
 ) {
   @IsEnum(EAccountStatus)
   @IsOptional()
@@ -41,10 +49,48 @@ export class EditAccountCurrencyDto extends PickType(PreloadAccountDto, [
 ]) {
   @IsNumberBase()
   @IsPositive()
-  rate: number;
+  readonly rate: number;
 }
 
 export class ReorderAccountDto {
   @IsNumber()
   readonly order: number;
+}
+
+export class ValidateAccountPropertiesDto {
+  @IsEnum(EAccountType)
+  @IsOptional()
+  readonly type?: EAccountType;
+
+  @IsBoolean()
+  @IsOptional()
+  readonly shouldShowAsIncome?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  readonly shouldShowAsExpense?: boolean;
+}
+
+export class ArchiveAccountDto {
+  @IsNumberBase()
+  readonly userId: number;
+
+  @IsEnum(EAccountType)
+  readonly type: EAccountType;
+
+  @IsDefined()
+  readonly account: Account;
+}
+
+export class SyncAccountsOrderDto extends PickType(FindAllAccountsDto, [
+  'excludeId',
+]) {
+  @IsDefined()
+  readonly queryRunner: QueryRunner;
+
+  @IsNumberBase()
+  readonly userId: number;
+
+  @IsEnum(EAccountType)
+  readonly type: EAccountType;
 }

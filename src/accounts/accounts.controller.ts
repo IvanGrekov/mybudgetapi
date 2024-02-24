@@ -48,7 +48,7 @@ export class AccountsController {
   }
 
   @Patch('currency/:id')
-  editCurrency(
+  editOnesCurrency(
     @Param('id') id: number,
     @Body() editAccountCurrencyDto: EditAccountCurrencyDto,
   ): Promise<Account> {
@@ -56,7 +56,7 @@ export class AccountsController {
   }
 
   @Patch('reorder/:id')
-  reorder(
+  reorderOne(
     @Param('id') id: number,
     @Body() reorderAccountDto: ReorderAccountDto,
   ): Promise<Account[]> {

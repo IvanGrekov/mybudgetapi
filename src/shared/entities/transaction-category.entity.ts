@@ -8,7 +8,10 @@ import {
 
 import { User } from './user.entity';
 import { ECurrency } from '../enums/currency.enums';
-import { ETransactionCategoryType } from '../enums/transaction-categories.enums';
+import {
+  ETransactionCategoryType,
+  ETransactionCategoryStatus,
+} from '../enums/transaction-categories.enums';
 
 @Entity()
 export class TransactionCategory {
@@ -28,6 +31,13 @@ export class TransactionCategory {
     enum: ETransactionCategoryType,
   })
   type: ETransactionCategoryType;
+
+  @Column({
+    type: 'enum',
+    enum: ETransactionCategoryStatus,
+    default: ETransactionCategoryStatus.ACTIVE,
+  })
+  status: ETransactionCategoryStatus;
 
   @Column({
     type: 'enum',

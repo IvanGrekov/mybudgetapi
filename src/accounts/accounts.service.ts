@@ -5,7 +5,13 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsRelations, DataSource } from 'typeorm';
+import {
+  Repository,
+  FindOptionsWhere,
+  FindOptionsRelations,
+  DataSource,
+  Not,
+} from 'typeorm';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import { Account } from '../shared/entities/account.entity';
@@ -18,6 +24,9 @@ import {
   EditAccountDto,
   EditAccountCurrencyDto,
   ReorderAccountDto,
+  ValidateAccountPropertiesDto,
+  ArchiveAccountDto,
+  SyncAccountsOrderDto,
 } from './accounts.dto';
 import { MAX_ACCOUNTS_PER_USER } from './accounts.constants';
 
@@ -34,10 +43,21 @@ export class AccountsService {
     userId,
     type,
     status = EAccountStatus.ACTIVE,
+    excludeId,
   }: FindAllAccountsDto): Promise<Account[]> {
+    const where: FindOptionsWhere<Account> = {
+      user: { id: userId },
+      type,
+      status,
+    };
+
+    if (typeof excludeId !== 'undefined') {
+      where.id = Not(excludeId);
+    }
+
     return this.accountRepository.find({
-      where: { user: { id: userId }, type, status },
-      order: { order: 'ASC' },
+      where,
+      order: { type: 'ASC', order: 'ASC' },
     });
   }
 
@@ -51,7 +71,7 @@ export class AccountsService {
     });
 
     if (!account) {
-      throw new NotFoundException('account', id);
+      throw new NotFoundException('Account', id);
     }
 
     return account;
@@ -100,7 +120,20 @@ export class AccountsService {
 
     this.validateAccountProperties(account);
 
-    return this.accountRepository.save(account);
+    const { status, type, user } = oldAccount;
+    const { status: newStatus } = editAccountDto;
+    const isArchiving =
+      status !== newStatus && newStatus === EAccountStatus.ARCHIVED;
+
+    if (isArchiving) {
+      return this.archiveAccount({
+        userId: user.id,
+        type,
+        account,
+      });
+    } else {
+      return this.accountRepository.save(account);
+    }
   }
 
   async editCurrency(
@@ -182,11 +215,7 @@ export class AccountsService {
     type,
     shouldShowAsIncome,
     shouldShowAsExpense,
-  }: {
-    type?: EAccountType;
-    shouldShowAsIncome?: boolean;
-    shouldShowAsExpense?: boolean;
-  }): void {
+  }: ValidateAccountPropertiesDto): void {
     if (shouldShowAsExpense && type !== EAccountType.I_OWE) {
       throw new BadRequestException(
         'Only `i_owe` Accounts can have `shouldShowAsExpense`',
@@ -215,10 +244,14 @@ export class AccountsService {
     oldAccount: Account,
     editAccountDto: EditAccountDto,
   ): Promise<number> {
-    const { user, order } = oldAccount;
-    const { type: newType } = editAccountDto;
+    const { status, type, user, order } = oldAccount;
+    const { status: newStatus, type: newType } = editAccountDto;
 
-    if (typeof newType === 'undefined') {
+    const isTypeChanging = typeof newType !== 'undefined' && newType !== type;
+    const isStatusChanging =
+      newStatus !== status && newStatus === EAccountStatus.ACTIVE;
+
+    if (!isTypeChanging && !isStatusChanging) {
       return order;
     }
 
@@ -226,11 +259,69 @@ export class AccountsService {
       throw new InternalServerErrorException('Old Account has no User');
     }
 
-    const accountsByType = await this.findAll({
+    if (isTypeChanging) {
+      const accountsByType = await this.findAll({
+        userId: user.id,
+        type: newType,
+      });
+
+      return accountsByType.length;
+    }
+
+    const accountsByOldType = await this.findAll({
       userId: user.id,
-      type: newType,
+      type,
     });
 
-    return accountsByType.length;
+    return accountsByOldType.length;
+  }
+
+  private async archiveAccount({
+    userId,
+    type,
+    account,
+  }: ArchiveAccountDto): Promise<Account> {
+    const accountId = account.id;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      queryRunner.manager.update(Account, accountId, account);
+
+      await this.syncAccountsOrder({
+        queryRunner,
+        userId,
+        type,
+        excludeId: accountId,
+      });
+
+      await queryRunner.commitTransaction();
+
+      return this.findOne(accountId);
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  private async syncAccountsOrder({
+    queryRunner,
+    userId,
+    type,
+    excludeId,
+  }: SyncAccountsOrderDto): Promise<void> {
+    const accountsByType = await this.findAll({
+      userId,
+      type,
+      excludeId,
+    });
+
+    accountsByType.forEach(({ id }, i) => {
+      queryRunner.manager.update(Account, id, { order: i });
+    });
   }
 }
