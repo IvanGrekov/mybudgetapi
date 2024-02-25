@@ -38,6 +38,20 @@ const getExpenseTransactionCategoriesDto: TGetTransactionCategoriesDto = ({
       type: ETransactionCategoryType.EXPENSE,
       currency,
       order: 0,
+      children: [
+        {
+          name: language === ELanguage.UA ? 'Оренда' : 'Rent',
+          type: ETransactionCategoryType.EXPENSE,
+          currency,
+          order: 0,
+        },
+        {
+          name: language === ELanguage.UA ? 'Комунальні послуги' : 'Utilities',
+          type: ETransactionCategoryType.EXPENSE,
+          currency,
+          order: 1,
+        },
+      ],
     },
     {
       name: language === ELanguage.UA ? 'Покупки' : 'Shopping',

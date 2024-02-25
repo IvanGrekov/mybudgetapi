@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsPositive,
   IsBoolean,
-  IsDefined,
+  IsObject,
 } from 'class-validator';
 import { QueryRunner } from 'typeorm';
 
@@ -78,14 +78,14 @@ export class ArchiveAccountDto {
   @IsEnum(EAccountType)
   readonly type: EAccountType;
 
-  @IsDefined()
+  @IsObject()
   readonly account: Account;
 }
 
 export class SyncAccountsOrderDto extends PickType(FindAllAccountsDto, [
   'excludeId',
 ]) {
-  @IsDefined()
+  @IsObject()
   readonly queryRunner: QueryRunner;
 
   @IsNumberBase()

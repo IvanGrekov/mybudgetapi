@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsNumber as IsNumberBase } from 'class-validator';
+import { IsEnum, IsOptional, IsArray } from 'class-validator';
 
 import IsNumber from '../property-decorators/is-number.decorator';
 import IsString from '../property-decorators/is-string.decorator';
@@ -15,11 +15,11 @@ export class PreloadTransactionCategoryDto {
   @IsEnum(ECurrency)
   readonly currency: ECurrency;
 
-  @IsNumberBase()
-  @IsOptional()
-  readonly parentId?: number;
-
   @IsNumber()
   @IsOptional()
   readonly order?: number;
+
+  @IsArray()
+  @IsOptional()
+  children?: PreloadTransactionCategoryDto[];
 }

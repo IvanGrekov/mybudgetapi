@@ -4,7 +4,7 @@ import {
   IsPositive,
   IsOptional,
   IsBoolean,
-  IsDefined,
+  IsObject,
 } from 'class-validator';
 import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
 import { QueryRunner } from 'typeorm';
@@ -49,7 +49,7 @@ export class UpdateRelationsCurrencyDto extends PickType(EditUserCurrencyDto, [
   'rate',
   'isForceCurrencyUpdate',
 ]) {
-  @IsDefined()
+  @IsObject()
   readonly queryRunner: QueryRunner;
 
   @IsNumber()

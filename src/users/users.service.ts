@@ -42,6 +42,10 @@ export class UsersService {
     });
   }
 
+  async getNewName(): Promise<string> {
+    return this.userRepository.count().then((count) => `User#${count + 1}`);
+  }
+
   async findOne(
     id: User['id'],
     relations?: FindOptionsRelations<User>,
@@ -78,6 +82,12 @@ export class UsersService {
       accounts,
       transactionCategories,
     });
+
+    // TODO: assign user to child transactionCategories
+
+    console.log('transactionCategories', transactionCategories);
+    console.log('------------');
+    console.log('userTemplate', userTemplate);
 
     const user = await this.userRepository.save(userTemplate);
 

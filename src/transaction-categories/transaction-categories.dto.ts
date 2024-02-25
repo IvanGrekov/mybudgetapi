@@ -4,7 +4,8 @@ import {
   IsOptional,
   IsBoolean,
   IsPositive,
-  IsDefined,
+  IsObject,
+  IsArray,
 } from 'class-validator';
 import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
 import { QueryRunner } from 'typeorm';
@@ -44,10 +45,14 @@ export class FindAllTransactionCategoriesDto {
 
 export class CreateTransactionCategoryDto extends OmitType(
   PreloadTransactionCategoryDto,
-  ['order'],
+  ['order', 'children'],
 ) {
   @IsNumberBase()
   readonly userId: number;
+
+  @IsNumberBase()
+  @IsOptional()
+  readonly parentId?: number;
 }
 
 export class EditTransactionCategoryDto extends PartialType(
@@ -67,12 +72,13 @@ export class EditTransactionCategoryCurrencyDto extends PickType(
   readonly rate: number;
 }
 
-export class ReorderTransactionCategoryDto extends PickType(
-  PreloadTransactionCategoryDto,
-  ['parentId'],
-) {
+export class ReorderTransactionCategoryDto {
   @IsNumber()
   readonly order: number;
+
+  @IsNumberBase()
+  @IsOptional()
+  readonly parentId?: number;
 }
 
 export class GetParentForNewTransactionCategoryDto extends PickType(
@@ -84,10 +90,10 @@ export class ArchiveTransactionCategoryDto {
   @IsNumberBase()
   readonly userId: number;
 
-  @IsDefined()
+  @IsObject()
   transactionCategory: TransactionCategory;
 
-  @IsDefined()
+  @IsObject()
   oldTransactionCategory: TransactionCategory;
 }
 
@@ -95,7 +101,7 @@ export class SyncTransactionCategoriesOrderDto extends PickType(
   FindAllTransactionCategoriesDto,
   ['excludeId', 'parentId'],
 ) {
-  @IsDefined()
+  @IsObject()
   readonly queryRunner: QueryRunner;
 
   @IsNumberBase()
@@ -109,9 +115,9 @@ export class UnassignChildrenFromParentDto {
   @IsNumberBase()
   readonly userId: number;
 
-  @IsDefined()
+  @IsObject()
   readonly queryRunner: QueryRunner;
 
-  @IsDefined()
+  @IsArray()
   children: TransactionCategory[];
 }
