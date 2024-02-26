@@ -119,5 +119,6 @@ export class UnassignChildrenFromParentDto {
   readonly queryRunner: QueryRunner;
 
   @IsArray()
+  @IsObject({ each: true })
   children: TransactionCategory[];
 }

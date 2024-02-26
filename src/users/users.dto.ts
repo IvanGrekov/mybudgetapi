@@ -4,11 +4,14 @@ import {
   IsPositive,
   IsOptional,
   IsBoolean,
+  IsArray,
   IsObject,
 } from 'class-validator';
 import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
 import { QueryRunner } from 'typeorm';
 
+import { Account } from '../shared/entities/account.entity';
+import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import IsString from '../shared/property-decorators/is-string.decorator';
 import { ECurrency } from '../shared/enums/currency.enums';
 import { ELanguage } from '../shared/enums/language.enums';
@@ -43,6 +46,16 @@ export class EditUserCurrencyDto extends PickType(CreateUserDto, [
   @IsBoolean()
   @IsOptional()
   readonly isForceCurrencyUpdate?: boolean;
+}
+
+export class DefaultRelationsDto {
+  @IsArray()
+  @IsObject({ each: true })
+  readonly accounts: Account[];
+
+  @IsArray()
+  @IsObject({ each: true })
+  readonly transactionCategories: TransactionCategory[];
 }
 
 export class UpdateRelationsCurrencyDto extends PickType(EditUserCurrencyDto, [

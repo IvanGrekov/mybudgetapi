@@ -8,6 +8,8 @@ import { Account } from '../shared/entities/account.entity';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { PaginationQueryDto } from '../shared/dto/pagination.dto';
 import { PreloadAccountDto } from '../shared/dto/preload-account.dto';
+import { ECurrency } from '../shared/enums/currency.enums';
+import { ELanguage } from '../shared/enums/language.enums';
 import { PreloadTransactionCategoryDto } from '../shared/dto/preload-transaction-category.dto';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
 import {
@@ -20,6 +22,7 @@ import {
   CreateUserDto,
   EditUserDto,
   EditUserCurrencyDto,
+  DefaultRelationsDto,
   UpdateRelationsCurrencyDto,
 } from './users.dto';
 
@@ -64,34 +67,35 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { defaultCurrency: currency, language } = createUserDto;
+    const defaultRelations = this.getDefaultRelations(currency, language);
 
-    const accounts = getDefaultAccountsDto({
-      currency,
-      language,
-    }).map((accountDto) => this.preloadAccount(accountDto));
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const transactionCategories = getDefaultTransactionCategoriesDto({
-      currency,
-      language,
-    }).map((transactionCategory) =>
-      this.preloadTransactionCategory(transactionCategory),
-    );
+    try {
+      const userTemplate = queryRunner.manager.create(User, {
+        ...createUserDto,
+        ...defaultRelations,
+      });
 
-    const userTemplate = this.userRepository.create({
-      ...createUserDto,
-      accounts,
-      transactionCategories,
-    });
+      const user = await queryRunner.manager.save(User, userTemplate);
 
-    // TODO: assign user to child transactionCategories
+      this.getChildrenTransactionCategories(user.transactionCategories).forEach(
+        ({ id }) => {
+          queryRunner.manager.update(TransactionCategory, id, { user });
+        },
+      );
 
-    console.log('transactionCategories', transactionCategories);
-    console.log('------------');
-    console.log('userTemplate', userTemplate);
+      await queryRunner.commitTransaction();
 
-    const user = await this.userRepository.save(userTemplate);
-
-    return this.findOne(user.id);
+      return this.findOne(user.id);
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async edit(id: User['id'], editUserDto: EditUserDto): Promise<User> {
@@ -166,6 +170,37 @@ export class UsersService {
     return this.transactionCategoryRepository.create(
       preloadTransactionCategoryDto,
     );
+  }
+
+  private getDefaultRelations(
+    currency: ECurrency,
+    language: ELanguage,
+  ): DefaultRelationsDto {
+    const accounts = getDefaultAccountsDto({
+      currency,
+      language,
+    }).map((accountDto) => this.preloadAccount(accountDto));
+
+    const transactionCategories = getDefaultTransactionCategoriesDto({
+      currency,
+      language,
+    }).map((transactionCategory) =>
+      this.preloadTransactionCategory(transactionCategory),
+    );
+
+    return { accounts, transactionCategories };
+  }
+
+  private getChildrenTransactionCategories(
+    transactionCategories: TransactionCategory[],
+  ): TransactionCategory[] {
+    const result: TransactionCategory[] = [];
+
+    transactionCategories.forEach(({ children }) => {
+      children && result.push(...children);
+    });
+
+    return result;
   }
 
   private updateRelationsCurrency({

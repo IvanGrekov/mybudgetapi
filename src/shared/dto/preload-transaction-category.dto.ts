@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsArray } from 'class-validator';
+import { IsEnum, IsOptional, IsArray, IsObject } from 'class-validator';
 
 import IsNumber from '../property-decorators/is-number.decorator';
 import IsString from '../property-decorators/is-string.decorator';
@@ -20,6 +20,7 @@ export class PreloadTransactionCategoryDto {
   readonly order?: number;
 
   @IsArray()
+  @IsObject({ each: true })
   @IsOptional()
   children?: PreloadTransactionCategoryDto[];
 }
