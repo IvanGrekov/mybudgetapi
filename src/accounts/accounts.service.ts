@@ -128,7 +128,7 @@ export class AccountsService {
       typeof balance !== 'undefined' && balance !== oldBalance;
 
     if (isBalanceChanging) {
-      // TODO: Implement balance editing to add a new transaction
+      // TODO: Implement balance editing to add a new transaction with type BALANCE_CORRECTION
       throw new BadRequestException(
         'Account `balance` is not editable at the moment',
       );
