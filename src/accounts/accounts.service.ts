@@ -120,10 +120,19 @@ export class AccountsService {
 
     this.validateAccountProperties(account);
 
-    const { status, type, user } = oldAccount;
-    const { status: newStatus } = editAccountDto;
+    const { status, type, user, balance: oldBalance } = oldAccount;
+    const { status: newStatus, balance } = editAccountDto;
     const isArchiving =
       status !== newStatus && newStatus === EAccountStatus.ARCHIVED;
+    const isBalanceChanging =
+      typeof balance !== 'undefined' && balance !== oldBalance;
+
+    if (isBalanceChanging) {
+      // TODO: Implement balance editing to add a new transaction
+      throw new BadRequestException(
+        'Account `balance` is not editable at the moment',
+      );
+    }
 
     if (isArchiving) {
       return this.archiveAccount({

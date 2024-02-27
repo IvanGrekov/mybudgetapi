@@ -37,7 +37,7 @@ export class CreateAccountDto extends OmitType(PreloadAccountDto, ['order']) {
 }
 
 export class EditAccountDto extends PartialType(
-  OmitType(CreateAccountDto, ['userId', 'balance', 'currency']),
+  OmitType(CreateAccountDto, ['userId', 'currency']),
 ) {
   @IsEnum(EAccountStatus)
   @IsOptional()
