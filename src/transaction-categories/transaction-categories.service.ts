@@ -1,6 +1,7 @@
 import {
   Injectable,
   ForbiddenException,
+  BadRequestException,
   ConflictException,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -22,6 +23,7 @@ import {
   FindAllTransactionCategoriesDto,
   CreateTransactionCategoryDto,
   EditTransactionCategoryDto,
+  EditTransactionCategoryCurrencyDto,
   GetParentForNewTransactionCategoryDto,
   ArchiveTransactionCategoryDto,
   SyncTransactionCategoriesOrderDto,
@@ -182,8 +184,26 @@ export class TransactionCategoriesService {
     }
   }
 
-  async editCurrency() {
-    throw new Error('Method not implemented.');
+  async editCurrency(
+    id: TransactionCategory['id'],
+    { currency }: EditTransactionCategoryCurrencyDto,
+  ) {
+    const oldTransactionCategory = await this.findOne(id);
+    const oldCurrency = oldTransactionCategory.currency;
+
+    if (oldCurrency === currency) {
+      throw new BadRequestException(
+        'The new `currency` is the same like current',
+      );
+    }
+
+    const transactionCategory =
+      await this.transactionCategoryRepository.preload({
+        id,
+        currency,
+      });
+
+    return this.transactionCategoryRepository.save(transactionCategory);
   }
 
   async reorder() {

@@ -3,7 +3,6 @@ import {
   IsEnum,
   IsOptional,
   IsBoolean,
-  IsPositive,
   IsObject,
   IsArray,
 } from 'class-validator';
@@ -66,11 +65,7 @@ export class EditTransactionCategoryDto extends PartialType(
 export class EditTransactionCategoryCurrencyDto extends PickType(
   PreloadTransactionCategoryDto,
   ['currency'],
-) {
-  @IsNumberBase()
-  @IsPositive()
-  readonly rate: number;
-}
+) {}
 
 export class ReorderTransactionCategoryDto {
   @IsNumber()

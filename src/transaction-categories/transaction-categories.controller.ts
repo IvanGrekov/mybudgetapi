@@ -16,6 +16,7 @@ import {
   FindAllTransactionCategoriesDto,
   CreateTransactionCategoryDto,
   EditTransactionCategoryDto,
+  EditTransactionCategoryCurrencyDto,
 } from './transaction-categories.dto';
 
 @Controller('transaction-categories')
@@ -57,8 +58,14 @@ export class TransactionCategoriesController {
   }
 
   @Patch('currency/:id')
-  editOnesCurrency() {
-    return this.transactionCategoriesService.editCurrency();
+  editOnesCurrency(
+    @Param('id') id: number,
+    @Body() editTransactionCategoryDto: EditTransactionCategoryCurrencyDto,
+  ) {
+    return this.transactionCategoriesService.editCurrency(
+      id,
+      editTransactionCategoryDto,
+    );
   }
 
   @Patch('reorder/:id')
