@@ -1,9 +1,10 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
+  ManyToOne,
   Column,
   OneToMany,
-  ManyToOne,
+  CreateDateColumn,
 } from 'typeorm';
 
 import { User } from './user.entity';
@@ -59,4 +60,7 @@ export class TransactionCategory {
 
   @Column({ default: 0 })
   order: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
 }

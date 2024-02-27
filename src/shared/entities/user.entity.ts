@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+} from 'typeorm';
 
 import { ECurrency } from '../enums/currency.enums';
 import { ELanguage } from '../enums/language.enums';
@@ -46,4 +52,7 @@ export class User {
     cascade: true,
   })
   transactions: Transaction[];
+
+  @CreateDateColumn()
+  createdAt: Date;
 }

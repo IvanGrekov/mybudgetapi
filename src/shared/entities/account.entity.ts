@@ -1,4 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  Column,
+  CreateDateColumn,
+} from 'typeorm';
 
 import { User } from './user.entity';
 import { ECurrency } from '../enums/currency.enums';
@@ -53,4 +59,7 @@ export class Account {
 
   @Column({ default: 0 })
   order: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
 }
