@@ -17,6 +17,7 @@ import {
   CreateTransactionCategoryDto,
   EditTransactionCategoryDto,
   EditTransactionCategoryCurrencyDto,
+  ReorderTransactionCategoriesDto,
 } from './transaction-categories.dto';
 
 @Controller('transaction-categories')
@@ -46,6 +47,15 @@ export class TransactionCategoriesController {
     );
   }
 
+  @Patch('reorder')
+  reorderOne(
+    @Body() reorderTransactionCategoriesDto: ReorderTransactionCategoriesDto,
+  ): Promise<TransactionCategory[]> {
+    return this.transactionCategoriesService.reorder(
+      reorderTransactionCategoriesDto,
+    );
+  }
+
   @Patch(':id')
   editOne(
     @Param('id') id: number,
@@ -66,11 +76,6 @@ export class TransactionCategoriesController {
       id,
       editTransactionCategoryDto,
     );
-  }
-
-  @Patch('reorder/:id')
-  reorderOne() {
-    return this.transactionCategoriesService.reorder();
   }
 
   @Delete(':id')

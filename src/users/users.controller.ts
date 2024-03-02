@@ -24,7 +24,7 @@ export class UsersController {
     return this.usersService.findAll(paginationQuery);
   }
 
-  @Get('user/name')
+  @Get('name')
   getNewName(): Promise<string> {
     return this.usersService.getNewName();
   }

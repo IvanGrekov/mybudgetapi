@@ -3,9 +3,11 @@ import {
   IsEnum,
   IsOptional,
   IsBoolean,
-  IsObject,
   IsArray,
+  ValidateNested,
+  IsObject,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
 import { QueryRunner } from 'typeorm';
 
@@ -16,6 +18,8 @@ import {
   ETransactionCategoryType,
   ETransactionCategoryStatus,
 } from '../shared/enums/transaction-categories.enums';
+
+import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './transaction-categories.constants';
 
 export class FindAllTransactionCategoriesDto {
   @IsNumberBase()
@@ -68,12 +72,27 @@ export class EditTransactionCategoryCurrencyDto extends PickType(
 ) {}
 
 export class ReorderTransactionCategoryDto {
-  @IsNumber()
-  readonly order: number;
-
   @IsNumberBase()
-  @IsOptional()
-  readonly parentId?: number;
+  readonly id: number;
+
+  @IsNumber({
+    max: MAX_TRANSACTION_CATEGORIES_PER_USER,
+  })
+  readonly order: number;
+}
+
+export class ReorderParentTransactionCategoryDto extends ReorderTransactionCategoryDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ReorderTransactionCategoryDto)
+  readonly children: ReorderTransactionCategoryDto[];
+}
+
+export class ReorderTransactionCategoriesDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ReorderParentTransactionCategoryDto)
+  readonly parents: ReorderParentTransactionCategoryDto[];
 }
 
 export class GetParentForNewTransactionCategoryDto extends PickType(
@@ -114,6 +133,7 @@ export class UnassignChildrenFromParentDto {
   readonly queryRunner: QueryRunner;
 
   @IsArray()
-  @IsObject({ each: true })
+  @ValidateNested({ each: true })
+  @Type(() => TransactionCategory)
   children: TransactionCategory[];
 }

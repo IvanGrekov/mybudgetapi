@@ -24,6 +24,7 @@ import {
   CreateTransactionCategoryDto,
   EditTransactionCategoryDto,
   EditTransactionCategoryCurrencyDto,
+  ReorderTransactionCategoriesDto,
   GetParentForNewTransactionCategoryDto,
   ArchiveTransactionCategoryDto,
   SyncTransactionCategoriesOrderDto,
@@ -206,9 +207,14 @@ export class TransactionCategoriesService {
     return this.transactionCategoryRepository.save(transactionCategory);
   }
 
-  async reorder() {
+  async reorder(
+    reorderTransactionCategoriesDto: ReorderTransactionCategoriesDto,
+  ) {
+    reorderTransactionCategoriesDto;
     // forbid to have children if item can not be as a parent
-    throw new Error('Method not implemented.');
+    // check length of children
+    // prevent id duplicates
+    return [];
   }
 
   async delete(id: TransactionCategory['id']): Promise<TransactionCategory> {

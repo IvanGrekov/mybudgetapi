@@ -5,8 +5,10 @@ import {
   IsOptional,
   IsBoolean,
   IsArray,
+  ValidateNested,
   IsObject,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
 import { QueryRunner } from 'typeorm';
 
@@ -50,11 +52,13 @@ export class EditUserCurrencyDto extends PickType(CreateUserDto, [
 
 export class DefaultRelationsDto {
   @IsArray()
-  @IsObject({ each: true })
+  @ValidateNested({ each: true })
+  @Type(() => Account)
   readonly accounts: Account[];
 
   @IsArray()
-  @IsObject({ each: true })
+  @ValidateNested({ each: true })
+  @Type(() => TransactionCategory)
   readonly transactionCategories: TransactionCategory[];
 }
 
