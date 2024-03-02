@@ -29,6 +29,8 @@ import {
   ArchiveTransactionCategoryDto,
   SyncTransactionCategoriesOrderDto,
   UnassignChildrenFromParentDto,
+  ValidateReorderingTransactionCategoriesDto,
+  ReorderParentTransactionCategoryDto,
 } from './transaction-categories.dto';
 import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './transaction-categories.constants';
 
@@ -47,6 +49,7 @@ export class TransactionCategoriesService {
     status = ETransactionCategoryStatus.ACTIVE,
     excludeId,
     parentId,
+    shouldFilterChildTransactionCategories = true,
   }: FindAllTransactionCategoriesDto): Promise<TransactionCategory[]> {
     const where: FindOptionsWhere<TransactionCategory> = {
       user: { id: userId },
@@ -73,9 +76,10 @@ export class TransactionCategoriesService {
       },
     );
 
-    const filteredTransactionCategories = parentId
-      ? transactionCategories
-      : this.filterChildTransactionCategories(transactionCategories);
+    const filteredTransactionCategories =
+      parentId || !shouldFilterChildTransactionCategories
+        ? transactionCategories
+        : this.filterChildTransactionCategories(transactionCategories);
 
     return this.sortChildTransactionCategories(filteredTransactionCategories);
   }
@@ -207,13 +211,26 @@ export class TransactionCategoriesService {
     return this.transactionCategoryRepository.save(transactionCategory);
   }
 
-  async reorder(
-    reorderTransactionCategoriesDto: ReorderTransactionCategoriesDto,
-  ) {
-    reorderTransactionCategoriesDto;
+  async reorder({ parentNodes }: ReorderTransactionCategoriesDto) {
+    if (parentNodes.length === 0) {
+      throw new BadRequestException('Items for reordering not provided');
+    }
+
+    const { user, type } = await this.findOne(parentNodes.at(0).id, {
+      user: true,
+    });
+    const currentTransactionCategories = await this.findAll({
+      userId: user.id,
+      type,
+      shouldFilterChildTransactionCategories: false,
+    });
+
+    this.validateReorderingTransactionCategories({
+      parentNodes,
+      currentTransactionCategories,
+    });
+
     // forbid to have children if item can not be as a parent
-    // check length of children
-    // prevent id duplicates
     return [];
   }
 
@@ -434,5 +451,56 @@ export class TransactionCategoriesService {
         parent: null,
       });
     });
+  }
+
+  private validateReorderingTransactionCategories({
+    parentNodes,
+    currentTransactionCategories,
+  }: ValidateReorderingTransactionCategoriesDto): void {
+    const nodeIds = this.getNodeIds(parentNodes);
+
+    currentTransactionCategories.forEach(({ id }) => {
+      const nodeIdIndex = nodeIds.findIndex((nodeId) => nodeId === id);
+
+      if (nodeIdIndex === -1) {
+        throw new BadRequestException(
+          `Node for TransactionCategory #${id} not found`,
+        );
+      }
+
+      nodeIds.splice(nodeIdIndex, 1);
+    });
+
+    if (nodeIds.length > 0) {
+      throw new BadRequestException(
+        `Nodes [#${nodeIds.join(', #')}] not found in current active TransactionCategories`,
+      );
+    }
+  }
+
+  private getNodeIds(
+    parentNodes: ReorderParentTransactionCategoryDto[],
+  ): number[] {
+    const nodeIds = new Map<number, number>();
+
+    parentNodes.forEach(({ id: parentNodeId, childNodes }) => {
+      childNodes.forEach(({ id: childNodeId }) => {
+        const childNodeIdCounter = nodeIds.get(childNodeId) || 0;
+        nodeIds.set(childNodeId, childNodeIdCounter + 1);
+      });
+
+      const parentNodeIdCounter = nodeIds.get(parentNodeId) || 0;
+      nodeIds.set(parentNodeId, parentNodeIdCounter + 1);
+    });
+
+    for (const [nodeId, count] of nodeIds) {
+      if (count > 1) {
+        throw new BadRequestException(
+          `Node for TransactionCategory #${nodeId} has duplicate`,
+        );
+      }
+    }
+
+    return Array.from(nodeIds.keys());
   }
 }

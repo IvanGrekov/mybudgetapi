@@ -3,9 +3,9 @@ import {
   IsEnum,
   IsOptional,
   IsBoolean,
+  IsObject,
   IsArray,
   ValidateNested,
-  IsObject,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
@@ -85,14 +85,14 @@ export class ReorderParentTransactionCategoryDto extends ReorderTransactionCateg
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ReorderTransactionCategoryDto)
-  readonly children: ReorderTransactionCategoryDto[];
+  readonly childNodes: ReorderTransactionCategoryDto[];
 }
 
 export class ReorderTransactionCategoriesDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ReorderParentTransactionCategoryDto)
-  readonly parents: ReorderParentTransactionCategoryDto[];
+  readonly parentNodes: ReorderParentTransactionCategoryDto[];
 }
 
 export class GetParentForNewTransactionCategoryDto extends PickType(
@@ -136,4 +136,14 @@ export class UnassignChildrenFromParentDto {
   @ValidateNested({ each: true })
   @Type(() => TransactionCategory)
   children: TransactionCategory[];
+}
+
+export class ValidateReorderingTransactionCategoriesDto extends PickType(
+  ReorderTransactionCategoriesDto,
+  ['parentNodes'],
+) {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TransactionCategory)
+  readonly currentTransactionCategories: TransactionCategory[];
 }
