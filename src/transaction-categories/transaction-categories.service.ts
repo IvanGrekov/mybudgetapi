@@ -31,6 +31,7 @@ import {
   UnassignChildrenFromParentDto,
   ValidateReorderingTransactionCategoriesDto,
   ReorderParentTransactionCategoryDto,
+  TransactionCategoryOrderNode,
 } from './transaction-categories.dto';
 import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './transaction-categories.constants';
 
@@ -230,7 +231,10 @@ export class TransactionCategoriesService {
       currentTransactionCategories,
     });
 
-    // forbid to have children if item can not be as a parent
+    const sortedParentNodes = this.sortReorderingParentNodes(parentNodes);
+    sortedParentNodes;
+    // TODO: if parent is becoming child, assign their children to new parent
+
     return [];
   }
 
@@ -246,6 +250,12 @@ export class TransactionCategoriesService {
     return transactionCategories.filter(({ parent }) => !parent);
   }
 
+  private sortTransactionCategories<T extends { order: number }>(
+    transactionCategories: T[],
+  ): T[] {
+    return transactionCategories.sort((a, b) => a.order - b.order);
+  }
+
   private sortChildTransactionCategories(
     transactionCategories: TransactionCategory[],
   ): TransactionCategory[] {
@@ -253,9 +263,7 @@ export class TransactionCategoriesService {
       const { children } = transactionCategory;
 
       if (Array.isArray(children)) {
-        transactionCategory.children = children.sort(
-          (a, b) => a.order - b.order,
-        );
+        transactionCategory.children = this.sortTransactionCategories(children);
       }
 
       return transactionCategory;
@@ -476,6 +484,8 @@ export class TransactionCategoriesService {
         `Nodes [#${nodeIds.join(', #')}] not found in current active TransactionCategories`,
       );
     }
+
+    this.validateOrderValues(parentNodes);
   }
 
   private getNodeIds(
@@ -484,10 +494,11 @@ export class TransactionCategoriesService {
     const nodeIds = new Map<number, number>();
 
     parentNodes.forEach(({ id: parentNodeId, childNodes }) => {
-      childNodes.forEach(({ id: childNodeId }) => {
-        const childNodeIdCounter = nodeIds.get(childNodeId) || 0;
-        nodeIds.set(childNodeId, childNodeIdCounter + 1);
-      });
+      childNodes &&
+        childNodes.forEach(({ id: childNodeId }) => {
+          const childNodeIdCounter = nodeIds.get(childNodeId) || 0;
+          nodeIds.set(childNodeId, childNodeIdCounter + 1);
+        });
 
       const parentNodeIdCounter = nodeIds.get(parentNodeId) || 0;
       nodeIds.set(parentNodeId, parentNodeIdCounter + 1);
@@ -502,5 +513,53 @@ export class TransactionCategoriesService {
     }
 
     return Array.from(nodeIds.keys());
+  }
+
+  private validateOrderValues(
+    transactionCategories: TransactionCategoryOrderNode[],
+  ): void {
+    const orderValues = new Map<number, number>();
+
+    for (const { id, order, childNodes } of transactionCategories) {
+      const currentIdByOrder = orderValues.get(order);
+      if (!currentIdByOrder) {
+        orderValues.set(order, id);
+      } else {
+        throw new BadRequestException(
+          `Order value ${order} used by several TransactionCategory #${currentIdByOrder} and #${id}`,
+        );
+      }
+
+      if (Array.isArray(childNodes) && childNodes.length > 0) {
+        this.validateOrderValues(childNodes);
+      }
+    }
+
+    let orderCounter = 0;
+    while (orderCounter !== orderValues.size) {
+      if (!orderValues.has(orderCounter)) {
+        throw new BadRequestException(
+          `Order value ${orderCounter} is missing in TransactionCategories`,
+        );
+      }
+      orderCounter++;
+    }
+  }
+
+  private sortReorderingParentNodes(
+    parentNodes: ReorderParentTransactionCategoryDto[],
+  ): ReorderParentTransactionCategoryDto[] {
+    const result = this.sortTransactionCategories(parentNodes);
+
+    return result.map((parentNode) => {
+      if (!!parentNode.childNodes) {
+        return {
+          ...parentNode,
+          childNodes: this.sortTransactionCategories(parentNode.childNodes),
+        };
+      }
+
+      return parentNode;
+    });
   }
 }

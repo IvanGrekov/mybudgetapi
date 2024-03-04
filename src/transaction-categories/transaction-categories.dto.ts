@@ -8,7 +8,12 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
+import {
+  PartialType,
+  OmitType,
+  PickType,
+  IntersectionType,
+} from '@nestjs/mapped-types';
 import { QueryRunner } from 'typeorm';
 
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
@@ -85,6 +90,7 @@ export class ReorderParentTransactionCategoryDto extends ReorderTransactionCateg
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ReorderTransactionCategoryDto)
+  @IsOptional()
   readonly childNodes: ReorderTransactionCategoryDto[];
 }
 
@@ -147,3 +153,8 @@ export class ValidateReorderingTransactionCategoriesDto extends PickType(
   @Type(() => TransactionCategory)
   readonly currentTransactionCategories: TransactionCategory[];
 }
+
+export class TransactionCategoryOrderNode extends IntersectionType(
+  ReorderTransactionCategoryDto,
+  PartialType(PickType(ReorderParentTransactionCategoryDto, ['childNodes'])),
+) {}
