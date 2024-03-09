@@ -58,7 +58,7 @@ export class TransactionCategoriesService {
       status,
     };
 
-    if (typeof excludeId !== 'undefined') {
+    if (!excludeId) {
       where.id = Not(excludeId);
     }
 
