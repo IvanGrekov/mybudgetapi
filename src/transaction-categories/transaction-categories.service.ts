@@ -12,6 +12,7 @@ import {
   DataSource,
   Not,
   FindOptionsWhere,
+  QueryRunner,
 } from 'typeorm';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
@@ -29,9 +30,8 @@ import {
   ArchiveTransactionCategoryDto,
   SyncTransactionCategoriesOrderDto,
   UnassignChildrenFromParentDto,
-  ValidateReorderingTransactionCategoriesDto,
   ReorderParentTransactionCategoryDto,
-  TransactionCategoryOrderNode,
+  UpdateReorderingChild,
 } from './transaction-categories.dto';
 import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './transaction-categories.constants';
 
@@ -217,25 +217,44 @@ export class TransactionCategoriesService {
       throw new BadRequestException('Items for reordering not provided');
     }
 
-    const { user, type } = await this.findOne(parentNodes.at(0).id, {
+    const {
+      user: { id: userId },
+      type,
+    } = await this.findOne(parentNodes.at(0).id, {
       user: true,
     });
     const currentTransactionCategories = await this.findAll({
-      userId: user.id,
+      userId,
       type,
       shouldFilterChildTransactionCategories: false,
     });
 
-    this.validateReorderingTransactionCategories({
+    this.validateReorderingTransactionCategories(
       parentNodes,
       currentTransactionCategories,
-    });
+    );
 
-    const sortedParentNodes = this.sortReorderingParentNodes(parentNodes);
-    sortedParentNodes;
-    // TODO: if parent is becoming child, assign their children to new parent
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    return [];
+    try {
+      for (const parentNode of parentNodes) {
+        await this.updateReorderingParent(queryRunner, parentNode);
+      }
+
+      await queryRunner.commitTransaction();
+
+      return this.findAll({
+        userId,
+        type,
+      });
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async delete(id: TransactionCategory['id']): Promise<TransactionCategory> {
@@ -461,11 +480,11 @@ export class TransactionCategoriesService {
     });
   }
 
-  private validateReorderingTransactionCategories({
-    parentNodes,
-    currentTransactionCategories,
-  }: ValidateReorderingTransactionCategoriesDto): void {
-    const nodeIds = this.getNodeIds(parentNodes);
+  private validateReorderingTransactionCategories(
+    parentNodes: ReorderParentTransactionCategoryDto[],
+    currentTransactionCategories: TransactionCategory[],
+  ): void {
+    const nodeIds = this.getReorderingNodeIds(parentNodes);
 
     currentTransactionCategories.forEach(({ id }) => {
       const nodeIdIndex = nodeIds.findIndex((nodeId) => nodeId === id);
@@ -488,39 +507,44 @@ export class TransactionCategoriesService {
     this.validateOrderValues(parentNodes);
   }
 
-  private getNodeIds(
+  private getReorderingNodeIds(
     parentNodes: ReorderParentTransactionCategoryDto[],
   ): number[] {
-    const nodeIds = new Map<number, number>();
+    const nodeIds = new Set<number>();
 
-    parentNodes.forEach(({ id: parentNodeId, childNodes }) => {
-      childNodes &&
+    try {
+      parentNodes.forEach(({ id: parentNodeId, childNodes }) => {
+        if (nodeIds.has(parentNodeId)) {
+          throw parentNodeId;
+        }
+        nodeIds.add(parentNodeId);
+
+        if (!childNodes) {
+          return;
+        }
         childNodes.forEach(({ id: childNodeId }) => {
-          const childNodeIdCounter = nodeIds.get(childNodeId) || 0;
-          nodeIds.set(childNodeId, childNodeIdCounter + 1);
+          if (nodeIds.has(childNodeId)) {
+            throw childNodeId;
+          }
+          nodeIds.add(childNodeId);
         });
-
-      const parentNodeIdCounter = nodeIds.get(parentNodeId) || 0;
-      nodeIds.set(parentNodeId, parentNodeIdCounter + 1);
-    });
-
-    for (const [nodeId, count] of nodeIds) {
-      if (count > 1) {
-        throw new BadRequestException(
-          `Node for TransactionCategory #${nodeId} has duplicate`,
-        );
-      }
+      });
+    } catch (id) {
+      throw new BadRequestException(
+        `Node for TransactionCategory #${id} has duplicate`,
+      );
     }
 
     return Array.from(nodeIds.keys());
   }
 
   private validateOrderValues(
-    transactionCategories: TransactionCategoryOrderNode[],
+    nodes: ReorderParentTransactionCategoryDto[],
+    parentId?: number,
   ): void {
     const orderValues = new Map<number, number>();
 
-    for (const { id, order, childNodes } of transactionCategories) {
+    for (const { id, order, childNodes } of nodes) {
       const currentIdByOrder = orderValues.get(order);
       if (!currentIdByOrder) {
         orderValues.set(order, id);
@@ -530,36 +554,63 @@ export class TransactionCategoriesService {
         );
       }
 
-      if (Array.isArray(childNodes) && childNodes.length > 0) {
-        this.validateOrderValues(childNodes);
+      if (childNodes?.length > 0) {
+        this.validateOrderValues(childNodes, id);
       }
     }
 
     let orderCounter = 0;
     while (orderCounter !== orderValues.size) {
       if (!orderValues.has(orderCounter)) {
+        const location = parentId
+          ? `for children of TransactionCategory #${parentId}`
+          : 'in TransactionCategories';
         throw new BadRequestException(
-          `Order value ${orderCounter} is missing in TransactionCategories`,
+          `Order value ${orderCounter} is missing ${location}`,
         );
       }
       orderCounter++;
     }
   }
 
-  private sortReorderingParentNodes(
-    parentNodes: ReorderParentTransactionCategoryDto[],
-  ): ReorderParentTransactionCategoryDto[] {
-    const result = this.sortTransactionCategories(parentNodes);
+  private async updateReorderingParent(
+    queryRunner: QueryRunner,
+    parentNode: ReorderParentTransactionCategoryDto,
+  ): Promise<void> {
+    const { id, order, childNodes } = parentNode;
+    const transactionCategory = await this.findOne(id, {
+      parent: true,
+      children: true,
+    });
 
-    return result.map((parentNode) => {
-      if (!!parentNode.childNodes) {
-        return {
-          ...parentNode,
-          childNodes: this.sortTransactionCategories(parentNode.childNodes),
-        };
-      }
+    queryRunner.manager.update(TransactionCategory, id, {
+      order,
+      parent: null,
+    });
 
-      return parentNode;
+    if (!childNodes) {
+      return;
+    }
+
+    for (const childNode of childNodes) {
+      await this.updateReorderingParentChild({
+        queryRunner,
+        childNode,
+        parentTransactionCategory: transactionCategory,
+      });
+    }
+  }
+
+  private async updateReorderingParentChild({
+    queryRunner,
+    childNode,
+    parentTransactionCategory,
+  }: UpdateReorderingChild): Promise<void> {
+    const { id, order } = childNode;
+
+    queryRunner.manager.update(TransactionCategory, id, {
+      order,
+      parent: parentTransactionCategory,
     });
   }
 }
