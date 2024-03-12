@@ -7,6 +7,8 @@ import {
 } from 'typeorm';
 
 import { User } from './user.entity';
+import { Account } from './account.entity';
+import { TransactionCategory } from './transaction-category.entity';
 import { ECurrency } from '../enums/currency.enums';
 import { ETransactionType } from '../enums/transactions.enums';
 
@@ -19,6 +21,44 @@ export class Transaction {
     onDelete: 'CASCADE',
   })
   user: User;
+
+  @ManyToOne(() => Account, (account) => account.outgoingTransactions, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  fromAccount?: Account;
+
+  @Column({ nullable: true })
+  fromAccountUpdatedBalance?: number;
+
+  @ManyToOne(() => Account, (account) => account.incomingTransactions, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  toAccount?: Account;
+
+  @Column({ nullable: true })
+  toAccountUpdatedBalance?: number;
+
+  @ManyToOne(
+    () => TransactionCategory,
+    (transactionCategory) => transactionCategory.outgoingTransactions,
+    {
+      nullable: true,
+      onDelete: 'CASCADE',
+    },
+  )
+  fromCategory?: TransactionCategory;
+
+  @ManyToOne(
+    () => TransactionCategory,
+    (transactionCategory) => transactionCategory.incomingTransactions,
+    {
+      nullable: true,
+      onDelete: 'CASCADE',
+    },
+  )
+  toCategory?: TransactionCategory;
 
   @Column({
     type: 'enum',

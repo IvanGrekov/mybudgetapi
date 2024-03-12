@@ -2,11 +2,13 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   ManyToOne,
+  OneToMany,
   Column,
   CreateDateColumn,
 } from 'typeorm';
 
 import { User } from './user.entity';
+import { Transaction } from './transaction.entity';
 import { ECurrency } from '../enums/currency.enums';
 import { EAccountType, EAccountStatus } from '../enums/accounts.enums';
 
@@ -19,6 +21,16 @@ export class Account {
     onDelete: 'CASCADE',
   })
   user: User;
+
+  @OneToMany(() => Transaction, (transaction) => transaction.fromAccount, {
+    cascade: true,
+  })
+  outgoingTransactions: Transaction[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.toAccount, {
+    cascade: true,
+  })
+  incomingTransactions: Transaction[];
 
   @Column()
   name: string;

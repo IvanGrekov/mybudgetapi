@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 
 import { User } from './user.entity';
+import { Transaction } from './transaction.entity';
 import { ECurrency } from '../enums/currency.enums';
 import {
   ETransactionCategoryType,
@@ -23,6 +24,28 @@ export class TransactionCategory {
     onDelete: 'CASCADE',
   })
   user: User;
+
+  @OneToMany(() => Transaction, (transaction) => transaction.fromCategory, {
+    cascade: true,
+  })
+  outgoingTransactions: Transaction[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.toCategory, {
+    cascade: true,
+  })
+  incomingTransactions: Transaction[];
+
+  @OneToMany(() => TransactionCategory, (category) => category.parent, {
+    cascade: true,
+    nullable: true,
+  })
+  children: TransactionCategory[];
+
+  @ManyToOne(() => TransactionCategory, (category) => category.children, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  parent: TransactionCategory;
 
   @Column()
   name: string;
@@ -45,18 +68,6 @@ export class TransactionCategory {
     enum: ECurrency,
   })
   currency: ECurrency;
-
-  @OneToMany(() => TransactionCategory, (category) => category.parent, {
-    cascade: true,
-    nullable: true,
-  })
-  children: TransactionCategory[];
-
-  @ManyToOne(() => TransactionCategory, (category) => category.children, {
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
-  parent: TransactionCategory;
 
   @Column({ default: 0 })
   order: number;

@@ -19,21 +19,6 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  nickname: string;
-
-  @Column({
-    type: 'enum',
-    enum: ECurrency,
-  })
-  defaultCurrency: ECurrency;
-
-  @Column({
-    type: 'enum',
-    enum: ELanguage,
-  })
-  language: ELanguage;
-
   @OneToMany(() => Account, (account) => account.user, {
     cascade: true,
   })
@@ -48,10 +33,25 @@ export class User {
   )
   transactionCategories: TransactionCategory[];
 
-  @OneToMany(() => Account, (transaction) => transaction.user, {
+  @OneToMany(() => Transaction, (transaction) => transaction.user, {
     cascade: true,
   })
   transactions: Transaction[];
+
+  @Column()
+  nickname: string;
+
+  @Column({
+    type: 'enum',
+    enum: ECurrency,
+  })
+  defaultCurrency: ECurrency;
+
+  @Column({
+    type: 'enum',
+    enum: ELanguage,
+  })
+  language: ELanguage;
 
   @CreateDateColumn()
   createdAt: Date;
