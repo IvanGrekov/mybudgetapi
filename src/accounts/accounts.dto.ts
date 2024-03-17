@@ -10,9 +10,11 @@ import {
 import { QueryRunner } from 'typeorm';
 
 import { Account } from '../shared/entities/account.entity';
+import { User } from '../shared/entities/user.entity';
 import IsNumber from '../shared/property-decorators/is-number.decorator';
 import { PreloadAccountDto } from '../shared/dto/preload-account.dto';
 import { EAccountType, EAccountStatus } from '../shared/enums/accounts.enums';
+import { ECurrency } from '../shared/enums/currency.enums';
 
 export class FindAllAccountsDto {
   @IsNumberBase()
@@ -69,6 +71,23 @@ export class ValidateAccountPropertiesDto {
   @IsBoolean()
   @IsOptional()
   readonly shouldShowAsExpense?: boolean;
+}
+
+export class CreateTransferTransactionDto {
+  @IsObject()
+  readonly user: User;
+
+  @IsObject()
+  readonly account: Account;
+
+  @IsNumberBase()
+  readonly value: number;
+
+  @IsNumberBase()
+  updatedBalance: number;
+
+  @IsEnum(ECurrency)
+  readonly currency: ECurrency;
 }
 
 export class ArchiveAccountDto {

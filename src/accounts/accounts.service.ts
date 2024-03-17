@@ -15,7 +15,9 @@ import {
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import { Account } from '../shared/entities/account.entity';
+import { Transaction } from '../shared/entities/transaction.entity';
 import { EAccountStatus, EAccountType } from '../shared/enums/accounts.enums';
+import { ETransactionType } from '../shared/enums/transactions.enums';
 import { UsersService } from '../users/users.service';
 
 import {
@@ -25,6 +27,7 @@ import {
   EditAccountCurrencyDto,
   ReorderAccountDto,
   ValidateAccountPropertiesDto,
+  CreateTransferTransactionDto,
   ArchiveAccountDto,
   SyncAccountsOrderDto,
 } from './accounts.dto';
@@ -35,6 +38,8 @@ export class AccountsService {
   constructor(
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
+    @InjectRepository(Transaction)
+    private readonly transactionRepository: Repository<Transaction>,
     private readonly usersService: UsersService,
     private readonly dataSource: DataSource,
   ) {}
@@ -120,18 +125,22 @@ export class AccountsService {
 
     this.validateAccountProperties(account);
 
-    const { status, type, user, balance: oldBalance } = oldAccount;
+    const { status, type, user, balance: oldBalance, currency } = oldAccount;
     const { status: newStatus, balance } = editAccountDto;
-    const isArchiving =
-      status !== newStatus && newStatus === EAccountStatus.ARCHIVED;
+
     const isBalanceChanging =
       typeof balance !== 'undefined' && balance !== oldBalance;
+    const isArchiving =
+      status !== newStatus && newStatus === EAccountStatus.ARCHIVED;
 
     if (isBalanceChanging) {
-      // TODO: Implement balance editing to add a new transaction with type BALANCE_CORRECTION
-      throw new BadRequestException(
-        'Account `balance` is not editable at the moment',
-      );
+      await this.createTransferTransaction({
+        user,
+        account,
+        value: balance - oldBalance,
+        currency,
+        updatedBalance: balance,
+      });
     }
 
     if (isArchiving) {
@@ -283,6 +292,27 @@ export class AccountsService {
     });
 
     return accountsByOldType.length;
+  }
+
+  private async createTransferTransaction({
+    user,
+    account,
+    value,
+    currency,
+    updatedBalance,
+  }: CreateTransferTransactionDto): Promise<Transaction> {
+    const transactionTemplate = await this.transactionRepository.create({
+      user,
+      fromAccount: account,
+      toAccount: account,
+      type: ETransactionType.TRANSFER,
+      value,
+      currency,
+      fromAccountUpdatedBalance: updatedBalance,
+      toAccountUpdatedBalance: updatedBalance,
+    });
+
+    return this.transactionRepository.save(transactionTemplate);
   }
 
   private async archiveAccount({

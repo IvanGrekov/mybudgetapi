@@ -13,13 +13,16 @@ import { ETransactionType } from '../shared/enums/transactions.enums';
 
 export class FindAllTransactionsDto extends PaginationQueryDto {
   @IsNumberBase()
-  readonly userId: number;
+  @IsOptional()
+  readonly userId?: number;
 
   @IsNumberBase()
-  readonly accountId: number;
+  @IsOptional()
+  readonly accountId?: number;
 
   @IsNumberBase()
-  readonly transactionCategoryId: number;
+  @IsOptional()
+  readonly transactionCategoryId?: number;
 
   @IsEnum(ETransactionType)
   @IsOptional()
@@ -31,16 +34,20 @@ export class CreateTransactionDto {
   readonly userId: number;
 
   @IsNumberBase()
-  readonly fromAccountId: number;
+  @IsOptional()
+  readonly fromAccountId?: number;
 
   @IsNumberBase()
-  readonly toAccountId: number;
+  @IsOptional()
+  readonly toAccountId?: number;
 
   @IsNumberBase()
-  readonly fromCategoryId: number;
+  @IsOptional()
+  readonly fromCategoryId?: number;
 
   @IsNumberBase()
-  readonly toCategoryId: number;
+  @IsOptional()
+  readonly toCategoryId?: number;
 
   @IsEnum(ETransactionType)
   readonly type: ETransactionType;
@@ -60,3 +67,5 @@ export class CreateTransactionDto {
 export class EditTransactionDto extends PartialType(
   OmitType(CreateTransactionDto, ['userId']),
 ) {}
+
+export class ValidateTransactionPropertiesDto extends EditTransactionDto {}

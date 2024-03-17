@@ -9,6 +9,7 @@ import {
   FindAllTransactionsDto,
   CreateTransactionDto,
   EditTransactionDto,
+  ValidateTransactionPropertiesDto,
 } from './transactions.dto';
 
 @Injectable()
@@ -83,7 +84,8 @@ export class TransactionsService {
   async create(
     createTransactionDto: CreateTransactionDto,
   ): Promise<Transaction> {
-    createTransactionDto;
+    this.validateTransactionProperties(createTransactionDto);
+    this.validateCreateTransactionProperties(createTransactionDto);
 
     throw new BadRequestException('Creating Transaction is not supported');
   }
@@ -92,7 +94,7 @@ export class TransactionsService {
     id: Transaction['id'],
     editTransactionDto: EditTransactionDto,
   ): Promise<Transaction> {
-    editTransactionDto;
+    this.validateTransactionProperties(editTransactionDto);
 
     throw new BadRequestException('Editing Transaction is not supported');
   }
@@ -102,4 +104,45 @@ export class TransactionsService {
 
     return this.transactionRepository.remove(transaction);
   }
+
+  private validateTransactionProperties({
+    fromAccountId,
+    toAccountId,
+    fromCategoryId,
+    toCategoryId,
+  }: ValidateTransactionPropertiesDto): void {
+    if (fromAccountId && fromCategoryId) {
+      throw new BadRequestException(
+        'Transaction cannot have both `fromAccountId` and `fromCategoryId`',
+      );
+    }
+
+    if (toAccountId && toCategoryId) {
+      throw new BadRequestException(
+        'Transaction cannot have both `toAccountId` and `toCategoryId`',
+      );
+    }
+  }
+
+  private validateCreateTransactionProperties({
+    fromAccountId,
+    toAccountId,
+    fromCategoryId,
+    toCategoryId,
+  }: CreateTransactionDto): void {
+    if (!fromAccountId && !fromCategoryId) {
+      throw new BadRequestException(
+        'Transaction must have either `fromAccountId` or `fromCategoryId`',
+      );
+    }
+
+    if (!toAccountId && !toCategoryId) {
+      throw new BadRequestException(
+        'Transaction must have either `toAccountId` or `toCategoryId`',
+      );
+    }
+  }
+
+  // TODO: Implement method to calculate transaction category balanceZ
+  // TODO: Implement method to calculate account balance
 }
