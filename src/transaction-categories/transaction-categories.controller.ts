@@ -71,7 +71,7 @@ export class TransactionCategoriesController {
   editOnesCurrency(
     @Param('id') id: number,
     @Body() editTransactionCategoryDto: EditTransactionCategoryCurrencyDto,
-  ) {
+  ): Promise<TransactionCategory> {
     return this.transactionCategoriesService.editCurrency(
       id,
       editTransactionCategoryDto,

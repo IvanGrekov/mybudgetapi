@@ -5,6 +5,7 @@ import { SharedModule } from './shared/shared.module';
 import { UsersModule } from './users/users.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { TransactionCategoriesModule } from './transaction-categories/transaction-categories.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -25,6 +26,7 @@ import { AppService } from './app.service';
     UsersModule,
     AccountsModule,
     TransactionCategoriesModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

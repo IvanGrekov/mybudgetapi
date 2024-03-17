@@ -193,7 +193,7 @@ export class TransactionCategoriesService {
   async editCurrency(
     id: TransactionCategory['id'],
     { currency }: EditTransactionCategoryCurrencyDto,
-  ) {
+  ): Promise<TransactionCategory> {
     const oldTransactionCategory = await this.findOne(id);
     const oldCurrency = oldTransactionCategory.currency;
 
