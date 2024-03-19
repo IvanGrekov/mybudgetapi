@@ -32,6 +32,9 @@ export class CreateUserDto {
 
   @IsEnum(ELanguage)
   readonly language: ELanguage;
+
+  @IsString()
+  readonly timeZone: string;
 }
 
 export class EditUserDto extends PartialType(

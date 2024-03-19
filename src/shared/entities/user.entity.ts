@@ -53,6 +53,9 @@ export class User {
   })
   language: ELanguage;
 
+  @Column()
+  timeZone: string;
+
   @CreateDateColumn()
   createdAt: Date;
 }
