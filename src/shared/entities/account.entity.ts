@@ -10,7 +10,7 @@ import {
 import { User } from './user.entity';
 import { Transaction } from './transaction.entity';
 import { ECurrency } from '../enums/currency.enums';
-import { EAccountType, EAccountStatus } from '../enums/accounts.enums';
+import { EAccountType, EAccountStatus } from '../enums/account.enums';
 
 @Entity()
 export class Account {

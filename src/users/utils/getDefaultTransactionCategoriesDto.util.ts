@@ -1,7 +1,7 @@
-import { PreloadTransactionCategoryDto } from '../dto/preload-transaction-category.dto';
-import { ECurrency } from '../enums/currency.enums';
-import { ELanguage } from '../enums/language.enums';
-import { ETransactionCategoryType } from '../enums/transaction-categories.enums';
+import { PreloadTransactionCategoryDto } from '../../shared/dtos/preload-transaction-category.dto';
+import { ECurrency } from '../../shared/enums/currency.enums';
+import { ELanguage } from '../../shared/enums/language.enums';
+import { ETransactionCategoryType } from '../../shared/enums/transaction-category.enums';
 
 type TGetTransactionCategoriesDto = (args: {
   currency: ECurrency;

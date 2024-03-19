@@ -13,11 +13,11 @@ import { QueryRunner } from 'typeorm';
 
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import IsNumber from '../shared/property-decorators/is-number.decorator';
-import { PreloadTransactionCategoryDto } from '../shared/dto/preload-transaction-category.dto';
+import { PreloadTransactionCategoryDto } from '../shared/dtos/preload-transaction-category.dto';
 import {
   ETransactionCategoryType,
   ETransactionCategoryStatus,
-} from '../shared/enums/transaction-categories.enums';
+} from '../shared/enums/transaction-category.enums';
 
 import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './transaction-categories.constants';
 

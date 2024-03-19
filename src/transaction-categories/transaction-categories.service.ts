@@ -17,7 +17,7 @@ import {
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
-import { ETransactionCategoryStatus } from '../shared/enums/transaction-categories.enums';
+import { ETransactionCategoryStatus } from '../shared/enums/transaction-category.enums';
 import { UsersService } from '../users/users.service';
 
 import {

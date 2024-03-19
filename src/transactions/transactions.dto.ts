@@ -8,8 +8,8 @@ import {
 import { PartialType, OmitType } from '@nestjs/mapped-types';
 
 import { ECurrency } from '../shared/enums/currency.enums';
-import { PaginationQueryDto } from '../shared/dto/pagination.dto';
-import { ETransactionType } from '../shared/enums/transactions.enums';
+import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
+import { ETransactionType } from '../shared/enums/transaction.enums';
 
 export class FindAllTransactionsDto extends PaginationQueryDto {
   @IsNumberBase()

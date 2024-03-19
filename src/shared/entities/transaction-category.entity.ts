@@ -13,7 +13,7 @@ import { ECurrency } from '../enums/currency.enums';
 import {
   ETransactionCategoryType,
   ETransactionCategoryStatus,
-} from '../enums/transaction-categories.enums';
+} from '../enums/transaction-category.enums';
 
 @Entity()
 export class TransactionCategory {

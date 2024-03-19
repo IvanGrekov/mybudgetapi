@@ -16,8 +16,8 @@ import {
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import { Account } from '../shared/entities/account.entity';
 import { Transaction } from '../shared/entities/transaction.entity';
-import { EAccountStatus, EAccountType } from '../shared/enums/accounts.enums';
-import { ETransactionType } from '../shared/enums/transactions.enums';
+import { EAccountStatus, EAccountType } from '../shared/enums/account.enums';
+import { ETransactionType } from '../shared/enums/transaction.enums';
 import { UsersService } from '../users/users.service';
 
 import {

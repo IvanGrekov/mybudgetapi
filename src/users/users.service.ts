@@ -6,17 +6,12 @@ import NotFoundException from '../shared/exceptions/not-found.exception';
 import { User } from '../shared/entities/user.entity';
 import { Account } from '../shared/entities/account.entity';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
-import { PaginationQueryDto } from '../shared/dto/pagination.dto';
-import { PreloadAccountDto } from '../shared/dto/preload-account.dto';
+import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
+import { PreloadAccountDto } from '../shared/dtos/preload-account.dto';
 import { ECurrency } from '../shared/enums/currency.enums';
 import { ELanguage } from '../shared/enums/language.enums';
-import { PreloadTransactionCategoryDto } from '../shared/dto/preload-transaction-category.dto';
+import { PreloadTransactionCategoryDto } from '../shared/dtos/preload-transaction-category.dto';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
-import {
-  getDefaultAccountsDto,
-  getCalculateNewAccountBalance,
-} from '../shared/utils/accounts.utils';
-import { getDefaultTransactionCategoriesDto } from '../shared/utils/transaction-categories.utils';
 
 import {
   CreateUserDto,
@@ -25,6 +20,9 @@ import {
   DefaultRelationsDto,
   UpdateRelationsCurrencyDto,
 } from './users.dto';
+import { getCalculateNewAccountBalance } from './utils/getCalculateNewAccountBalance.util';
+import { getDefaultAccountsDto } from './utils/getDefaultAccountsDto.util';
+import { getDefaultTransactionCategoriesDto } from './utils/getDefaultTransactionCategoriesDto.util';
 
 @Injectable()
 export class UsersService {

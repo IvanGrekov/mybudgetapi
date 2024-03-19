@@ -1,7 +1,7 @@
-import { PreloadAccountDto } from '../dto/preload-account.dto';
-import { ECurrency } from '../enums/currency.enums';
-import { ELanguage } from '../enums/language.enums';
-import { EAccountType } from '../enums/accounts.enums';
+import { PreloadAccountDto } from '../../shared/dtos/preload-account.dto';
+import { ECurrency } from '../../shared/enums/currency.enums';
+import { ELanguage } from '../../shared/enums/language.enums';
+import { EAccountType } from '../../shared/enums/account.enums';
 
 type TGetDefaultAccountsDto = (args: {
   currency: ECurrency;
@@ -38,13 +38,4 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({
       order: 0,
     },
   ];
-};
-
-export const getCalculateNewAccountBalance = (
-  rate: number,
-  isInitBalance?: boolean,
-) => {
-  const fieldName = isInitBalance ? 'initBalance' : 'balance';
-
-  return () => `${fieldName} * ${rate}`;
 };

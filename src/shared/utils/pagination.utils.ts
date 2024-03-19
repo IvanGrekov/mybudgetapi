@@ -1,4 +1,4 @@
-import { PaginationQueryDto } from '../dto/pagination.dto';
+import { PaginationQueryDto } from '../dtos/pagination.dto';
 
 export const calculateSkipOption = ({
   offset,

@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 import IsNumber from '../property-decorators/is-number.decorator';
 import IsString from '../property-decorators/is-string.decorator';
 import { ECurrency } from '../enums/currency.enums';
-import { ETransactionCategoryType } from '../enums/transaction-categories.enums';
+import { ETransactionCategoryType } from '../enums/transaction-category.enums';
 
 export class PreloadTransactionCategoryDto {
   @IsString()
