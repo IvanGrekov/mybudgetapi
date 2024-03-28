@@ -12,13 +12,11 @@ import {
 import { Account } from '../shared/entities/account.entity';
 
 import { AccountsService } from './accounts.service';
-import {
-  FindAllAccountsDto,
-  CreateAccountDto,
-  EditAccountDto,
-  EditAccountCurrencyDto,
-  ReorderAccountDto,
-} from './accounts.dto';
+import { FindAllAccountsDto } from './dtos/find-all-accounts.dto';
+import { CreateAccountDto } from './dtos/create-account.dto';
+import { EditAccountDto } from './dtos/edit-account.dto';
+import { EditAccountCurrencyDto } from './dtos/edit-account-currency.dto';
+import { ReorderAccountDto } from './dtos/reorder-account.dto';
 
 @Controller('accounts')
 export class AccountsController {

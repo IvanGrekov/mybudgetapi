@@ -20,20 +20,18 @@ import { TransactionCategory } from '../shared/entities/transaction-category.ent
 import { ETransactionCategoryStatus } from '../shared/enums/transaction-category.enums';
 import { UsersService } from '../users/users.service';
 
-import {
-  FindAllTransactionCategoriesDto,
-  CreateTransactionCategoryDto,
-  EditTransactionCategoryDto,
-  EditTransactionCategoryCurrencyDto,
-  ReorderTransactionCategoriesDto,
-  GetParentForNewTransactionCategoryDto,
-  ArchiveTransactionCategoryDto,
-  SyncTransactionCategoriesOrderDto,
-  UnassignChildrenFromParentDto,
-  ReorderParentTransactionCategoryDto,
-  UpdateReorderingChild,
-} from './transaction-categories.dto';
-import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './transaction-categories.constants';
+import { FindAllTransactionCategoriesDto } from './dtos/find-all-transaction-categories.dto';
+import { CreateTransactionCategoryDto } from './dtos/create-transaction-category.dto';
+import { ReorderTransactionCategoriesDto } from './dtos/reorder-transaction-categories.dto';
+import { EditTransactionCategoryDto } from './dtos/edit-transaction-category.dto';
+import { EditTransactionCategoryCurrencyDto } from './dtos/edit-transaction-category-currency.dto';
+import { ReorderParentTransactionCategoryDto } from './dtos/reorder-parent-transaction-category.dto';
+import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './constants/transaction-categories-pagination.constants';
+import { IGetParentForNewTransactionCategory } from './interfaces/get-parent-for-new-transaction-category.interface';
+import { IArchiveTransactionCategory } from './interfaces/archive-transaction-category.interface';
+import { ISyncTransactionCategoriesOrder } from './interfaces/sync-transaction-categories-order.interface';
+import { IUpdateReorderingChild } from './interfaces/update-reordering-child.interface';
+import { IUnassignChildrenFromParent } from './interfaces/unassign-children-from-parent.dto';
 
 @Injectable()
 export class TransactionCategoriesService {
@@ -291,9 +289,9 @@ export class TransactionCategoriesService {
 
   private async getParentForNewTransactionCategory({
     parentId,
-    userId,
     type,
-  }: GetParentForNewTransactionCategoryDto): Promise<
+    userId,
+  }: IGetParentForNewTransactionCategory): Promise<
     TransactionCategory['parent']
   > {
     const parentTransactionCategory = await this.findOne(parentId, {
@@ -379,7 +377,7 @@ export class TransactionCategoriesService {
     userId,
     transactionCategory,
     oldTransactionCategory,
-  }: ArchiveTransactionCategoryDto): Promise<TransactionCategory> {
+  }: IArchiveTransactionCategory): Promise<TransactionCategory> {
     const { parent, children, type } = oldTransactionCategory;
     const transactionCategoryId = transactionCategory.id;
 
@@ -437,7 +435,7 @@ export class TransactionCategoriesService {
     type,
     excludeId,
     parentId,
-  }: SyncTransactionCategoriesOrderDto): Promise<void> {
+  }: ISyncTransactionCategoriesOrder): Promise<void> {
     const transactionCategories = await this.findAll({
       userId,
       type,
@@ -454,7 +452,7 @@ export class TransactionCategoriesService {
     queryRunner,
     userId,
     children,
-  }: UnassignChildrenFromParentDto): Promise<void> {
+  }: IUnassignChildrenFromParent): Promise<void> {
     if (!Array.isArray(children)) {
       throw new InternalServerErrorException(
         'TransactionCategory children not resolved',
@@ -593,21 +591,20 @@ export class TransactionCategoriesService {
     }
 
     for (const childNode of childNodes) {
-      await this.updateReorderingParentChild({
+      await this.updateReorderingChild({
         queryRunner,
-        childNode,
+        ...childNode,
         parentTransactionCategory: transactionCategory,
       });
     }
   }
 
-  private async updateReorderingParentChild({
+  private async updateReorderingChild({
     queryRunner,
-    childNode,
+    id,
+    order,
     parentTransactionCategory,
-  }: UpdateReorderingChild): Promise<void> {
-    const { id, order } = childNode;
-
+  }: IUpdateReorderingChild): Promise<void> {
     queryRunner.manager.update(TransactionCategory, id, {
       order,
       parent: parentTransactionCategory,

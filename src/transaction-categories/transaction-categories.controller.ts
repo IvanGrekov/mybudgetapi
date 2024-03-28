@@ -12,13 +12,11 @@ import {
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 
 import { TransactionCategoriesService } from './transaction-categories.service';
-import {
-  FindAllTransactionCategoriesDto,
-  CreateTransactionCategoryDto,
-  EditTransactionCategoryDto,
-  EditTransactionCategoryCurrencyDto,
-  ReorderTransactionCategoriesDto,
-} from './transaction-categories.dto';
+import { FindAllTransactionCategoriesDto } from './dtos/find-all-transaction-categories.dto';
+import { CreateTransactionCategoryDto } from './dtos/create-transaction-category.dto';
+import { ReorderTransactionCategoriesDto } from './dtos/reorder-transaction-categories.dto';
+import { EditTransactionCategoryDto } from './dtos/edit-transaction-category.dto';
+import { EditTransactionCategoryCurrencyDto } from './dtos/edit-transaction-category-currency.dto';
 
 @Controller('transaction-categories')
 export class TransactionCategoriesController {
