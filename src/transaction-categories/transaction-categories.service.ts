@@ -26,12 +26,12 @@ import { ReorderTransactionCategoriesDto } from './dtos/reorder-transaction-cate
 import { EditTransactionCategoryDto } from './dtos/edit-transaction-category.dto';
 import { EditTransactionCategoryCurrencyDto } from './dtos/edit-transaction-category-currency.dto';
 import { ReorderParentTransactionCategoryDto } from './dtos/reorder-parent-transaction-category.dto';
+import { IGetParentForNewTransactionCategoryArgs } from './interfaces/get-parent-for-new-transaction-category-args.interface';
+import { IArchiveTransactionCategoryArgs } from './interfaces/archive-transaction-category-args.interface';
+import { ISyncTransactionCategoriesOrderArgs } from './interfaces/sync-transaction-categories-order-args.interface';
+import { IUpdateReorderingChildArgs } from './interfaces/update-reordering-child-args.interface';
+import { IUnassignChildrenFromParentArgs } from './interfaces/unassign-children-from-parent-args.interface';
 import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './constants/transaction-categories-pagination.constants';
-import { IGetParentForNewTransactionCategory } from './interfaces/get-parent-for-new-transaction-category.interface';
-import { IArchiveTransactionCategory } from './interfaces/archive-transaction-category.interface';
-import { ISyncTransactionCategoriesOrder } from './interfaces/sync-transaction-categories-order.interface';
-import { IUpdateReorderingChild } from './interfaces/update-reordering-child.interface';
-import { IUnassignChildrenFromParent } from './interfaces/unassign-children-from-parent.dto';
 
 @Injectable()
 export class TransactionCategoriesService {
@@ -291,7 +291,7 @@ export class TransactionCategoriesService {
     parentId,
     type,
     userId,
-  }: IGetParentForNewTransactionCategory): Promise<
+  }: IGetParentForNewTransactionCategoryArgs): Promise<
     TransactionCategory['parent']
   > {
     const parentTransactionCategory = await this.findOne(parentId, {
@@ -377,7 +377,7 @@ export class TransactionCategoriesService {
     userId,
     transactionCategory,
     oldTransactionCategory,
-  }: IArchiveTransactionCategory): Promise<TransactionCategory> {
+  }: IArchiveTransactionCategoryArgs): Promise<TransactionCategory> {
     const { parent, children, type } = oldTransactionCategory;
     const transactionCategoryId = transactionCategory.id;
 
@@ -435,7 +435,7 @@ export class TransactionCategoriesService {
     type,
     excludeId,
     parentId,
-  }: ISyncTransactionCategoriesOrder): Promise<void> {
+  }: ISyncTransactionCategoriesOrderArgs): Promise<void> {
     const transactionCategories = await this.findAll({
       userId,
       type,
@@ -452,7 +452,7 @@ export class TransactionCategoriesService {
     queryRunner,
     userId,
     children,
-  }: IUnassignChildrenFromParent): Promise<void> {
+  }: IUnassignChildrenFromParentArgs): Promise<void> {
     if (!Array.isArray(children)) {
       throw new InternalServerErrorException(
         'TransactionCategory children not resolved',
@@ -604,7 +604,7 @@ export class TransactionCategoriesService {
     id,
     order,
     parentTransactionCategory,
-  }: IUpdateReorderingChild): Promise<void> {
+  }: IUpdateReorderingChildArgs): Promise<void> {
     queryRunner.manager.update(TransactionCategory, id, {
       order,
       parent: parentTransactionCategory,

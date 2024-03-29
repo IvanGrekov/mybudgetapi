@@ -10,12 +10,11 @@ import {
 } from '@nestjs/common';
 
 import { Transaction } from '../shared/entities/transaction.entity';
+
 import { TransactionsService } from './transactions.service';
-import {
-  FindAllTransactionsDto,
-  CreateTransactionDto,
-  EditTransactionDto,
-} from './transactions.dto';
+import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
+import { CreateTransactionDto } from './dtos/create-transaction.dto';
+import { EditTransactionDto } from './dtos/edit-transaction.dto';
 
 @Controller('transactions')
 export class TransactionsController {

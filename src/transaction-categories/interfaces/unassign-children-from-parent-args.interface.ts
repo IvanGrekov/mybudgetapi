@@ -2,9 +2,8 @@ import { QueryRunner } from 'typeorm';
 
 import { TransactionCategory } from '../../shared/entities/transaction-category.entity';
 
-export interface IUpdateReorderingChild {
+export interface IUnassignChildrenFromParentArgs {
   queryRunner: QueryRunner;
-  id: number;
-  order: number;
-  parentTransactionCategory: TransactionCategory;
+  userId: number;
+  children: TransactionCategory[];
 }

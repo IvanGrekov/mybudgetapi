@@ -13,16 +13,14 @@ import { ELanguage } from '../shared/enums/language.enums';
 import { PreloadTransactionCategoryDto } from '../shared/dtos/preload-transaction-category.dto';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
 
-import {
-  CreateUserDto,
-  EditUserDto,
-  EditUserCurrencyDto,
-  DefaultRelationsDto,
-  UpdateRelationsCurrencyDto,
-} from './users.dto';
+import { CreateUserDto } from './dtos/create-user.dto';
+import { EditUserDto } from './dtos/edit-user.dto';
+import { EditUserCurrencyDto } from './dtos/create-user-currency.dto';
 import { getCalculateNewAccountBalance } from './utils/getCalculateNewAccountBalance.util';
 import { getDefaultAccountsDto } from './utils/getDefaultAccountsDto.util';
 import { getDefaultTransactionCategoriesDto } from './utils/getDefaultTransactionCategoriesDto.util';
+import { IRelations } from './interfaces/relations.interface';
+import { IUpdateRelationsCurrencyArgs } from './interfaces/update-relations-currency-args.interface';
 
 @Injectable()
 export class UsersService {
@@ -173,7 +171,7 @@ export class UsersService {
   private getDefaultRelations(
     currency: ECurrency,
     language: ELanguage,
-  ): DefaultRelationsDto {
+  ): IRelations {
     const accounts = getDefaultAccountsDto({
       currency,
       language,
@@ -208,7 +206,7 @@ export class UsersService {
     currency,
     oldCurrency,
     rate,
-  }: UpdateRelationsCurrencyDto): void {
+  }: IUpdateRelationsCurrencyArgs): void {
     const criteria = isForceCurrencyUpdate
       ? { user: { id: userId } }
       : { user: { id: userId }, currency: oldCurrency };

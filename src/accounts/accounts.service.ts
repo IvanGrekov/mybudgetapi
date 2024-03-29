@@ -25,10 +25,10 @@ import { CreateAccountDto } from './dtos/create-account.dto';
 import { EditAccountDto } from './dtos/edit-account.dto';
 import { EditAccountCurrencyDto } from './dtos/edit-account-currency.dto';
 import { ReorderAccountDto } from './dtos/reorder-account.dto';
-import { IValidateAccountProperties } from './interfaces/validate-account-properties.interface';
-import { ICreateTransferTransaction } from './interfaces/create-transfer-transaction.interface';
-import { IArchiveAccount } from './interfaces/archive-account.interface';
-import { ISyncAccountsOrder } from './interfaces/sync-accounts-order.interface';
+import { IValidateAccountPropertiesArgs } from './interfaces/validate-account-properties-args.interface';
+import { ICreateTransferTransactionArgs } from './interfaces/create-transfer-transaction-args.interface';
+import { IArchiveAccountArgs } from './interfaces/archive-account-args.interface';
+import { ISyncAccountsOrderArgs } from './interfaces/sync-accounts-order-args.interface';
 import { MAX_ACCOUNTS_PER_USER } from './constants/accounts-pagination.constants';
 
 @Injectable()
@@ -231,7 +231,7 @@ export class AccountsService {
     type,
     shouldShowAsIncome,
     shouldShowAsExpense,
-  }: IValidateAccountProperties): void {
+  }: IValidateAccountPropertiesArgs): void {
     if (shouldShowAsExpense && type !== EAccountType.I_OWE) {
       throw new BadRequestException(
         'Only `i_owe` Accounts can have `shouldShowAsExpense`',
@@ -298,7 +298,7 @@ export class AccountsService {
     value,
     currency,
     updatedBalance,
-  }: ICreateTransferTransaction): Promise<Transaction> {
+  }: ICreateTransferTransactionArgs): Promise<Transaction> {
     const transactionTemplate = await this.transactionRepository.create({
       user,
       fromAccount: account,
@@ -317,7 +317,7 @@ export class AccountsService {
     userId,
     type,
     account,
-  }: IArchiveAccount): Promise<Account> {
+  }: IArchiveAccountArgs): Promise<Account> {
     const accountId = account.id;
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -350,7 +350,7 @@ export class AccountsService {
     userId,
     type,
     excludeId,
-  }: ISyncAccountsOrder): Promise<void> {
+  }: ISyncAccountsOrderArgs): Promise<void> {
     const accountsByType = await this.findAll({
       userId,
       type,

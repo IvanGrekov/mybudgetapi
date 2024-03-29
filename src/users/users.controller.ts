@@ -13,7 +13,9 @@ import { User } from '../shared/entities/user.entity';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
 
 import { UsersService } from './users.service';
-import { CreateUserDto, EditUserDto, EditUserCurrencyDto } from './users.dto';
+import { CreateUserDto } from './dtos/create-user.dto';
+import { EditUserDto } from './dtos/edit-user.dto';
+import { EditUserCurrencyDto } from './dtos/create-user-currency.dto';
 
 @Controller('users')
 export class UsersController {

@@ -5,12 +5,11 @@ import { calculateSkipOption } from '../shared/utils/pagination.utils';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import { Transaction } from '../shared/entities/transaction.entity';
-import {
-  FindAllTransactionsDto,
-  CreateTransactionDto,
-  EditTransactionDto,
-  ValidateTransactionPropertiesDto,
-} from './transactions.dto';
+
+import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
+import { CreateTransactionDto } from './dtos/create-transaction.dto';
+import { EditTransactionDto } from './dtos/edit-transaction.dto';
+import { IValidateTransactionPropertiesArgs } from './interfaces/validate-transaction-properties-args.interface';
 
 @Injectable()
 export class TransactionsService {
@@ -110,7 +109,7 @@ export class TransactionsService {
     toAccountId,
     fromCategoryId,
     toCategoryId,
-  }: ValidateTransactionPropertiesDto): void {
+  }: IValidateTransactionPropertiesArgs): void {
     if (fromAccountId && fromCategoryId) {
       throw new BadRequestException(
         'Transaction cannot have both `fromAccountId` and `fromCategoryId`',
