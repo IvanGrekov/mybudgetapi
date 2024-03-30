@@ -3,14 +3,14 @@ import { OmitType } from '@nestjs/mapped-types';
 
 import { PreloadTransactionCategoryDto } from '../../shared/dtos/preload-transaction-category.dto';
 
-export class CreateTransactionCategoryDto extends OmitType(
-  PreloadTransactionCategoryDto,
-  ['order', 'children'],
-) {
-  @IsNumberBase()
-  readonly userId: number;
+export class CreateTransactionCategoryDto extends OmitType(PreloadTransactionCategoryDto, [
+    'order',
+    'children',
+]) {
+    @IsNumberBase()
+    readonly userId: number;
 
-  @IsNumberBase()
-  @IsOptional()
-  readonly parentId?: number;
+    @IsNumberBase()
+    @IsOptional()
+    readonly parentId?: number;
 }

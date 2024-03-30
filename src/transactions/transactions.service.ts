@@ -13,135 +13,133 @@ import { IValidateTransactionPropertiesArgs } from './interfaces/validate-transa
 
 @Injectable()
 export class TransactionsService {
-  constructor(
-    @InjectRepository(Transaction)
-    private readonly transactionRepository: Repository<Transaction>,
-  ) {}
+    constructor(
+        @InjectRepository(Transaction)
+        private readonly transactionRepository: Repository<Transaction>,
+    ) {}
 
-  async findAll({
-    userId,
-    accountId,
-    transactionCategoryId,
-    type,
-    ...paginationQuery
-  }: FindAllTransactionsDto): Promise<Transaction[]> {
-    if (!userId && !accountId && !transactionCategoryId) {
-      throw new BadRequestException(
-        'At least one of `userId`, `accountId` or `transactionCategoryId` must be provided',
-      );
+    async findAll({
+        userId,
+        accountId,
+        transactionCategoryId,
+        type,
+        ...paginationQuery
+    }: FindAllTransactionsDto): Promise<Transaction[]> {
+        if (!userId && !accountId && !transactionCategoryId) {
+            throw new BadRequestException(
+                'At least one of `userId`, `accountId` or `transactionCategoryId` must be provided',
+            );
+        }
+
+        const where: FindOptionsWhere<Transaction> = {
+            type,
+        };
+
+        if (userId) {
+            where.user = { id: userId };
+        }
+
+        if (accountId) {
+            where.fromAccount = { id: accountId };
+            where.toAccount = { id: accountId };
+        }
+
+        if (transactionCategoryId) {
+            where.fromCategory = { id: transactionCategoryId };
+            where.toCategory = { id: transactionCategoryId };
+        }
+
+        return this.transactionRepository.find({
+            take: paginationQuery.limit,
+            skip: calculateSkipOption(paginationQuery),
+            where,
+            order: { type: 'ASC', createdAt: 'DESC' },
+            relations: {
+                user: true,
+                fromAccount: true,
+                toAccount: true,
+                fromCategory: true,
+                toCategory: true,
+            },
+        });
     }
 
-    const where: FindOptionsWhere<Transaction> = {
-      type,
-    };
+    async findOne(
+        id: Transaction['id'],
+        relations?: FindOptionsRelations<Transaction>,
+    ): Promise<Transaction> {
+        const transaction = await this.transactionRepository.findOne({
+            where: { id },
+            relations,
+        });
 
-    if (userId) {
-      where.user = { id: userId };
+        if (!transaction) {
+            throw new NotFoundException('Transaction', id);
+        }
+
+        return transaction;
     }
 
-    if (accountId) {
-      where.fromAccount = { id: accountId };
-      where.toAccount = { id: accountId };
+    async create(createTransactionDto: CreateTransactionDto): Promise<Transaction> {
+        this.validateTransactionProperties(createTransactionDto);
+        this.validateCreateTransactionProperties(createTransactionDto);
+
+        throw new BadRequestException('Creating Transaction is not supported');
     }
 
-    if (transactionCategoryId) {
-      where.fromCategory = { id: transactionCategoryId };
-      where.toCategory = { id: transactionCategoryId };
+    async edit(
+        id: Transaction['id'],
+        editTransactionDto: EditTransactionDto,
+    ): Promise<Transaction> {
+        this.validateTransactionProperties(editTransactionDto);
+
+        throw new BadRequestException('Editing Transaction is not supported');
     }
 
-    return this.transactionRepository.find({
-      take: paginationQuery.limit,
-      skip: calculateSkipOption(paginationQuery),
-      where,
-      order: { type: 'ASC', createdAt: 'DESC' },
-      relations: {
-        user: true,
-        fromAccount: true,
-        toAccount: true,
-        fromCategory: true,
-        toCategory: true,
-      },
-    });
-  }
+    async delete(id: Transaction['id']): Promise<Transaction> {
+        const transaction = await this.findOne(id);
 
-  async findOne(
-    id: Transaction['id'],
-    relations?: FindOptionsRelations<Transaction>,
-  ): Promise<Transaction> {
-    const transaction = await this.transactionRepository.findOne({
-      where: { id },
-      relations,
-    });
-
-    if (!transaction) {
-      throw new NotFoundException('Transaction', id);
+        return this.transactionRepository.remove(transaction);
     }
 
-    return transaction;
-  }
+    private validateTransactionProperties({
+        fromAccountId,
+        toAccountId,
+        fromCategoryId,
+        toCategoryId,
+    }: IValidateTransactionPropertiesArgs): void {
+        if (fromAccountId && fromCategoryId) {
+            throw new BadRequestException(
+                'Transaction cannot have both `fromAccountId` and `fromCategoryId`',
+            );
+        }
 
-  async create(
-    createTransactionDto: CreateTransactionDto,
-  ): Promise<Transaction> {
-    this.validateTransactionProperties(createTransactionDto);
-    this.validateCreateTransactionProperties(createTransactionDto);
-
-    throw new BadRequestException('Creating Transaction is not supported');
-  }
-
-  async edit(
-    id: Transaction['id'],
-    editTransactionDto: EditTransactionDto,
-  ): Promise<Transaction> {
-    this.validateTransactionProperties(editTransactionDto);
-
-    throw new BadRequestException('Editing Transaction is not supported');
-  }
-
-  async delete(id: Transaction['id']): Promise<Transaction> {
-    const transaction = await this.findOne(id);
-
-    return this.transactionRepository.remove(transaction);
-  }
-
-  private validateTransactionProperties({
-    fromAccountId,
-    toAccountId,
-    fromCategoryId,
-    toCategoryId,
-  }: IValidateTransactionPropertiesArgs): void {
-    if (fromAccountId && fromCategoryId) {
-      throw new BadRequestException(
-        'Transaction cannot have both `fromAccountId` and `fromCategoryId`',
-      );
+        if (toAccountId && toCategoryId) {
+            throw new BadRequestException(
+                'Transaction cannot have both `toAccountId` and `toCategoryId`',
+            );
+        }
     }
 
-    if (toAccountId && toCategoryId) {
-      throw new BadRequestException(
-        'Transaction cannot have both `toAccountId` and `toCategoryId`',
-      );
-    }
-  }
+    private validateCreateTransactionProperties({
+        fromAccountId,
+        toAccountId,
+        fromCategoryId,
+        toCategoryId,
+    }: CreateTransactionDto): void {
+        if (!fromAccountId && !fromCategoryId) {
+            throw new BadRequestException(
+                'Transaction must have either `fromAccountId` or `fromCategoryId`',
+            );
+        }
 
-  private validateCreateTransactionProperties({
-    fromAccountId,
-    toAccountId,
-    fromCategoryId,
-    toCategoryId,
-  }: CreateTransactionDto): void {
-    if (!fromAccountId && !fromCategoryId) {
-      throw new BadRequestException(
-        'Transaction must have either `fromAccountId` or `fromCategoryId`',
-      );
+        if (!toAccountId && !toCategoryId) {
+            throw new BadRequestException(
+                'Transaction must have either `toAccountId` or `toCategoryId`',
+            );
+        }
     }
 
-    if (!toAccountId && !toCategoryId) {
-      throw new BadRequestException(
-        'Transaction must have either `toAccountId` or `toCategoryId`',
-      );
-    }
-  }
-
-  // TODO: Implement method to calculate transaction category balanceZ
-  // TODO: Implement method to calculate account balance
+    // TODO: Implement method to calculate transaction category balanceZ
+    // TODO: Implement method to calculate account balance
 }

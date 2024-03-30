@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Query,
-  Param,
-  Body,
-} from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Query, Param, Body } from '@nestjs/common';
 
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 
@@ -20,64 +11,50 @@ import { EditTransactionCategoryCurrencyDto } from './dtos/edit-transaction-cate
 
 @Controller('transaction-categories')
 export class TransactionCategoriesController {
-  constructor(
-    private readonly transactionCategoriesService: TransactionCategoriesService,
-  ) {}
+    constructor(private readonly transactionCategoriesService: TransactionCategoriesService) {}
 
-  @Get()
-  findAll(
-    @Query() query: FindAllTransactionCategoriesDto,
-  ): Promise<TransactionCategory[]> {
-    return this.transactionCategoriesService.findAll(query);
-  }
+    @Get()
+    findAll(@Query() query: FindAllTransactionCategoriesDto): Promise<TransactionCategory[]> {
+        return this.transactionCategoriesService.findAll(query);
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: number): Promise<TransactionCategory> {
-    return this.transactionCategoriesService.findOne(id);
-  }
+    @Get(':id')
+    findOne(@Param('id') id: number): Promise<TransactionCategory> {
+        return this.transactionCategoriesService.findOne(id);
+    }
 
-  @Post()
-  create(
-    @Body() createTransactionCategoryDto: CreateTransactionCategoryDto,
-  ): Promise<TransactionCategory> {
-    return this.transactionCategoriesService.create(
-      createTransactionCategoryDto,
-    );
-  }
+    @Post()
+    create(
+        @Body() createTransactionCategoryDto: CreateTransactionCategoryDto,
+    ): Promise<TransactionCategory> {
+        return this.transactionCategoriesService.create(createTransactionCategoryDto);
+    }
 
-  @Patch('reorder')
-  reorderOne(
-    @Body() reorderTransactionCategoriesDto: ReorderTransactionCategoriesDto,
-  ): Promise<TransactionCategory[]> {
-    return this.transactionCategoriesService.reorder(
-      reorderTransactionCategoriesDto,
-    );
-  }
+    @Patch('reorder')
+    reorderOne(
+        @Body() reorderTransactionCategoriesDto: ReorderTransactionCategoriesDto,
+    ): Promise<TransactionCategory[]> {
+        return this.transactionCategoriesService.reorder(reorderTransactionCategoriesDto);
+    }
 
-  @Patch(':id')
-  editOne(
-    @Param('id') id: number,
-    @Body() editTransactionCategoryDto: EditTransactionCategoryDto,
-  ): Promise<TransactionCategory> {
-    return this.transactionCategoriesService.edit(
-      id,
-      editTransactionCategoryDto,
-    );
-  }
+    @Patch(':id')
+    editOne(
+        @Param('id') id: number,
+        @Body() editTransactionCategoryDto: EditTransactionCategoryDto,
+    ): Promise<TransactionCategory> {
+        return this.transactionCategoriesService.edit(id, editTransactionCategoryDto);
+    }
 
-  @Patch('currency/:id')
-  editOnesCurrency(
-    @Param('id') id: number,
-    @Body() editTransactionCategoryDto: EditTransactionCategoryCurrencyDto,
-  ): Promise<TransactionCategory> {
-    return this.transactionCategoriesService.editCurrency(
-      id,
-      editTransactionCategoryDto,
-    );
-  }
+    @Patch('currency/:id')
+    editOnesCurrency(
+        @Param('id') id: number,
+        @Body() editTransactionCategoryDto: EditTransactionCategoryCurrencyDto,
+    ): Promise<TransactionCategory> {
+        return this.transactionCategoriesService.editCurrency(id, editTransactionCategoryDto);
+    }
 
-  @Delete(':id')
-  delete(@Param('id') id: number): Promise<TransactionCategory> {
-    return this.transactionCategoriesService.delete(id);
-  }
+    @Delete(':id')
+    delete(@Param('id') id: number): Promise<TransactionCategory> {
+        return this.transactionCategoriesService.delete(id);
+    }
 }

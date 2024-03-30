@@ -9,8 +9,8 @@ import { TransactionCategoriesController } from './transaction-categories.contro
 import { TransactionCategoriesService } from './transaction-categories.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TransactionCategory, User]), UsersModule],
-  controllers: [TransactionCategoriesController],
-  providers: [TransactionCategoriesService],
+    imports: [TypeOrmModule.forFeature([TransactionCategory, User]), UsersModule],
+    controllers: [TransactionCategoriesController],
+    providers: [TransactionCategoriesService],
 })
 export class TransactionCategoriesModule {}

@@ -7,22 +7,22 @@ import { ECurrency } from '../enums/currency.enums';
 import { ETransactionCategoryType } from '../enums/transaction-category.enums';
 
 export class PreloadTransactionCategoryDto {
-  @IsString()
-  readonly name: string;
+    @IsString()
+    readonly name: string;
 
-  @IsEnum(ETransactionCategoryType)
-  readonly type: ETransactionCategoryType;
+    @IsEnum(ETransactionCategoryType)
+    readonly type: ETransactionCategoryType;
 
-  @IsEnum(ECurrency)
-  readonly currency: ECurrency;
+    @IsEnum(ECurrency)
+    readonly currency: ECurrency;
 
-  @IsNumber()
-  @IsOptional()
-  readonly order?: number;
+    @IsNumber()
+    @IsOptional()
+    readonly order?: number;
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PreloadTransactionCategoryDto)
-  @IsOptional()
-  children?: PreloadTransactionCategoryDto[];
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => PreloadTransactionCategoryDto)
+    @IsOptional()
+    children?: PreloadTransactionCategoryDto[];
 }

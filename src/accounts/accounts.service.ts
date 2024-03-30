@@ -1,17 +1,11 @@
 import {
-  Injectable,
-  ForbiddenException,
-  BadRequestException,
-  InternalServerErrorException,
+    Injectable,
+    ForbiddenException,
+    BadRequestException,
+    InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Repository,
-  FindOptionsWhere,
-  FindOptionsRelations,
-  DataSource,
-  Not,
-} from 'typeorm';
+import { Repository, FindOptionsWhere, FindOptionsRelations, DataSource, Not } from 'typeorm';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import { Account } from '../shared/entities/account.entity';
@@ -33,332 +27,305 @@ import { MAX_ACCOUNTS_PER_USER } from './constants/accounts-pagination.constants
 
 @Injectable()
 export class AccountsService {
-  constructor(
-    @InjectRepository(Account)
-    private readonly accountRepository: Repository<Account>,
-    @InjectRepository(Transaction)
-    private readonly transactionRepository: Repository<Transaction>,
-    private readonly usersService: UsersService,
-    private readonly dataSource: DataSource,
-  ) {}
+    constructor(
+        @InjectRepository(Account)
+        private readonly accountRepository: Repository<Account>,
+        @InjectRepository(Transaction)
+        private readonly transactionRepository: Repository<Transaction>,
+        private readonly usersService: UsersService,
+        private readonly dataSource: DataSource,
+    ) {}
 
-  async findAll({
-    userId,
-    type,
-    status = EAccountStatus.ACTIVE,
-    excludeId,
-  }: FindAllAccountsDto): Promise<Account[]> {
-    const where: FindOptionsWhere<Account> = {
-      user: { id: userId },
-      type,
-      status,
-    };
+    async findAll({
+        userId,
+        type,
+        status = EAccountStatus.ACTIVE,
+        excludeId,
+    }: FindAllAccountsDto): Promise<Account[]> {
+        const where: FindOptionsWhere<Account> = {
+            user: { id: userId },
+            type,
+            status,
+        };
 
-    if (typeof excludeId !== 'undefined') {
-      where.id = Not(excludeId);
+        if (typeof excludeId !== 'undefined') {
+            where.id = Not(excludeId);
+        }
+
+        return this.accountRepository.find({
+            where,
+            order: { type: 'ASC', order: 'ASC' },
+        });
     }
 
-    return this.accountRepository.find({
-      where,
-      order: { type: 'ASC', order: 'ASC' },
-    });
-  }
+    async findOne(id: Account['id'], relations?: FindOptionsRelations<Account>): Promise<Account> {
+        const account = await this.accountRepository.findOne({
+            where: { id },
+            relations,
+        });
 
-  async findOne(
-    id: Account['id'],
-    relations?: FindOptionsRelations<Account>,
-  ): Promise<Account> {
-    const account = await this.accountRepository.findOne({
-      where: { id },
-      relations,
-    });
+        if (!account) {
+            throw new NotFoundException('Account', id);
+        }
 
-    if (!account) {
-      throw new NotFoundException('Account', id);
+        return account;
     }
 
-    return account;
-  }
+    async create(createAccountDto: CreateAccountDto): Promise<Account> {
+        this.validateAccountProperties(createAccountDto);
 
-  async create(createAccountDto: CreateAccountDto): Promise<Account> {
-    this.validateAccountProperties(createAccountDto);
+        const { userId, balance, type } = createAccountDto;
+        const user = await this.usersService.findOne(userId);
+        const activeAccounts = await this.findAll({
+            userId,
+        });
 
-    const { userId, balance, type } = createAccountDto;
-    const user = await this.usersService.findOne(userId);
-    const activeAccounts = await this.findAll({
-      userId,
-    });
+        if (activeAccounts.length >= MAX_ACCOUNTS_PER_USER) {
+            throw new ForbiddenException(
+                `User #${userId} already has the maximum number of Accounts`,
+            );
+        }
 
-    if (activeAccounts.length >= MAX_ACCOUNTS_PER_USER) {
-      throw new ForbiddenException(
-        `User #${userId} already has the maximum number of Accounts`,
-      );
+        const order = this.getNewAccountNewOrder(activeAccounts, type);
+
+        const accountTemplate = this.accountRepository.create({
+            ...createAccountDto,
+            initBalance: balance,
+            order,
+            user,
+        });
+
+        const account = await this.accountRepository.save(accountTemplate);
+
+        return this.findOne(account.id);
     }
 
-    const order = this.getNewAccountNewOrder(activeAccounts, type);
+    async edit(id: Account['id'], editAccountDto: EditAccountDto): Promise<Account> {
+        const oldAccount = await this.findOne(id, { user: true });
+        const order = await this.getOldAccountNewOrder(oldAccount, editAccountDto);
+        const account = await this.accountRepository.preload({
+            id,
+            ...editAccountDto,
+            order,
+        });
 
-    const accountTemplate = this.accountRepository.create({
-      ...createAccountDto,
-      initBalance: balance,
-      order,
-      user,
-    });
+        this.validateAccountProperties(account);
 
-    const account = await this.accountRepository.save(accountTemplate);
+        const { status, type, user, balance: oldBalance, currency } = oldAccount;
+        const { status: newStatus, balance } = editAccountDto;
 
-    return this.findOne(account.id);
-  }
+        const isBalanceChanging = typeof balance !== 'undefined' && balance !== oldBalance;
+        const isArchiving = status !== newStatus && newStatus === EAccountStatus.ARCHIVED;
 
-  async edit(
-    id: Account['id'],
-    editAccountDto: EditAccountDto,
-  ): Promise<Account> {
-    const oldAccount = await this.findOne(id, { user: true });
-    const order = await this.getOldAccountNewOrder(oldAccount, editAccountDto);
-    const account = await this.accountRepository.preload({
-      id,
-      ...editAccountDto,
-      order,
-    });
+        if (isBalanceChanging) {
+            await this.createTransferTransaction({
+                user,
+                account,
+                value: balance - oldBalance,
+                currency,
+                updatedBalance: balance,
+            });
+        }
 
-    this.validateAccountProperties(account);
+        if (isArchiving) {
+            return this.archiveAccount({
+                userId: user.id,
+                type,
+                account,
+            });
+        } else {
+            return this.accountRepository.save(account);
+        }
+    }
 
-    const { status, type, user, balance: oldBalance, currency } = oldAccount;
-    const { status: newStatus, balance } = editAccountDto;
+    async editCurrency(
+        id: Account['id'],
+        { currency, rate }: EditAccountCurrencyDto,
+    ): Promise<Account> {
+        const oldAccount = await this.findOne(id);
+        const oldCurrency = oldAccount.currency;
 
-    const isBalanceChanging =
-      typeof balance !== 'undefined' && balance !== oldBalance;
-    const isArchiving =
-      status !== newStatus && newStatus === EAccountStatus.ARCHIVED;
+        if (oldCurrency === currency) {
+            throw new BadRequestException('The new `currency` is the same like current');
+        }
 
-    if (isBalanceChanging) {
-      await this.createTransferTransaction({
+        const { balance, initBalance } = oldAccount;
+        const account = await this.accountRepository.preload({
+            id,
+            currency,
+            balance: balance * rate,
+            initBalance: initBalance * rate,
+        });
+
+        return this.accountRepository.save(account);
+    }
+
+    async reorder(id: Account['id'], { order }: ReorderAccountDto): Promise<Account[]> {
+        const account = await this.findOne(id, { user: true });
+
+        if (account.status === EAccountStatus.ARCHIVED) {
+            throw new BadRequestException(`Account #${id} is archived`);
+        }
+
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const {
+                user: { id: userId },
+                type,
+            } = account;
+
+            const accountsByType = await this.findAll({
+                userId,
+                type,
+            });
+            const newAccountsByType = accountsByType.filter(
+                ({ id: accountId }) => accountId !== id,
+            );
+
+            newAccountsByType.splice(order, 0, account);
+            newAccountsByType.forEach(({ id: accountId }, i) => {
+                queryRunner.manager.update(Account, accountId, { order: i });
+            });
+            await queryRunner.commitTransaction();
+
+            return this.findAll({
+                userId,
+            });
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
+    async delete(id: Account['id']): Promise<Account> {
+        const account = await this.findOne(id);
+
+        return this.accountRepository.remove(account);
+    }
+
+    private validateAccountProperties({
+        type,
+        shouldShowAsIncome,
+        shouldShowAsExpense,
+    }: IValidateAccountPropertiesArgs): void {
+        if (shouldShowAsExpense && type !== EAccountType.I_OWE) {
+            throw new BadRequestException('Only `i_owe` Accounts can have `shouldShowAsExpense`');
+        }
+
+        if (shouldShowAsIncome && type !== EAccountType.OWE_ME) {
+            throw new BadRequestException('Only `owe_me` Accounts can have `shouldShowAsIncome`');
+        }
+    }
+
+    private getNewAccountNewOrder(activeAccounts: Account[], type: EAccountType): number {
+        const filteredAccounts = activeAccounts.filter((account) => account.type === type);
+
+        return filteredAccounts.length;
+    }
+
+    private async getOldAccountNewOrder(
+        oldAccount: Account,
+        editAccountDto: EditAccountDto,
+    ): Promise<number> {
+        const { status, type, user, order } = oldAccount;
+        const { status: newStatus, type: newType } = editAccountDto;
+
+        const isTypeChanging = typeof newType !== 'undefined' && newType !== type;
+        const isStatusChanging = newStatus !== status && newStatus === EAccountStatus.ACTIVE;
+
+        if (!isTypeChanging && !isStatusChanging) {
+            return order;
+        }
+
+        if (!user) {
+            throw new InternalServerErrorException('Old Account has no User');
+        }
+
+        if (isTypeChanging) {
+            const accountsByType = await this.findAll({
+                userId: user.id,
+                type: newType,
+            });
+
+            return accountsByType.length;
+        }
+
+        const accountsByOldType = await this.findAll({
+            userId: user.id,
+            type,
+        });
+
+        return accountsByOldType.length;
+    }
+
+    private async createTransferTransaction({
         user,
         account,
-        value: balance - oldBalance,
+        value,
         currency,
-        updatedBalance: balance,
-      });
+        updatedBalance,
+    }: ICreateTransferTransactionArgs): Promise<Transaction> {
+        const transactionTemplate = await this.transactionRepository.create({
+            user,
+            fromAccount: account,
+            toAccount: account,
+            type: ETransactionType.TRANSFER,
+            value,
+            currency,
+            fromAccountUpdatedBalance: updatedBalance,
+            toAccountUpdatedBalance: updatedBalance,
+        });
+
+        return this.transactionRepository.save(transactionTemplate);
     }
 
-    if (isArchiving) {
-      return this.archiveAccount({
-        userId: user.id,
-        type,
-        account,
-      });
-    } else {
-      return this.accountRepository.save(account);
-    }
-  }
+    private async archiveAccount({ userId, type, account }: IArchiveAccountArgs): Promise<Account> {
+        const accountId = account.id;
 
-  async editCurrency(
-    id: Account['id'],
-    { currency, rate }: EditAccountCurrencyDto,
-  ): Promise<Account> {
-    const oldAccount = await this.findOne(id);
-    const oldCurrency = oldAccount.currency;
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
 
-    if (oldCurrency === currency) {
-      throw new BadRequestException(
-        'The new `currency` is the same like current',
-      );
-    }
+        try {
+            queryRunner.manager.update(Account, accountId, account);
 
-    const { balance, initBalance } = oldAccount;
-    const account = await this.accountRepository.preload({
-      id,
-      currency,
-      balance: balance * rate,
-      initBalance: initBalance * rate,
-    });
+            await this.syncAccountsOrder({
+                queryRunner,
+                userId,
+                type,
+                excludeId: accountId,
+            });
 
-    return this.accountRepository.save(account);
-  }
+            await queryRunner.commitTransaction();
 
-  async reorder(
-    id: Account['id'],
-    { order }: ReorderAccountDto,
-  ): Promise<Account[]> {
-    const account = await this.findOne(id, { user: true });
-
-    if (account.status === EAccountStatus.ARCHIVED) {
-      throw new BadRequestException(`Account #${id} is archived`);
+            return this.findOne(accountId);
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
     }
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const {
-        user: { id: userId },
-        type,
-      } = account;
-
-      const accountsByType = await this.findAll({
-        userId,
-        type,
-      });
-      const newAccountsByType = accountsByType.filter(
-        ({ id: accountId }) => accountId !== id,
-      );
-
-      newAccountsByType.splice(order, 0, account);
-      newAccountsByType.forEach(({ id: accountId }, i) => {
-        queryRunner.manager.update(Account, accountId, { order: i });
-      });
-      await queryRunner.commitTransaction();
-
-      return this.findAll({
-        userId,
-      });
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
-    }
-  }
-
-  async delete(id: Account['id']): Promise<Account> {
-    const account = await this.findOne(id);
-
-    return this.accountRepository.remove(account);
-  }
-
-  private validateAccountProperties({
-    type,
-    shouldShowAsIncome,
-    shouldShowAsExpense,
-  }: IValidateAccountPropertiesArgs): void {
-    if (shouldShowAsExpense && type !== EAccountType.I_OWE) {
-      throw new BadRequestException(
-        'Only `i_owe` Accounts can have `shouldShowAsExpense`',
-      );
-    }
-
-    if (shouldShowAsIncome && type !== EAccountType.OWE_ME) {
-      throw new BadRequestException(
-        'Only `owe_me` Accounts can have `shouldShowAsIncome`',
-      );
-    }
-  }
-
-  private getNewAccountNewOrder(
-    activeAccounts: Account[],
-    type: EAccountType,
-  ): number {
-    const filteredAccounts = activeAccounts.filter(
-      (account) => account.type === type,
-    );
-
-    return filteredAccounts.length;
-  }
-
-  private async getOldAccountNewOrder(
-    oldAccount: Account,
-    editAccountDto: EditAccountDto,
-  ): Promise<number> {
-    const { status, type, user, order } = oldAccount;
-    const { status: newStatus, type: newType } = editAccountDto;
-
-    const isTypeChanging = typeof newType !== 'undefined' && newType !== type;
-    const isStatusChanging =
-      newStatus !== status && newStatus === EAccountStatus.ACTIVE;
-
-    if (!isTypeChanging && !isStatusChanging) {
-      return order;
-    }
-
-    if (!user) {
-      throw new InternalServerErrorException('Old Account has no User');
-    }
-
-    if (isTypeChanging) {
-      const accountsByType = await this.findAll({
-        userId: user.id,
-        type: newType,
-      });
-
-      return accountsByType.length;
-    }
-
-    const accountsByOldType = await this.findAll({
-      userId: user.id,
-      type,
-    });
-
-    return accountsByOldType.length;
-  }
-
-  private async createTransferTransaction({
-    user,
-    account,
-    value,
-    currency,
-    updatedBalance,
-  }: ICreateTransferTransactionArgs): Promise<Transaction> {
-    const transactionTemplate = await this.transactionRepository.create({
-      user,
-      fromAccount: account,
-      toAccount: account,
-      type: ETransactionType.TRANSFER,
-      value,
-      currency,
-      fromAccountUpdatedBalance: updatedBalance,
-      toAccountUpdatedBalance: updatedBalance,
-    });
-
-    return this.transactionRepository.save(transactionTemplate);
-  }
-
-  private async archiveAccount({
-    userId,
-    type,
-    account,
-  }: IArchiveAccountArgs): Promise<Account> {
-    const accountId = account.id;
-
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      queryRunner.manager.update(Account, accountId, account);
-
-      await this.syncAccountsOrder({
+    private async syncAccountsOrder({
         queryRunner,
         userId,
         type,
-        excludeId: accountId,
-      });
+        excludeId,
+    }: ISyncAccountsOrderArgs): Promise<void> {
+        const accountsByType = await this.findAll({
+            userId,
+            type,
+            excludeId,
+        });
 
-      await queryRunner.commitTransaction();
-
-      return this.findOne(accountId);
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
+        accountsByType.forEach(({ id }, i) => {
+            queryRunner.manager.update(Account, id, { order: i });
+        });
     }
-  }
-
-  private async syncAccountsOrder({
-    queryRunner,
-    userId,
-    type,
-    excludeId,
-  }: ISyncAccountsOrderArgs): Promise<void> {
-    const accountsByType = await this.findAll({
-      userId,
-      type,
-      excludeId,
-    });
-
-    accountsByType.forEach(({ id }, i) => {
-      queryRunner.manager.update(Account, id, { order: i });
-    });
-  }
 }

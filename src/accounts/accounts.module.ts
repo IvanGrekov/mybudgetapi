@@ -10,11 +10,8 @@ import { AccountsController } from './accounts.controller';
 import { AccountsService } from './accounts.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Account, User, Transaction]),
-    UsersModule,
-  ],
-  controllers: [AccountsController],
-  providers: [AccountsService],
+    imports: [TypeOrmModule.forFeature([Account, User, Transaction]), UsersModule],
+    controllers: [AccountsController],
+    providers: [AccountsService],
 })
 export class AccountsModule {}
