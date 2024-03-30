@@ -7,9 +7,6 @@ import { AccountsModule } from './accounts/accounts.module';
 import { TransactionCategoriesModule } from './transaction-categories/transaction-categories.module';
 import { TransactionsModule } from './transactions/transactions.module';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-
 @Module({
     imports: [
         TypeOrmModule.forRoot({
@@ -28,7 +25,5 @@ import { AppService } from './app.service';
         TransactionCategoriesModule,
         TransactionsModule,
     ],
-    controllers: [AppController],
-    providers: [AppService],
 })
 export class AppModule {}

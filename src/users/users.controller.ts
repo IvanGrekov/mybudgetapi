@@ -1,4 +1,5 @@
 import { Controller, Get, Query, Post, Param, Body, Patch, Delete } from '@nestjs/common';
+import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { User } from '../shared/entities/user.entity';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
@@ -8,35 +9,42 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { EditUserDto } from './dtos/edit-user.dto';
 import { EditUserCurrencyDto } from './dtos/create-user-currency.dto';
 
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
+    @ApiOkResponse({ type: [User] })
     @Get()
     findAll(@Query() paginationQuery: PaginationQueryDto): Promise<User[]> {
         return this.usersService.findAll(paginationQuery);
     }
 
+    @ApiOkResponse({ type: String })
     @Get('name')
     getNewName(): Promise<string> {
         return this.usersService.getNewName();
     }
 
+    @ApiOkResponse({ type: User })
     @Get(':id')
     findOne(@Param('id') id: number): Promise<User> {
         return this.usersService.findOne(id);
     }
 
+    @ApiOkResponse({ type: User })
     @Post()
     create(@Body() createUserDto: CreateUserDto): Promise<User> {
         return this.usersService.create(createUserDto);
     }
 
+    @ApiOkResponse({ type: User })
     @Patch(':id')
     editOne(@Param('id') id: number, @Body() editUserDto: EditUserDto): Promise<User> {
         return this.usersService.edit(id, editUserDto);
     }
 
+    @ApiOkResponse({ type: User })
     @Patch('currency/:id')
     editOnesCurrency(
         @Param('id') id: number,
@@ -45,6 +53,7 @@ export class UsersController {
         return this.usersService.editCurrency(id, editUserCurrencyDto);
     }
 
+    @ApiOkResponse({ type: User })
     @Delete(':id')
     deleteOne(@Param('id') id: number): Promise<User> {
         return this.usersService.delete(id);

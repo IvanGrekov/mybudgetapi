@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import { IsDefined, IsEnum, IsOptional, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import IsNumber from '../property-decorators/is-number.decorator';
@@ -7,6 +7,7 @@ import { ECurrency } from '../enums/currency.enums';
 import { ETransactionCategoryType } from '../enums/transaction-category.enums';
 
 export class PreloadTransactionCategoryDto {
+    @IsDefined()
     @IsString()
     readonly name: string;
 
