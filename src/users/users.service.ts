@@ -7,20 +7,14 @@ import { User } from '../shared/entities/user.entity';
 import { Account } from '../shared/entities/account.entity';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
-import { PreloadAccountDto } from '../shared/dtos/preload-account.dto';
-import { ECurrency } from '../shared/enums/currency.enums';
-import { ELanguage } from '../shared/enums/language.enums';
-import { PreloadTransactionCategoryDto } from '../shared/dtos/preload-transaction-category.dto';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
 
 import { CreateUserDto } from './dtos/create-user.dto';
 import { EditUserDto } from './dtos/edit-user.dto';
 import { EditUserCurrencyDto } from './dtos/create-user-currency.dto';
-import { getCalculateNewAccountBalance } from './utils/getCalculateNewAccountBalance.util';
-import { getDefaultAccountsDto } from './utils/getDefaultAccountsDto.util';
-import { getDefaultTransactionCategoriesDto } from './utils/getDefaultTransactionCategoriesDto.util';
-import { IRelations } from './interfaces/relations.interface';
-import { IUpdateRelationsCurrencyArgs } from './interfaces/update-relations-currency-args.interface';
+import { getChildrenTransactionCategories } from './utils/getChildrenTransactionCategories.util';
+import { getDefaultRelations } from './utils/getDefaultRelations.util';
+import { updateRelationsCurrency } from './utils/updateRelationsCurrency.util';
 
 @Injectable()
 export class UsersService {
@@ -60,7 +54,14 @@ export class UsersService {
 
     async create(createUserDto: CreateUserDto): Promise<User> {
         const { defaultCurrency: currency, language } = createUserDto;
-        const defaultRelations = this.getDefaultRelations(currency, language);
+        const defaultRelations = getDefaultRelations({
+            currency,
+            language,
+            createAccount: this.accountRepository.create.bind(this.accountRepository),
+            createTransactionCategory: this.transactionCategoryRepository.create.bind(
+                this.transactionCategoryRepository,
+            ),
+        });
 
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -74,7 +75,7 @@ export class UsersService {
 
             const user = await queryRunner.manager.save(User, userTemplate);
 
-            this.getChildrenTransactionCategories(user.transactionCategories).forEach(({ id }) => {
+            getChildrenTransactionCategories(user.transactionCategories).forEach(({ id }) => {
                 queryRunner.manager.update(TransactionCategory, id, { user });
             });
 
@@ -120,7 +121,7 @@ export class UsersService {
         try {
             queryRunner.manager.update(User, id, { defaultCurrency });
 
-            this.updateRelationsCurrency({
+            updateRelationsCurrency({
                 queryRunner,
                 userId: id,
                 isForceCurrencyUpdate,
@@ -144,83 +145,5 @@ export class UsersService {
         const user = await this.findOne(id);
 
         return this.userRepository.remove(user);
-    }
-
-    private preloadAccount(preloadAccountDto: PreloadAccountDto): Account {
-        return this.accountRepository.create({
-            ...preloadAccountDto,
-            initBalance: preloadAccountDto.balance,
-        });
-    }
-
-    private preloadTransactionCategory(
-        preloadTransactionCategoryDto: PreloadTransactionCategoryDto,
-    ): TransactionCategory {
-        return this.transactionCategoryRepository.create(preloadTransactionCategoryDto);
-    }
-
-    private getDefaultRelations(currency: ECurrency, language: ELanguage): IRelations {
-        const accounts = getDefaultAccountsDto({
-            currency,
-            language,
-        }).map((accountDto) => this.preloadAccount(accountDto));
-
-        const transactionCategories = getDefaultTransactionCategoriesDto({
-            currency,
-            language,
-        }).map((transactionCategory) => this.preloadTransactionCategory(transactionCategory));
-
-        return { accounts, transactionCategories };
-    }
-
-    private getChildrenTransactionCategories(
-        transactionCategories: TransactionCategory[],
-    ): TransactionCategory[] {
-        const result: TransactionCategory[] = [];
-
-        transactionCategories.forEach(({ children }) => {
-            children && result.push(...children);
-        });
-
-        return result;
-    }
-
-    private updateRelationsCurrency({
-        queryRunner,
-        userId,
-        isForceCurrencyUpdate,
-        currency,
-        oldCurrency,
-        rate,
-    }: IUpdateRelationsCurrencyArgs): void {
-        const criteria = isForceCurrencyUpdate
-            ? { user: { id: userId } }
-            : { user: { id: userId }, currency: oldCurrency };
-
-        const accountPartialEntity = {
-            currency,
-            balance: getCalculateNewAccountBalance(rate),
-            initBalance: getCalculateNewAccountBalance(rate, true),
-        };
-
-        const transactionCategoryPartialEntity = {
-            currency,
-        };
-
-        if (isForceCurrencyUpdate) {
-            queryRunner.manager.update(Account, criteria, accountPartialEntity);
-            queryRunner.manager.update(
-                TransactionCategory,
-                criteria,
-                transactionCategoryPartialEntity,
-            );
-        } else {
-            queryRunner.manager.update(Account, criteria, accountPartialEntity);
-            queryRunner.manager.update(
-                TransactionCategory,
-                criteria,
-                transactionCategoryPartialEntity,
-            );
-        }
     }
 }
