@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner, UpdateResult } from 'typeorm';
 
 import { EAccountType } from '../../shared/enums/account.enums';
 import { Account } from '../../shared/entities/account.entity';
@@ -8,19 +8,19 @@ import { FindAllAccountsDto } from '../dtos/find-all-accounts.dto';
 type TFindAllAccounts = (args: FindAllAccountsDto) => Promise<Account[]>;
 
 type TSyncAccountsOrder = (args: {
-    queryRunner: QueryRunner;
     userId: number;
     type: EAccountType;
     excludeId?: number;
     findAllAccounts: TFindAllAccounts;
+    updateAccount(id: number, account: Partial<Account>): Promise<UpdateResult>;
 }) => Promise<void>;
 
 const syncAccountsOrder: TSyncAccountsOrder = async ({
-    queryRunner,
     userId,
     type,
     excludeId,
     findAllAccounts,
+    updateAccount,
 }) => {
     const accountsByType = await findAllAccounts({
         userId,
@@ -29,7 +29,7 @@ const syncAccountsOrder: TSyncAccountsOrder = async ({
     });
 
     accountsByType.forEach(({ id }, i) => {
-        queryRunner.manager.update(Account, id, { order: i });
+        updateAccount(id, { order: i });
     });
 };
 
@@ -60,11 +60,11 @@ export const archiveAccount: TArchiveAccountArgs = async ({
         queryRunner.manager.update(Account, accountId, account);
 
         await syncAccountsOrder({
-            queryRunner,
             userId,
             type,
             excludeId: accountId,
             findAllAccounts,
+            updateAccount: (id, account) => queryRunner.manager.update(Account, id, account),
         });
 
         await queryRunner.commitTransaction();

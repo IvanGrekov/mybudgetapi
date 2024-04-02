@@ -1,19 +1,6 @@
-import {
-    Injectable,
-    ForbiddenException,
-    BadRequestException,
-    ConflictException,
-    InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-    FindOptionsRelations,
-    Repository,
-    DataSource,
-    Not,
-    FindOptionsWhere,
-    QueryRunner,
-} from 'typeorm';
+import { FindOptionsRelations, Repository, DataSource, Not, FindOptionsWhere } from 'typeorm';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
@@ -25,13 +12,15 @@ import { CreateTransactionCategoryDto } from './dtos/create-transaction-category
 import { ReorderTransactionCategoriesDto } from './dtos/reorder-transaction-categories.dto';
 import { EditTransactionCategoryDto } from './dtos/edit-transaction-category.dto';
 import { EditTransactionCategoryCurrencyDto } from './dtos/edit-transaction-category-currency.dto';
-import { ReorderParentTransactionCategoryDto } from './dtos/reorder-parent-transaction-category.dto';
-import { IGetParentForNewTransactionCategoryArgs } from './interfaces/get-parent-for-new-transaction-category-args.interface';
-import { IArchiveTransactionCategoryArgs } from './interfaces/archive-transaction-category-args.interface';
-import { ISyncTransactionCategoriesOrderArgs } from './interfaces/sync-transaction-categories-order-args.interface';
-import { IUpdateReorderingChildArgs } from './interfaces/update-reordering-child-args.interface';
-import { IUnassignChildrenFromParentArgs } from './interfaces/unassign-children-from-parent-args.interface';
 import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './constants/transaction-categories-pagination.constants';
+import { getParentTransactionCategories } from './utils/getParentTransactionCategories.util';
+import { sortChildTransactionCategories } from './utils/sortChildTransactionCategories.util';
+import { getParentForNewTransactionCategory } from './utils/getParentForNewTransactionCategory.util';
+import { getNewTransactionCategoryOrder } from './utils/getNewTransactionCategoryOrder.utils';
+import { getOldTransactionCategoryNewOrder } from './utils/getOldTransactionCategoryNewOrder.utils';
+import { archiveTransactionCategory } from './utils/archiveTransactionCategory.utils';
+import { validateReorderingTransactionCategories } from './utils/validateReorderingTransactionCategories.util';
+import { updateReorderingParent } from './utils/updateReorderingParent.utils';
 
 @Injectable()
 export class TransactionCategoriesService {
@@ -76,9 +65,9 @@ export class TransactionCategoriesService {
         const filteredTransactionCategories =
             parentId || !shouldFilterChildTransactionCategories
                 ? transactionCategories
-                : this.filterChildTransactionCategories(transactionCategories);
+                : getParentTransactionCategories(transactionCategories);
 
-        return this.sortChildTransactionCategories(filteredTransactionCategories);
+        return sortChildTransactionCategories(filteredTransactionCategories);
     }
 
     async findOne(
@@ -118,16 +107,18 @@ export class TransactionCategoriesService {
             user,
         });
 
-        transactionCategoryTemplate.parent = await this.getParentForNewTransactionCategory({
+        transactionCategoryTemplate.parent = await getParentForNewTransactionCategory({
             parentId,
             userId,
             type,
+            findOneTransactionCategory: this.findOne.bind(this),
         });
 
-        transactionCategoryTemplate.order = await this.getNewTransactionCategoryNewOrder(
+        transactionCategoryTemplate.order = await getNewTransactionCategoryOrder({
             transactionCategoryTemplate,
             activeTransactionCategories,
-        );
+            findOneTransactionCategory: this.findOne.bind(this),
+        });
 
         const transactionCategory = await this.transactionCategoryRepository.save(
             transactionCategoryTemplate,
@@ -146,10 +137,11 @@ export class TransactionCategoriesService {
             children: true,
         });
 
-        const order = await this.getOldTransactionCategoryNewOrder(
+        const order = await getOldTransactionCategoryNewOrder({
             oldTransactionCategory,
             editTransactionCategoryDto,
-        );
+            findAllTransactionCategories: this.findAll.bind(this),
+        });
 
         const transactionCategory = await this.transactionCategoryRepository.preload({
             id,
@@ -169,10 +161,13 @@ export class TransactionCategoriesService {
         }
 
         if (isArchiving) {
-            return this.archiveTransactionCategory({
+            return archiveTransactionCategory({
                 userId: user.id,
                 transactionCategory,
                 oldTransactionCategory,
+                createQueryRunner: this.dataSource.createQueryRunner.bind(this.dataSource),
+                findOneTransactionCategory: this.findOne.bind(this),
+                findAllTransactionCategories: this.findAll.bind(this),
             });
         } else {
             return this.transactionCategoryRepository.save(transactionCategory);
@@ -215,7 +210,7 @@ export class TransactionCategoriesService {
             shouldFilterChildTransactionCategories: false,
         });
 
-        this.validateReorderingTransactionCategories(parentNodes, currentTransactionCategories);
+        validateReorderingTransactionCategories(parentNodes, currentTransactionCategories);
 
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -223,7 +218,12 @@ export class TransactionCategoriesService {
 
         try {
             for (const parentNode of parentNodes) {
-                await this.updateReorderingParent(queryRunner, parentNode);
+                await updateReorderingParent({
+                    parentNode,
+                    findOneTransactionCategory: this.findOne.bind(this),
+                    updateTransactionCategory: (id, transactionCategory) =>
+                        queryRunner.manager.update(TransactionCategory, id, transactionCategory),
+                });
             }
 
             await queryRunner.commitTransaction();
@@ -244,341 +244,5 @@ export class TransactionCategoriesService {
         const transactionCategory = await this.findOne(id);
 
         return this.transactionCategoryRepository.remove(transactionCategory);
-    }
-
-    private filterChildTransactionCategories(
-        transactionCategories: TransactionCategory[],
-    ): TransactionCategory[] {
-        return transactionCategories.filter(({ parent }) => !parent);
-    }
-
-    private sortTransactionCategories<T extends { order: number }>(
-        transactionCategories: T[],
-    ): T[] {
-        return transactionCategories.sort((a, b) => a.order - b.order);
-    }
-
-    private sortChildTransactionCategories(
-        transactionCategories: TransactionCategory[],
-    ): TransactionCategory[] {
-        return transactionCategories.map((transactionCategory) => {
-            const { children } = transactionCategory;
-
-            if (Array.isArray(children)) {
-                transactionCategory.children = this.sortTransactionCategories(children);
-            }
-
-            return transactionCategory;
-        });
-    }
-
-    private async getParentForNewTransactionCategory({
-        parentId,
-        type,
-        userId,
-    }: IGetParentForNewTransactionCategoryArgs): Promise<TransactionCategory['parent']> {
-        const parentTransactionCategory = await this.findOne(parentId, {
-            user: true,
-        });
-        const { user: parentUser, type: parentType } = parentTransactionCategory;
-
-        if (userId !== parentUser.id) {
-            throw new ConflictException(
-                'Parent TransactionCategory #${parentId} belongs to another User',
-            );
-        }
-
-        if (type !== parentType) {
-            throw new ConflictException(
-                `Parent TransactionCategory #${parentId} \`type\` is different from the new TransactionCategory \`type\``,
-            );
-        }
-
-        return parentTransactionCategory;
-    }
-
-    private async getNewTransactionCategoryNewOrder(
-        transactionCategoryTemplate: TransactionCategory,
-        activeTransactionCategories: TransactionCategory[],
-    ): Promise<number> {
-        const { parent, type } = transactionCategoryTemplate;
-
-        if (parent) {
-            const parentTransactionCategory = await this.findOne(parent.id, {
-                children: true,
-            });
-
-            return parentTransactionCategory.children.length;
-        }
-
-        const filteredTransactionCategories = activeTransactionCategories.filter(
-            (transactionCategory) => transactionCategory.type === type,
-        );
-
-        return filteredTransactionCategories.length;
-    }
-
-    private async getOldTransactionCategoryNewOrder(
-        oldTransactionCategory: TransactionCategory,
-        editTransactionCategoryDto: EditTransactionCategoryDto,
-    ): Promise<number> {
-        const { status, type, user, order } = oldTransactionCategory;
-        const { status: newStatus, type: newType } = editTransactionCategoryDto;
-
-        const isTypeChanging = typeof newType !== 'undefined' && newType !== type;
-        const isStatusChanging =
-            newStatus !== status && newStatus === ETransactionCategoryStatus.ACTIVE;
-
-        if (!isTypeChanging && !isStatusChanging) {
-            return order;
-        }
-
-        if (!user) {
-            throw new InternalServerErrorException('Old TransactionCategory has no User');
-        }
-
-        if (isTypeChanging) {
-            const transactionCategoriesByType = await this.findAll({
-                userId: user.id,
-                type: newType,
-            });
-
-            return transactionCategoriesByType.length;
-        }
-
-        const transactionCategoriesByOldType = await this.findAll({
-            userId: user.id,
-            type,
-        });
-
-        return transactionCategoriesByOldType.length;
-    }
-
-    private async archiveTransactionCategory({
-        userId,
-        transactionCategory,
-        oldTransactionCategory,
-    }: IArchiveTransactionCategoryArgs): Promise<TransactionCategory> {
-        const { parent, children, type } = oldTransactionCategory;
-        const transactionCategoryId = transactionCategory.id;
-
-        if (!Array.isArray(children)) {
-            throw new InternalServerErrorException(
-                'Old TransactionCategory has no resolved children',
-            );
-        }
-
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
-        try {
-            if (parent) {
-                transactionCategory.parent = null;
-            }
-
-            if (children.length) {
-                await this.unassignChildrenFromParent({
-                    queryRunner,
-                    userId,
-                    children,
-                });
-            }
-
-            queryRunner.manager.update(
-                TransactionCategory,
-                transactionCategoryId,
-                transactionCategory,
-            );
-
-            await this.syncTransactionCategoriesOrder({
-                queryRunner,
-                userId,
-                excludeId: transactionCategoryId,
-                type,
-                parentId: parent?.id,
-            });
-
-            await queryRunner.commitTransaction();
-
-            return this.findOne(transactionCategoryId);
-        } catch (err) {
-            await queryRunner.rollbackTransaction();
-            throw err;
-        } finally {
-            await queryRunner.release();
-        }
-    }
-
-    private async syncTransactionCategoriesOrder({
-        queryRunner,
-        userId,
-        type,
-        excludeId,
-        parentId,
-    }: ISyncTransactionCategoriesOrderArgs): Promise<void> {
-        const transactionCategories = await this.findAll({
-            userId,
-            type,
-            excludeId,
-            parentId,
-        });
-
-        transactionCategories.forEach(({ id }, i) => {
-            queryRunner.manager.update(TransactionCategory, id, { order: i });
-        });
-    }
-
-    private async unassignChildrenFromParent({
-        queryRunner,
-        userId,
-        children,
-    }: IUnassignChildrenFromParentArgs): Promise<void> {
-        if (!Array.isArray(children)) {
-            throw new InternalServerErrorException('TransactionCategory children not resolved');
-        }
-
-        if (children.length === 0) {
-            return;
-        }
-
-        const transactionCategoriesByType = await this.findAll({
-            userId,
-            type: children[0].type,
-        });
-        const length = transactionCategoriesByType.length - 1;
-
-        children.forEach(({ id }, i) => {
-            const newOrder = length + i;
-            queryRunner.manager.update(TransactionCategory, id, {
-                order: newOrder,
-                parent: null,
-            });
-        });
-    }
-
-    private validateReorderingTransactionCategories(
-        parentNodes: ReorderParentTransactionCategoryDto[],
-        currentTransactionCategories: TransactionCategory[],
-    ): void {
-        const nodeIds = this.getReorderingNodeIds(parentNodes);
-
-        currentTransactionCategories.forEach(({ id }) => {
-            const nodeIdIndex = nodeIds.findIndex((nodeId) => nodeId === id);
-
-            if (nodeIdIndex === -1) {
-                throw new BadRequestException(`Node for TransactionCategory #${id} not found`);
-            }
-
-            nodeIds.splice(nodeIdIndex, 1);
-        });
-
-        if (nodeIds.length > 0) {
-            throw new BadRequestException(
-                `Nodes [#${nodeIds.join(', #')}] not found in current active TransactionCategories`,
-            );
-        }
-
-        this.validateOrderValues(parentNodes);
-    }
-
-    private getReorderingNodeIds(parentNodes: ReorderParentTransactionCategoryDto[]): number[] {
-        const nodeIds = new Set<number>();
-
-        try {
-            parentNodes.forEach(({ id: parentNodeId, childNodes }) => {
-                if (nodeIds.has(parentNodeId)) {
-                    throw parentNodeId;
-                }
-                nodeIds.add(parentNodeId);
-
-                if (!childNodes) {
-                    return;
-                }
-                childNodes.forEach(({ id: childNodeId }) => {
-                    if (nodeIds.has(childNodeId)) {
-                        throw childNodeId;
-                    }
-                    nodeIds.add(childNodeId);
-                });
-            });
-        } catch (id) {
-            throw new BadRequestException(`Node for TransactionCategory #${id} has duplicate`);
-        }
-
-        return Array.from(nodeIds.keys());
-    }
-
-    private validateOrderValues(
-        nodes: ReorderParentTransactionCategoryDto[],
-        parentId?: number,
-    ): void {
-        const orderValues = new Map<number, number>();
-
-        for (const { id, order, childNodes } of nodes) {
-            const currentIdByOrder = orderValues.get(order);
-            if (!currentIdByOrder) {
-                orderValues.set(order, id);
-            } else {
-                throw new BadRequestException(
-                    `Order value ${order} used by several TransactionCategory #${currentIdByOrder} and #${id}`,
-                );
-            }
-
-            if (childNodes?.length > 0) {
-                this.validateOrderValues(childNodes, id);
-            }
-        }
-
-        let orderCounter = 0;
-        while (orderCounter !== orderValues.size) {
-            if (!orderValues.has(orderCounter)) {
-                const location = parentId
-                    ? `for children of TransactionCategory #${parentId}`
-                    : 'in TransactionCategories';
-                throw new BadRequestException(`Order value ${orderCounter} is missing ${location}`);
-            }
-            orderCounter++;
-        }
-    }
-
-    private async updateReorderingParent(
-        queryRunner: QueryRunner,
-        parentNode: ReorderParentTransactionCategoryDto,
-    ): Promise<void> {
-        const { id, order, childNodes } = parentNode;
-        const transactionCategory = await this.findOne(id, {
-            parent: true,
-            children: true,
-        });
-
-        queryRunner.manager.update(TransactionCategory, id, {
-            order,
-            parent: null,
-        });
-
-        if (!childNodes) {
-            return;
-        }
-
-        for (const childNode of childNodes) {
-            await this.updateReorderingChild({
-                queryRunner,
-                ...childNode,
-                parentTransactionCategory: transactionCategory,
-            });
-        }
-    }
-
-    private async updateReorderingChild({
-        queryRunner,
-        id,
-        order,
-        parentTransactionCategory,
-    }: IUpdateReorderingChildArgs): Promise<void> {
-        queryRunner.manager.update(TransactionCategory, id, {
-            order,
-            parent: parentTransactionCategory,
-        });
     }
 }
