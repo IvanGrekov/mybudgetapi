@@ -9,7 +9,8 @@ import { Transaction } from '../shared/entities/transaction.entity';
 import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { EditTransactionDto } from './dtos/edit-transaction.dto';
-import { IValidateTransactionPropertiesArgs } from './interfaces/validate-transaction-properties-args.interface';
+import { validateTransactionProperties } from './utils/validateTransactionProperties.util';
+import { validateCreateTransactionProperties } from './utils/validateCreateTransactionProperties.util';
 
 @Injectable()
 export class TransactionsService {
@@ -81,8 +82,7 @@ export class TransactionsService {
     }
 
     async create(createTransactionDto: CreateTransactionDto): Promise<Transaction> {
-        this.validateTransactionProperties(createTransactionDto);
-        this.validateCreateTransactionProperties(createTransactionDto);
+        validateCreateTransactionProperties(createTransactionDto);
 
         throw new BadRequestException('Creating Transaction is not supported');
     }
@@ -91,7 +91,7 @@ export class TransactionsService {
         id: Transaction['id'],
         editTransactionDto: EditTransactionDto,
     ): Promise<Transaction> {
-        this.validateTransactionProperties(editTransactionDto);
+        validateTransactionProperties(editTransactionDto);
 
         throw new BadRequestException('Editing Transaction is not supported');
     }
@@ -100,44 +100,6 @@ export class TransactionsService {
         const transaction = await this.findOne(id);
 
         return this.transactionRepository.remove(transaction);
-    }
-
-    private validateTransactionProperties({
-        fromAccountId,
-        toAccountId,
-        fromCategoryId,
-        toCategoryId,
-    }: IValidateTransactionPropertiesArgs): void {
-        if (fromAccountId && fromCategoryId) {
-            throw new BadRequestException(
-                'Transaction cannot have both `fromAccountId` and `fromCategoryId`',
-            );
-        }
-
-        if (toAccountId && toCategoryId) {
-            throw new BadRequestException(
-                'Transaction cannot have both `toAccountId` and `toCategoryId`',
-            );
-        }
-    }
-
-    private validateCreateTransactionProperties({
-        fromAccountId,
-        toAccountId,
-        fromCategoryId,
-        toCategoryId,
-    }: CreateTransactionDto): void {
-        if (!fromAccountId && !fromCategoryId) {
-            throw new BadRequestException(
-                'Transaction must have either `fromAccountId` or `fromCategoryId`',
-            );
-        }
-
-        if (!toAccountId && !toCategoryId) {
-            throw new BadRequestException(
-                'Transaction must have either `toAccountId` or `toCategoryId`',
-            );
-        }
     }
 
     // TODO: Implement method to calculate transaction category balanceZ
