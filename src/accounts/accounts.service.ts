@@ -35,17 +35,14 @@ export class AccountsService {
         userId,
         type,
         status = EAccountStatus.ACTIVE,
-        excludeId,
+        excludeId = 0,
     }: FindAllAccountsDto): Promise<Account[]> {
         const where: FindOptionsWhere<Account> = {
+            id: Not(excludeId),
             user: { id: userId },
             type,
             status,
         };
-
-        if (typeof excludeId !== 'undefined') {
-            where.id = Not(excludeId);
-        }
 
         return this.accountRepository.find({
             where,

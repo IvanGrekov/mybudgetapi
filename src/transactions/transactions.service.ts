@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsRelations, Repository, FindOptionsWhere } from 'typeorm';
+import { FindOptionsRelations, Repository } from 'typeorm';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
@@ -10,6 +10,8 @@ import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { EditTransactionDto } from './dtos/edit-transaction.dto';
 import { validateTransactionProperties } from './utils/validateTransactionProperties.util';
+import { validateFindAllTransactionProperties } from './utils/validateFindAllTransactionProperties.util';
+import { getFindAllWhereInput } from './utils/getFindAllWhereInput.util';
 import { validateCreateTransactionProperties } from './utils/validateCreateTransactionProperties.util';
 
 @Injectable()
@@ -19,42 +21,14 @@ export class TransactionsService {
         private readonly transactionRepository: Repository<Transaction>,
     ) {}
 
-    async findAll({
-        userId,
-        accountId,
-        transactionCategoryId,
-        type,
-        ...paginationQuery
-    }: FindAllTransactionsDto): Promise<Transaction[]> {
-        if (!userId && !accountId && !transactionCategoryId) {
-            throw new BadRequestException(
-                'At least one of `userId`, `accountId` or `transactionCategoryId` must be provided',
-            );
-        }
-
-        const where: FindOptionsWhere<Transaction> = {
-            type,
-        };
-
-        if (userId) {
-            where.user = { id: userId };
-        }
-
-        if (accountId) {
-            where.fromAccount = { id: accountId };
-            where.toAccount = { id: accountId };
-        }
-
-        if (transactionCategoryId) {
-            where.fromCategory = { id: transactionCategoryId };
-            where.toCategory = { id: transactionCategoryId };
-        }
+    async findAll(query: FindAllTransactionsDto): Promise<Transaction[]> {
+        validateFindAllTransactionProperties(query);
 
         return this.transactionRepository.find({
-            take: paginationQuery.limit,
-            skip: calculateSkipOption(paginationQuery),
-            where,
-            order: { type: 'ASC', createdAt: 'DESC' },
+            take: query.limit,
+            skip: calculateSkipOption(query),
+            where: getFindAllWhereInput(query),
+            order: { createdAt: 'DESC' },
             relations: {
                 user: true,
                 fromAccount: true,

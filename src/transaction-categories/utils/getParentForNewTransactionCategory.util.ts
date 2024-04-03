@@ -21,6 +21,10 @@ export const getParentForNewTransactionCategory: TGetParentForNewTransactionCate
     userId,
     findOneTransactionCategory,
 }) => {
+    if (!parentId) {
+        return null;
+    }
+
     const parentTransactionCategory = await findOneTransactionCategory(parentId, {
         user: true,
     });
