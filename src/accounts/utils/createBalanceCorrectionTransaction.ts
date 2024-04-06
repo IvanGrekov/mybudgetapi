@@ -6,17 +6,17 @@ import { User } from '../../shared/entities/user.entity';
 import { ECurrency } from '../../shared/enums/currency.enums';
 import { ETransactionType } from '../../shared/enums/transaction.enums';
 
-type TCreateTransferTransaction = (args: {
+type TCreateBalanceCorrectionTransaction = (args: {
     user: User;
     account: Account;
     value: number;
     updatedBalance: number;
     currency: ECurrency;
-    createTransaction(entityLike: DeepPartial<Transaction>): Promise<Transaction>;
+    createTransaction(entityLike: DeepPartial<Transaction>): Transaction;
     saveTransaction(entity: Transaction): Promise<Transaction>;
 }) => Promise<Transaction>;
 
-export const createTransferTransaction: TCreateTransferTransaction = async ({
+export const createBalanceCorrectionTransaction: TCreateBalanceCorrectionTransaction = async ({
     user,
     account,
     value,
@@ -25,7 +25,7 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
     createTransaction,
     saveTransaction,
 }) => {
-    const transactionTemplate = await createTransaction({
+    const transactionTemplate = createTransaction({
         user,
         fromAccount: account,
         toAccount: account,

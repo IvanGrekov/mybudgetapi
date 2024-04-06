@@ -17,7 +17,7 @@ import { MAX_ACCOUNTS_PER_USER } from './constants/accounts-pagination.constants
 import { validateAccountProperties } from './utils/validateAccountProperties.util';
 import { getNewAccountNewOrder } from './utils/getNewAccountNewOrder.util';
 import { getOldAccountNewOrder } from './utils/getOldAccountNewOrder.util';
-import { createTransferTransaction } from './utils/createTransferTransaction.util';
+import { createBalanceCorrectionTransaction } from './utils/createBalanceCorrectionTransaction';
 import { archiveAccount } from './utils/archiveAccount.util';
 
 @Injectable()
@@ -97,7 +97,7 @@ export class AccountsService {
         const order = await getOldAccountNewOrder({
             oldAccount,
             editAccountDto,
-            findAllAccounts: this.findAll.bind(this),
+            findAllAccounts: this.findAll,
         });
         const account = await this.accountRepository.preload({
             id,
@@ -114,14 +114,14 @@ export class AccountsService {
         const isArchiving = status !== newStatus && newStatus === EAccountStatus.ARCHIVED;
 
         if (isBalanceChanging) {
-            await createTransferTransaction({
+            await createBalanceCorrectionTransaction({
                 user,
                 account,
                 value: balance - oldBalance,
                 currency,
                 updatedBalance: balance,
-                create: this.transactionRepository.create.bind(this.transactionRepository),
-                save: this.transactionRepository.save.bind(this.transactionRepository),
+                createTransaction: this.transactionRepository.create,
+                saveTransaction: this.transactionRepository.save,
             });
         }
 
@@ -131,8 +131,8 @@ export class AccountsService {
                 type,
                 account,
                 createQueryRunner: this.dataSource.createQueryRunner.bind(this.dataSource),
-                findOneAccount: this.findOne.bind(this),
-                findAllAccounts: this.findAll.bind(this),
+                findOneAccount: this.findOne,
+                findAllAccounts: this.findAll,
             });
         } else {
             return this.accountRepository.save(account);
