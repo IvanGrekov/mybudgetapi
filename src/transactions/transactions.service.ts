@@ -37,7 +37,6 @@ export class TransactionsService {
             where: getFindAllWhereInput(query),
             order: { createdAt: 'DESC' },
             relations: {
-                user: true,
                 fromAccount: true,
                 toAccount: true,
                 fromCategory: true,
