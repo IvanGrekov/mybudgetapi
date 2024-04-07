@@ -120,8 +120,10 @@ export class AccountsService {
                 value: balance - oldBalance,
                 currency,
                 updatedBalance: balance,
-                createTransaction: this.transactionRepository.create,
-                saveTransaction: this.transactionRepository.save,
+                createTransaction: this.transactionRepository.create.bind(
+                    this.transactionRepository,
+                ),
+                saveTransaction: this.transactionRepository.save.bind(this.transactionRepository),
             });
         }
 
