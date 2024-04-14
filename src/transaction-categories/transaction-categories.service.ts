@@ -1,8 +1,9 @@
-import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, Repository, DataSource, Not, FindOptionsWhere } from 'typeorm';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
+import MaximumEntitiesNumberException from '../shared/exceptions/maximum-entities-number.exception';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { ETransactionCategoryStatus } from '../shared/enums/transaction-category.enums';
 import { UsersService } from '../users/users.service';
@@ -97,9 +98,7 @@ export class TransactionCategoriesService {
         });
 
         if (activeTransactionCategories.length >= MAX_TRANSACTION_CATEGORIES_PER_USER) {
-            throw new ForbiddenException(
-                `User #${user.id} already has the maximum number of TransactionCategories`,
-            );
+            throw new MaximumEntitiesNumberException(user.id, 'TransactionCategory');
         }
 
         const transactionCategoryTemplate = this.transactionCategoryRepository.create({

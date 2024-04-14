@@ -6,7 +6,6 @@ import {
     IsString,
 } from 'class-validator';
 
-import { ECurrency } from '../../shared/enums/currency.enums';
 import { ETransactionType } from '../../shared/enums/transaction.enums';
 
 export class CreateTransactionDto {
@@ -36,8 +35,10 @@ export class CreateTransactionDto {
     @IsPositive()
     readonly value: number;
 
-    @IsEnum(ECurrency)
-    readonly currency: ECurrency;
+    @IsNumberBase()
+    @IsPositive()
+    @IsOptional()
+    readonly currencyRate?: number;
 
     @IsString()
     @IsOptional()

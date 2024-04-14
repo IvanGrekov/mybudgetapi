@@ -7,6 +7,7 @@ import NotFoundException from '../shared/exceptions/not-found.exception';
 import { Transaction } from '../shared/entities/transaction.entity';
 import { Account } from '../shared/entities/account.entity';
 import { ETransactionType } from '../shared/enums/transaction.enums';
+import { UsersService } from '../users/users.service';
 
 import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
@@ -22,10 +23,11 @@ import { createIncomeTransaction } from './utils/createIncomeTransaction.util';
 @Injectable()
 export class TransactionsService {
     constructor(
-        @InjectRepository(Transaction)
-        private readonly transactionRepository: Repository<Transaction>,
         @InjectRepository(Account)
         private readonly accountRepository: Repository<Account>,
+        @InjectRepository(Transaction)
+        private readonly transactionRepository: Repository<Transaction>,
+        private readonly usersService: UsersService,
     ) {}
 
     async findAll(query: FindAllTransactionsDto): Promise<Transaction[]> {
@@ -70,6 +72,7 @@ export class TransactionsService {
             case ETransactionType.TRANSFER:
                 transactionTemplate = createTransferTransaction({
                     createTransactionDto,
+                    findUserById: this.usersService.findOne,
                     findAccountById: this.accountRepository.findOne,
                     saveAccount: this.accountRepository.save,
                 });

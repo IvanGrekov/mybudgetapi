@@ -2,6 +2,7 @@ import { ConflictException } from '@nestjs/common';
 
 import { FindOptionsRelations } from 'typeorm';
 
+import { getIdPointer } from '../../shared/utils/idPointer.utils';
 import { TransactionCategory } from '../../shared/entities/transaction-category.entity';
 import { ETransactionCategoryType } from '../../shared/enums/transaction-category.enums';
 
@@ -32,13 +33,13 @@ export const getParentForNewTransactionCategory: TGetParentForNewTransactionCate
 
     if (userId !== parentUser.id) {
         throw new ConflictException(
-            'Parent TransactionCategory #${parentId} belongs to another User',
+            `Parent TransactionCategory ${getIdPointer(parentId)} belongs to another User`,
         );
     }
 
     if (type !== parentType) {
         throw new ConflictException(
-            `Parent TransactionCategory #${parentId} \`type\` is different from the new TransactionCategory \`type\``,
+            `Parent TransactionCategory ${getIdPointer(parentId)} \`type\` is different from the new TransactionCategory \`type\``,
         );
     }
 

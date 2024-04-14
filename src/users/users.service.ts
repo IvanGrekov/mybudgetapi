@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsRelations, Repository } from 'typeorm';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
+import { getIdPointer } from '../shared/utils/idPointer.utils';
 import { User } from '../shared/entities/user.entity';
 import { Account } from '../shared/entities/account.entity';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
@@ -36,7 +37,7 @@ export class UsersService {
     }
 
     async getNewName(): Promise<string> {
-        return this.userRepository.count().then((count) => `User#${count + 1}`);
+        return this.userRepository.count().then((count) => `User${getIdPointer(count + 1)}`);
     }
 
     async findOne(id: User['id'], relations?: FindOptionsRelations<User>): Promise<User> {

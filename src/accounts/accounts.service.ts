@@ -1,8 +1,10 @@
-import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere, FindOptionsRelations, DataSource, Not } from 'typeorm';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
+import MaximumEntitiesNumberException from '../shared/exceptions/maximum-entities-number.exception';
+import ArchivedEntityException from '../shared/exceptions/archived-entity.exception';
 import { Account } from '../shared/entities/account.entity';
 import { Transaction } from '../shared/entities/transaction.entity';
 import { EAccountStatus } from '../shared/enums/account.enums';
@@ -73,9 +75,7 @@ export class AccountsService {
         });
 
         if (activeAccounts.length >= MAX_ACCOUNTS_PER_USER) {
-            throw new ForbiddenException(
-                `User #${userId} already has the maximum number of Accounts`,
-            );
+            throw new MaximumEntitiesNumberException(userId, 'account');
         }
 
         const order = getNewAccountNewOrder(activeAccounts, type);
@@ -167,7 +167,7 @@ export class AccountsService {
         const account = await this.findOne(id, { user: true });
 
         if (account.status === EAccountStatus.ARCHIVED) {
-            throw new BadRequestException(`Account #${id} is archived`);
+            throw new ArchivedEntityException('account', id);
         }
 
         const queryRunner = this.dataSource.createQueryRunner();
