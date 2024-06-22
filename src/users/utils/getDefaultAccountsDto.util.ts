@@ -9,9 +9,11 @@ type TGetDefaultAccountsDto = (args: {
 }) => PreloadAccountDto[];
 
 export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({ currency, language }) => {
+    const isUa = language === ELanguage.UA;
+
     return [
         {
-            name: language === ELanguage.UA ? 'Готівка' : 'Cash',
+            name: isUa ? 'Готівка' : 'Cash',
             type: EAccountType.REGULAR,
             currency,
             balance: 0,
@@ -19,7 +21,7 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({ currency, langua
             order: 0,
         },
         {
-            name: language === ELanguage.UA ? 'Банківський рахунок' : 'Bank Account',
+            name: isUa ? 'Банківський рахунок' : 'Bank Account',
             type: EAccountType.REGULAR,
             currency,
             balance: 0,
@@ -27,10 +29,10 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({ currency, langua
             order: 1,
         },
         {
-            name: language === ELanguage.UA ? 'Збереження' : 'Savings',
+            name: isUa ? 'Збереження' : 'Savings',
             type: EAccountType.SAVINGS,
             currency,
-            balance: 0,
+            balance: 100,
             shouldHideFromOverallBalance: true,
             order: 0,
         },

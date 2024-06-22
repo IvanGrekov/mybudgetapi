@@ -181,7 +181,7 @@ export class TransactionCategoriesService {
         const oldCurrency = oldTransactionCategory.currency;
 
         if (oldCurrency === currency) {
-            throw new BadRequestException('The new `currency` is the same like current');
+            throw new BadRequestException('The new `currency` is the same like current one');
         }
 
         const transactionCategory = await this.transactionCategoryRepository.preload({

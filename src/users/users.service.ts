@@ -8,6 +8,7 @@ import { User } from '../shared/entities/user.entity';
 import { Account } from '../shared/entities/account.entity';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
+import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
 
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -29,11 +30,20 @@ export class UsersService {
         private readonly dataSource: DataSource,
     ) {}
 
-    async findAll(query: PaginationQueryDto): Promise<User[]> {
-        return this.userRepository.find({
-            take: query.limit,
+    async findAll(query: PaginationQueryDto): Promise<PaginatedItemsResultDto<User>> {
+        const { offset, limit } = query;
+
+        const [items, total] = await this.userRepository.findAndCount({
+            take: limit,
             skip: calculateSkipOption(query),
         });
+
+        return {
+            items,
+            page: offset,
+            itemsPerPage: limit,
+            total,
+        };
     }
 
     async getNewName(): Promise<string> {
@@ -105,14 +115,28 @@ export class UsersService {
     }
 
     async editCurrency(
-        id: User['id'],
-        { defaultCurrency, rate, isForceCurrencyUpdate }: EditUserCurrencyDto,
+        userId: User['id'],
+        { defaultCurrency, ...args }: EditUserCurrencyDto,
     ): Promise<User> {
-        const oldUser = await this.findOne(id);
-        const oldDefaultCurrency = oldUser.defaultCurrency;
+        const { defaultCurrency: oldDefaultCurrency } = await this.findOne(userId);
 
         if (oldDefaultCurrency === defaultCurrency) {
-            throw new BadRequestException('The new `defaultCurrency` is the same like current');
+            throw new BadRequestException('The new `defaultCurrency` is the same like current one');
+        }
+
+        const {
+            isAccountsCurrencySoftUpdate,
+            isTransactionCategoriesCurrencySoftUpdate,
+            isTransactionCategoriesCurrencyForceUpdate,
+        } = args;
+
+        if (
+            isTransactionCategoriesCurrencySoftUpdate &&
+            isTransactionCategoriesCurrencyForceUpdate
+        ) {
+            throw new BadRequestException(
+                'Cannot provide `isTransactionCategoriesCurrencyForceUpdate` and `isTransactionCategoriesCurrencySoftUpdate` at the same time',
+            );
         }
 
         const queryRunner = this.dataSource.createQueryRunner();
@@ -120,20 +144,24 @@ export class UsersService {
         await queryRunner.startTransaction();
 
         try {
-            queryRunner.manager.update(User, id, { defaultCurrency });
+            queryRunner.manager.update(User, userId, { defaultCurrency });
 
             updateRelationsCurrency({
                 queryRunner,
-                userId: id,
-                isForceCurrencyUpdate,
+                userId,
                 oldCurrency: oldDefaultCurrency,
                 currency: defaultCurrency,
-                rate,
+                ...args,
             });
 
             await queryRunner.commitTransaction();
 
-            return this.findOne(id);
+            return this.findOne(userId, {
+                accounts: isAccountsCurrencySoftUpdate,
+                transactionCategories:
+                    isTransactionCategoriesCurrencySoftUpdate ||
+                    isTransactionCategoriesCurrencyForceUpdate,
+            });
         } catch (err) {
             await queryRunner.rollbackTransaction();
             throw err;

@@ -149,7 +149,7 @@ export class AccountsService {
         const oldCurrency = oldAccount.currency;
 
         if (oldCurrency === currency) {
-            throw new BadRequestException('The new `currency` is the same like current');
+            throw new BadRequestException('The new `currency` is the same like current one');
         }
 
         const { balance, initBalance } = oldAccount;

@@ -10,5 +10,13 @@ export class EditUserCurrencyDto extends PickType(CreateUserDto, ['defaultCurren
 
     @IsBoolean()
     @IsOptional()
-    readonly isForceCurrencyUpdate?: boolean;
+    readonly isAccountsCurrencySoftUpdate?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    readonly isTransactionCategoriesCurrencySoftUpdate?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    readonly isTransactionCategoriesCurrencyForceUpdate?: boolean;
 }

@@ -10,7 +10,9 @@ type TUpdateRelationsCurrency = (args: {
     currency: ECurrency;
     oldCurrency: ECurrency;
     rate: number;
-    isForceCurrencyUpdate?: boolean;
+    isAccountsCurrencySoftUpdate?: boolean;
+    isTransactionCategoriesCurrencySoftUpdate?: boolean;
+    isTransactionCategoriesCurrencyForceUpdate?: boolean;
 }) => Promise<void>;
 
 export const getCalculateNewAccountBalance = (rate: number, isInitBalance?: boolean) => {
@@ -25,12 +27,10 @@ export const updateRelationsCurrency: TUpdateRelationsCurrency = async ({
     currency,
     oldCurrency,
     rate,
-    isForceCurrencyUpdate,
+    isAccountsCurrencySoftUpdate,
+    isTransactionCategoriesCurrencySoftUpdate,
+    isTransactionCategoriesCurrencyForceUpdate,
 }) => {
-    const criteria = isForceCurrencyUpdate
-        ? { user: { id: userId } }
-        : { user: { id: userId }, currency: oldCurrency };
-
     const accountPartialEntity = {
         currency,
         balance: getCalculateNewAccountBalance(rate),
@@ -41,11 +41,19 @@ export const updateRelationsCurrency: TUpdateRelationsCurrency = async ({
         currency,
     };
 
-    if (isForceCurrencyUpdate) {
-        queryRunner.manager.update(Account, criteria, accountPartialEntity);
-        queryRunner.manager.update(TransactionCategory, criteria, transactionCategoryPartialEntity);
-    } else {
-        queryRunner.manager.update(Account, criteria, accountPartialEntity);
+    if (isAccountsCurrencySoftUpdate) {
+        queryRunner.manager.update(
+            Account,
+            { user: { id: userId }, currency: oldCurrency },
+            accountPartialEntity,
+        );
+    }
+
+    if (isTransactionCategoriesCurrencySoftUpdate || isTransactionCategoriesCurrencyForceUpdate) {
+        const criteria = isTransactionCategoriesCurrencyForceUpdate
+            ? { user: { id: userId } }
+            : { user: { id: userId }, currency: oldCurrency };
+
         queryRunner.manager.update(TransactionCategory, criteria, transactionCategoryPartialEntity);
     }
 };

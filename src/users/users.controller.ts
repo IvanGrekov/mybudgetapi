@@ -3,6 +3,7 @@ import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { User } from '../shared/entities/user.entity';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
+import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -14,16 +15,16 @@ import { EditUserCurrencyDto } from './dtos/create-user-currency.dto';
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
-    @ApiOkResponse({ type: [User] })
-    @Get()
-    findAll(@Query() paginationQuery: PaginationQueryDto): Promise<User[]> {
-        return this.usersService.findAll(paginationQuery);
-    }
-
     @ApiOkResponse({ type: String })
     @Get('name')
     getNewName(): Promise<string> {
         return this.usersService.getNewName();
+    }
+
+    @ApiOkResponse({ type: [User] })
+    @Get()
+    findAll(@Query() paginationQuery: PaginationQueryDto): Promise<PaginatedItemsResultDto<User>> {
+        return this.usersService.findAll(paginationQuery);
     }
 
     @ApiOkResponse({ type: User })
