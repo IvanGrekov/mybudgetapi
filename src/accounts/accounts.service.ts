@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, FindOptionsRelations, DataSource, Not } from 'typeorm';
+import { Repository, FindOptionsRelations, DataSource, Not } from 'typeorm';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import MaximumEntitiesNumberException from '../shared/exceptions/maximum-entities-number.exception';
@@ -37,17 +37,15 @@ export class AccountsService {
         userId,
         type,
         status = EAccountStatus.ACTIVE,
-        excludeId = 0,
+        excludeId,
     }: FindAllAccountsDto): Promise<Account[]> {
-        const where: FindOptionsWhere<Account> = {
-            id: Not(excludeId),
-            user: { id: userId },
-            type,
-            status,
-        };
-
         return this.accountRepository.find({
-            where,
+            where: {
+                id: typeof excludeId === 'number' ? Not(excludeId) : undefined,
+                user: { id: userId },
+                type,
+                status,
+            },
             order: { type: 'ASC', order: 'ASC' },
         });
     }
@@ -97,7 +95,7 @@ export class AccountsService {
         const order = await getOldAccountNewOrder({
             oldAccount,
             editAccountDto,
-            findAllAccounts: this.findAll,
+            findAllAccounts: this.findAll.bind(this),
         });
         const account = await this.accountRepository.preload({
             id,
@@ -107,19 +105,16 @@ export class AccountsService {
 
         validateAccountProperties(account);
 
-        const { status, type, user, balance: oldBalance, currency } = oldAccount;
-        const { status: newStatus, balance } = editAccountDto;
+        const { status, user, balance: oldBalance } = oldAccount;
+        const { status: newStatus, balance: newBalance } = editAccountDto;
 
-        const isBalanceChanging = typeof balance !== 'undefined' && balance !== oldBalance;
-        const isArchiving = status !== newStatus && newStatus === EAccountStatus.ARCHIVED;
-
+        const isBalanceChanging = typeof newBalance !== 'undefined' && newBalance !== oldBalance;
         if (isBalanceChanging) {
             await createBalanceCorrectionTransaction({
                 user,
                 account,
-                value: balance - oldBalance,
-                currency,
-                updatedBalance: balance,
+                value: newBalance - oldBalance,
+                updatedBalance: newBalance,
                 createTransaction: this.transactionRepository.create.bind(
                     this.transactionRepository,
                 ),
@@ -127,14 +122,14 @@ export class AccountsService {
             });
         }
 
+        const isArchiving = status !== newStatus && newStatus === EAccountStatus.ARCHIVED;
         if (isArchiving) {
             return archiveAccount({
                 userId: user.id,
-                type,
                 account,
                 createQueryRunner: this.dataSource.createQueryRunner.bind(this.dataSource),
-                findOneAccount: this.findOne,
-                findAllAccounts: this.findAll,
+                findOneAccount: this.findOne.bind(this),
+                findAllAccounts: this.findAll.bind(this),
             });
         } else {
             return this.accountRepository.save(account);

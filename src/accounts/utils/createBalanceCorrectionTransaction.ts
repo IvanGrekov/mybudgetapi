@@ -3,7 +3,6 @@ import { DeepPartial } from 'typeorm';
 import { Transaction } from '../../shared/entities/transaction.entity';
 import { Account } from '../../shared/entities/account.entity';
 import { User } from '../../shared/entities/user.entity';
-import { ECurrency } from '../../shared/enums/currency.enums';
 import { ETransactionType } from '../../shared/enums/transaction.enums';
 
 type TCreateBalanceCorrectionTransaction = (args: {
@@ -11,7 +10,6 @@ type TCreateBalanceCorrectionTransaction = (args: {
     account: Account;
     value: number;
     updatedBalance: number;
-    currency: ECurrency;
     createTransaction(entityLike: DeepPartial<Transaction>): Transaction;
     saveTransaction(entity: Transaction): Promise<Transaction>;
 }) => Promise<Transaction>;
@@ -20,7 +18,6 @@ export const createBalanceCorrectionTransaction: TCreateBalanceCorrectionTransac
     user,
     account,
     value,
-    currency,
     updatedBalance,
     createTransaction,
     saveTransaction,
@@ -31,7 +28,7 @@ export const createBalanceCorrectionTransaction: TCreateBalanceCorrectionTransac
         toAccount: account,
         type: ETransactionType.BALANCE_CORRECTION,
         value,
-        currency,
+        currency: account.currency,
         fromAccountUpdatedBalance: updatedBalance,
         toAccountUpdatedBalance: updatedBalance,
     });

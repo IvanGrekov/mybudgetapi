@@ -17,13 +17,12 @@ export const getOldAccountNewOrder: TGetOldAccountNewOrder = async ({
     editAccountDto,
     findAllAccounts,
 }) => {
-    const { status, type, user, order } = oldAccount;
-    const { status: newStatus, type: newType } = editAccountDto;
+    const { status: oldStatus, type, user, order } = oldAccount;
+    const { status: newStatus } = editAccountDto;
 
-    const isTypeChanging = typeof newType !== 'undefined' && newType !== type;
-    const isStatusChanging = newStatus !== status && newStatus === EAccountStatus.ACTIVE;
+    const isStatusChanging = newStatus === EAccountStatus.ACTIVE && newStatus !== oldStatus;
 
-    if (!isTypeChanging && !isStatusChanging) {
+    if (!isStatusChanging) {
         return order;
     }
 
@@ -31,19 +30,10 @@ export const getOldAccountNewOrder: TGetOldAccountNewOrder = async ({
         throw new InternalServerErrorException('Old Account has no User');
     }
 
-    if (isTypeChanging) {
-        const accountsByType = await findAllAccounts({
-            userId: user.id,
-            type: newType,
-        });
-
-        return accountsByType.length;
-    }
-
-    const accountsByOldType = await findAllAccounts({
+    const accountsByType = await findAllAccounts({
         userId: user.id,
         type,
     });
 
-    return accountsByOldType.length;
+    return accountsByType.length;
 };

@@ -6,7 +6,7 @@ import { EAccountStatus } from '../../shared/enums/account.enums';
 import { CreateAccountDto } from './create-account.dto';
 
 export class EditAccountDto extends PartialType(
-    OmitType(CreateAccountDto, ['userId', 'currency']),
+    OmitType(CreateAccountDto, ['userId', 'currency', 'type']),
 ) {
     @IsEnum(EAccountStatus)
     @IsOptional()

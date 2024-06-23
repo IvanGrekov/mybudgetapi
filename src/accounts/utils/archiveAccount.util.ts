@@ -36,7 +36,6 @@ const syncAccountsOrder: TSyncAccountsOrder = async ({
 type TArchiveAccountArgs = (args: {
     account: Account;
     userId: number;
-    type: EAccountType;
     createQueryRunner(): QueryRunner;
     findOneAccount(id: number): Promise<Account>;
     findAllAccounts: TFindAllAccounts;
@@ -45,12 +44,11 @@ type TArchiveAccountArgs = (args: {
 export const archiveAccount: TArchiveAccountArgs = async ({
     account,
     userId,
-    type,
     createQueryRunner,
     findOneAccount,
     findAllAccounts,
 }) => {
-    const accountId = account.id;
+    const { id: accountId, type } = account;
 
     const queryRunner = createQueryRunner();
     await queryRunner.connect();
