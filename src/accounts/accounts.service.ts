@@ -172,19 +172,26 @@ export class AccountsService {
         try {
             const {
                 user: { id: userId },
+                order: oldOrder,
                 type,
             } = account;
+
+            if (order === oldOrder) {
+                throw new BadRequestException('The `order` is the same like current one');
+            }
 
             const accountsByType = await this.findAll({
                 userId,
                 type,
+                excludeId: id,
             });
-            const newAccountsByType = accountsByType.filter(
-                ({ id: accountId }) => accountId !== id,
-            );
 
-            newAccountsByType.splice(order, 0, account);
-            newAccountsByType.forEach(({ id: accountId }, i) => {
+            if (order > accountsByType.length) {
+                throw new BadRequestException('The `order` is out of Accounts range');
+            }
+
+            accountsByType.splice(order, 0, account);
+            accountsByType.forEach(({ id: accountId }, i) => {
                 queryRunner.manager.update(Account, accountId, { order: i });
             });
             await queryRunner.commitTransaction();
@@ -201,8 +208,39 @@ export class AccountsService {
     }
 
     async delete(id: Account['id']): Promise<Account> {
-        const account = await this.findOne(id);
+        const account = await this.findOne(id, {
+            user: true,
+        });
 
-        return this.accountRepository.remove(account);
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const {
+                user: { id: userId },
+                type,
+            } = account;
+
+            const accountsByType = await this.findAll({
+                userId,
+                type,
+                excludeId: id,
+            });
+
+            accountsByType.forEach(({ id: accountId }, i) => {
+                queryRunner.manager.update(Account, accountId, { order: i });
+            });
+
+            queryRunner.manager.remove(account);
+            await queryRunner.commitTransaction();
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
+
+        return account;
     }
 }

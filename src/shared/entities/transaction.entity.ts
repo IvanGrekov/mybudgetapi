@@ -22,7 +22,7 @@ export class Transaction {
     })
     fromAccount?: Account;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'real' })
     fromAccountUpdatedBalance?: number;
 
     @ManyToOne(() => Account, (account) => account.incomingTransactions, {
@@ -31,7 +31,7 @@ export class Transaction {
     })
     toAccount?: Account;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'real' })
     toAccountUpdatedBalance?: number;
 
     @ManyToOne(
@@ -60,7 +60,7 @@ export class Transaction {
     })
     type: ETransactionType;
 
-    @Column()
+    @Column({ type: 'real' })
     value: number;
 
     @Column({

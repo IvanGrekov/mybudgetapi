@@ -54,10 +54,10 @@ export class Account {
     })
     currency: ECurrency;
 
-    @Column()
+    @Column({ type: 'real' })
     balance: number;
 
-    @Column()
+    @Column({ type: 'real' })
     initBalance: number;
 
     @Column({ default: false })
