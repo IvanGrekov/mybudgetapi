@@ -41,16 +41,15 @@ export class TransactionCategoriesService {
         shouldFilterChildTransactionCategories = true,
     }: FindAllTransactionCategoriesDto): Promise<TransactionCategory[]> {
         const where: FindOptionsWhere<TransactionCategory> = {
+            id: typeof excludeId === 'number' ? Not(excludeId) : undefined,
             user: { id: userId },
             type,
             status,
         };
 
-        if (typeof excludeId !== 'undefined') {
-            where.id = Not(excludeId);
-        }
+        const isParentIdProvided = typeof parentId !== 'undefined';
 
-        if (typeof parentId !== 'undefined') {
+        if (isParentIdProvided) {
             where.parent = { id: parentId };
         }
 
@@ -64,7 +63,7 @@ export class TransactionCategoriesService {
         });
 
         const filteredTransactionCategories =
-            parentId || !shouldFilterChildTransactionCategories
+            isParentIdProvided || !shouldFilterChildTransactionCategories
                 ? transactionCategories
                 : getParentTransactionCategories(transactionCategories);
 
