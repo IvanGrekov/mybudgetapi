@@ -85,9 +85,7 @@ export class AccountsService {
             user,
         });
 
-        const account = await this.accountRepository.save(accountTemplate);
-
-        return this.findOne(account.id);
+        return this.accountRepository.save(accountTemplate);
     }
 
     async edit(id: Account['id'], editAccountDto: EditAccountDto): Promise<Account> {
@@ -207,7 +205,7 @@ export class AccountsService {
         }
     }
 
-    async delete(id: Account['id']): Promise<Account> {
+    async delete(id: Account['id']): Promise<Account[]> {
         const account = await this.findOne(id, {
             user: true,
         });
@@ -233,14 +231,18 @@ export class AccountsService {
             });
 
             queryRunner.manager.remove(account);
+
             await queryRunner.commitTransaction();
+
+            return this.findAll({
+                userId,
+                type,
+            });
         } catch (err) {
             await queryRunner.rollbackTransaction();
             throw err;
         } finally {
             await queryRunner.release();
         }
-
-        return account;
     }
 }

@@ -27,7 +27,7 @@ export const getNewTransactionCategoryOrder: TGetNewTransactionCategoryOrder = a
     }
 
     const filteredTransactionCategories = activeTransactionCategories.filter(
-        (transactionCategory) => transactionCategory.type === type,
+        (transactionCategory) => transactionCategory.type === type && !transactionCategory.parent,
     );
 
     return filteredTransactionCategories.length;

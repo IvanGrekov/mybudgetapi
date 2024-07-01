@@ -59,7 +59,7 @@ export class AccountsController {
 
     @ApiOkResponse({ type: Account })
     @Delete(':id')
-    delete(@Param('id') id: number): Promise<Account> {
+    delete(@Param('id') id: number): Promise<Account[]> {
         return this.accountsService.delete(id);
     }
 }

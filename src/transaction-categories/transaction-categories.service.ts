@@ -12,6 +12,7 @@ import { FindAllTransactionCategoriesDto } from './dtos/find-all-transaction-cat
 import { CreateTransactionCategoryDto } from './dtos/create-transaction-category.dto';
 import { ReorderTransactionCategoriesDto } from './dtos/reorder-transaction-categories.dto';
 import { EditTransactionCategoryDto } from './dtos/edit-transaction-category.dto';
+import { DeleteTransactionCategoryDto } from './dtos/delete-transaction-category.dto';
 import { EditTransactionCategoryCurrencyDto } from './dtos/edit-transaction-category-currency.dto';
 import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './constants/transaction-categories-pagination.constants';
 import { getParentTransactionCategories } from './utils/getParentTransactionCategories.util';
@@ -22,6 +23,7 @@ import { getOldTransactionCategoryNewOrder } from './utils/getOldTransactionCate
 import { archiveTransactionCategory } from './utils/archiveTransactionCategory.utils';
 import { validateReorderingTransactionCategories } from './utils/validateReorderingTransactionCategories.util';
 import { updateReorderingParent } from './utils/updateReorderingParent.utils';
+import { extractChildrenTransactionCategories } from './utils/extractChildrenTransactionCategories';
 
 @Injectable()
 export class TransactionCategoriesService {
@@ -94,6 +96,7 @@ export class TransactionCategoriesService {
         const user = await this.usersService.findOne(userId);
         const activeTransactionCategories = await this.findAll({
             userId,
+            shouldFilterChildTransactionCategories: false,
         });
 
         if (activeTransactionCategories.length >= MAX_TRANSACTION_CATEGORIES_PER_USER) {
@@ -118,11 +121,7 @@ export class TransactionCategoriesService {
             findOneTransactionCategory: this.findOne.bind(this),
         });
 
-        const transactionCategory = await this.transactionCategoryRepository.save(
-            transactionCategoryTemplate,
-        );
-
-        return this.findOne(transactionCategory.id, { parent: true });
+        return this.transactionCategoryRepository.save(transactionCategoryTemplate);
     }
 
     async edit(
@@ -219,8 +218,10 @@ export class TransactionCategoriesService {
                 await updateReorderingParent({
                     parentNode,
                     findOneTransactionCategory: this.findOne.bind(this),
-                    updateTransactionCategory: (id, transactionCategory) =>
-                        queryRunner.manager.update(TransactionCategory, id, transactionCategory),
+                    updateTransactionCategory: queryRunner.manager.update.bind(
+                        this,
+                        TransactionCategory,
+                    ),
                 });
             }
 
@@ -238,9 +239,63 @@ export class TransactionCategoriesService {
         }
     }
 
-    async delete(id: TransactionCategory['id']): Promise<TransactionCategory> {
-        const transactionCategory = await this.findOne(id);
+    async delete(
+        id: TransactionCategory['id'],
+        { shouldRemoveChildTransactionCategories }: DeleteTransactionCategoryDto,
+    ): Promise<TransactionCategory[]> {
+        const transactionCategory = await this.findOne(id, {
+            user: true,
+            parent: true,
+            children: true,
+        });
 
-        return this.transactionCategoryRepository.remove(transactionCategory);
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const {
+                children,
+                parent,
+                type,
+                user: { id: userId },
+            } = transactionCategory;
+
+            const siblingsTransactionCategories = await this.findAll({
+                userId,
+                type,
+                parentId: parent?.id,
+                excludeId: id,
+            });
+
+            if (shouldRemoveChildTransactionCategories && !!children?.length) {
+                extractChildrenTransactionCategories({
+                    children,
+                    currentParentsLength: siblingsTransactionCategories.length,
+                    updateTransactionCategory: (id, transactionCategory) =>
+                        queryRunner.manager.update(TransactionCategory, id, transactionCategory),
+                });
+            }
+
+            siblingsTransactionCategories.forEach(({ id: transactionCategoryId }, i) => {
+                queryRunner.manager.update(TransactionCategory, transactionCategoryId, {
+                    order: i,
+                });
+            });
+
+            queryRunner.manager.remove(transactionCategory);
+
+            await queryRunner.commitTransaction();
+
+            return this.findAll({
+                userId,
+                type,
+            });
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
     }
 }

@@ -64,7 +64,7 @@ const getExpenseTransactionCategoriesDto: TGetTransactionCategoriesDto = ({
             order: 1,
         },
         {
-            name: isUa ? 'Транспорт' : 'Transportation',
+            name: isUa ? 'Транспорт' : 'Transport',
             type: ETransactionCategoryType.EXPENSE,
             currency,
             order: 2,

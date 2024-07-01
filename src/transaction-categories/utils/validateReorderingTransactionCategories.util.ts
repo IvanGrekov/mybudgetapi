@@ -38,6 +38,7 @@ const validateOrderValues = (
     nodes: ReorderParentTransactionCategoryDto[],
     parentId?: number,
 ): void => {
+    // NOTE: [order : id]
     const orderValues = new Map<number, number>();
 
     for (const { id, order, childNodes } of nodes) {
@@ -85,6 +86,7 @@ export const validateReorderingTransactionCategories = (
         nodeIds.splice(nodeIdIndex, 1);
     });
 
+    // NOTE: nodeIds is expected to be empty after the loop above
     if (nodeIds.length > 0) {
         throw new BadRequestException(
             `Nodes ${getMultipleIdPointers(nodeIds)} not found in current active TransactionCategories`,

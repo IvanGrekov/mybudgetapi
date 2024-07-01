@@ -87,9 +87,7 @@ export class TransactionsService {
                 throw new BadRequestException('Unsupported Transaction type');
         }
 
-        const transaction = await this.transactionRepository.save(transactionTemplate);
-
-        return this.findOne(transaction.id);
+        return this.transactionRepository.save(transactionTemplate);
     }
 
     async edit(

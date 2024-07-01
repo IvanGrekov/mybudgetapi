@@ -9,6 +9,7 @@ import { CreateTransactionCategoryDto } from './dtos/create-transaction-category
 import { ReorderTransactionCategoriesDto } from './dtos/reorder-transaction-categories.dto';
 import { EditTransactionCategoryDto } from './dtos/edit-transaction-category.dto';
 import { EditTransactionCategoryCurrencyDto } from './dtos/edit-transaction-category-currency.dto';
+import { DeleteTransactionCategoryDto } from './dtos/delete-transaction-category.dto';
 
 @ApiTags('transaction-categories')
 @Controller('transaction-categories')
@@ -56,14 +57,20 @@ export class TransactionCategoriesController {
     @Patch('currency/:id')
     editOnesCurrency(
         @Param('id') id: number,
-        @Body() editTransactionCategoryDto: EditTransactionCategoryCurrencyDto,
+        @Body() editTransactionCategoryCurrencyDto: EditTransactionCategoryCurrencyDto,
     ): Promise<TransactionCategory> {
-        return this.transactionCategoriesService.editCurrency(id, editTransactionCategoryDto);
+        return this.transactionCategoriesService.editCurrency(
+            id,
+            editTransactionCategoryCurrencyDto,
+        );
     }
 
     @ApiOkResponse({ type: TransactionCategory })
     @Delete(':id')
-    delete(@Param('id') id: number): Promise<TransactionCategory> {
-        return this.transactionCategoriesService.delete(id);
+    delete(
+        @Param('id') id: number,
+        @Query() deleteTransactionCategoryDto: DeleteTransactionCategoryDto,
+    ): Promise<TransactionCategory[]> {
+        return this.transactionCategoriesService.delete(id, deleteTransactionCategoryDto);
     }
 }
