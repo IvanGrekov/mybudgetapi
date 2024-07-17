@@ -6,7 +6,7 @@ import { ETransactionCategoryStatus } from '../../shared/enums/transaction-categ
 import { CreateTransactionCategoryDto } from './create-transaction-category.dto';
 
 export class EditTransactionCategoryDto extends PartialType(
-    OmitType(CreateTransactionCategoryDto, ['userId', 'parentId', 'currency']),
+    OmitType(CreateTransactionCategoryDto, ['type', 'userId', 'parentId', 'currency']),
 ) {
     @IsEnum(ETransactionCategoryStatus)
     @IsOptional()

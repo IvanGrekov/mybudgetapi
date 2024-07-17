@@ -28,8 +28,9 @@ export const getParentForNewTransactionCategory: TGetParentForNewTransactionCate
 
     const parentTransactionCategory = await findOneTransactionCategory(parentId, {
         user: true,
+        parent: true,
     });
-    const { user: parentUser, type: parentType } = parentTransactionCategory;
+    const { user: parentUser, type: parentType, parent } = parentTransactionCategory;
 
     if (userId !== parentUser.id) {
         throw new ConflictException(
@@ -40,6 +41,12 @@ export const getParentForNewTransactionCategory: TGetParentForNewTransactionCate
     if (type !== parentType) {
         throw new ConflictException(
             `Parent TransactionCategory ${getIdPointer(parentId)} \`type\` is different from the new TransactionCategory \`type\``,
+        );
+    }
+
+    if (parent) {
+        throw new ConflictException(
+            `TransactionCategory ${getIdPointer(parentId)} already a child of another TransactionCategory`,
         );
     }
 

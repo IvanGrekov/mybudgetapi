@@ -146,16 +146,10 @@ export class TransactionCategoriesService {
             order,
         });
 
-        const { status, type, user } = oldTransactionCategory;
-        const { status: newStatus, type: newType } = editTransactionCategoryDto;
-        const isTypeChanging = typeof newType !== 'undefined' && newType !== type;
+        const { status, user } = oldTransactionCategory;
+        const { status: newStatus } = editTransactionCategoryDto;
         const isArchiving =
             status !== newStatus && newStatus === ETransactionCategoryStatus.ARCHIVED;
-
-        if (isTypeChanging) {
-            transactionCategory.parent = null;
-            transactionCategory.children = [];
-        }
 
         if (isArchiving) {
             return archiveTransactionCategory({
@@ -186,6 +180,8 @@ export class TransactionCategoriesService {
             id,
             currency,
         });
+
+        // TODO: update related transactions
 
         return this.transactionCategoryRepository.save(transactionCategory);
     }
@@ -218,10 +214,8 @@ export class TransactionCategoriesService {
                 await updateReorderingParent({
                     parentNode,
                     findOneTransactionCategory: this.findOne.bind(this),
-                    updateTransactionCategory: queryRunner.manager.update.bind(
-                        this,
-                        TransactionCategory,
-                    ),
+                    updateTransactionCategory: (id, transactionCategory) =>
+                        queryRunner.manager.update(TransactionCategory, id, transactionCategory),
                 });
             }
 

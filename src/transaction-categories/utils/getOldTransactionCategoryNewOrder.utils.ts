@@ -19,27 +19,17 @@ export const getOldTransactionCategoryNewOrder: TGetOldTransactionCategoryNewOrd
     findAllTransactionCategories,
 }) => {
     const { status, type, user, order } = oldTransactionCategory;
-    const { status: newStatus, type: newType } = editTransactionCategoryDto;
+    const { status: newStatus } = editTransactionCategoryDto;
 
-    const isTypeChanging = typeof newType !== 'undefined' && newType !== type;
     const isStatusChanging =
         newStatus !== status && newStatus === ETransactionCategoryStatus.ACTIVE;
 
-    if (!isTypeChanging && !isStatusChanging) {
+    if (!isStatusChanging) {
         return order;
     }
 
     if (!user) {
         throw new InternalServerErrorException('Old TransactionCategory has no User');
-    }
-
-    if (isTypeChanging) {
-        const transactionCategoriesByType = await findAllTransactionCategories({
-            userId: user.id,
-            type: newType,
-        });
-
-        return transactionCategoriesByType.length;
     }
 
     const transactionCategoriesByOldType = await findAllTransactionCategories({

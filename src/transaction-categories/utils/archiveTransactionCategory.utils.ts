@@ -103,7 +103,7 @@ export const archiveTransactionCategory: TArchiveTransactionCategory = async ({
     const transactionCategoryId = transactionCategory.id;
 
     if (!Array.isArray(children)) {
-        throw new InternalServerErrorException('Old TransactionCategory has no resolved children');
+        throw new InternalServerErrorException('TransactionCategory has no resolved children');
     }
 
     const queryRunner = createQueryRunner();
