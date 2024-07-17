@@ -6,6 +6,7 @@ import { calculateSkipOption } from '../shared/utils/pagination.utils';
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import { Transaction } from '../shared/entities/transaction.entity';
 import { Account } from '../shared/entities/account.entity';
+import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 import { ETransactionType } from '../shared/enums/transaction.enums';
 import { UsersService } from '../users/users.service';
 
@@ -30,10 +31,12 @@ export class TransactionsService {
         private readonly usersService: UsersService,
     ) {}
 
-    async findAll(query: FindAllTransactionsDto): Promise<Transaction[]> {
+    async findAll(query: FindAllTransactionsDto): Promise<PaginatedItemsResultDto<Transaction>> {
+        const { offset, limit } = query;
+
         validateFindAllTransactionProperties(query);
 
-        return this.transactionRepository.find({
+        const [items, total] = await this.transactionRepository.findAndCount({
             take: query.limit,
             skip: calculateSkipOption(query),
             where: getFindAllWhereInput(query),
@@ -45,6 +48,13 @@ export class TransactionsService {
                 toCategory: true,
             },
         });
+
+        return {
+            items,
+            page: offset,
+            itemsPerPage: limit,
+            total,
+        };
     }
 
     async findOne(
@@ -107,6 +117,6 @@ export class TransactionsService {
         return this.transactionRepository.remove(transaction);
     }
 
-    // TODO: Implement method to calculate transaction category balanceZ
+    // TODO: Implement method to calculate transaction category balance
     // TODO: Implement method to calculate account balance
 }

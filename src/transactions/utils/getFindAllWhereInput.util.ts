@@ -1,4 +1,4 @@
-import { Between, MoreThanOrEqual, LessThanOrEqual, FindOptionsWhere, Like, IsNull } from 'typeorm';
+import { Between, MoreThanOrEqual, LessThanOrEqual, FindOptionsWhere, Like } from 'typeorm';
 
 import { Transaction } from '../../shared/entities/transaction.entity';
 
@@ -26,8 +26,6 @@ export const getFindAllWhereInput = ({
     transactionCategoryId,
     type,
     search,
-    excludeAccountTransactions,
-    excludeCategoryTransactions,
     from,
     to,
 }: FindAllTransactionsDto): FindOptionsWhere<Transaction> => {
@@ -41,16 +39,6 @@ export const getFindAllWhereInput = ({
         description: search ? Like(`%${search}%`) : undefined,
         createdAt: getCreatedAtFilter(from, to),
     };
-
-    if (excludeAccountTransactions) {
-        where.fromAccount = IsNull();
-        where.toAccount = IsNull();
-    }
-
-    if (excludeCategoryTransactions) {
-        where.fromCategory = IsNull();
-        where.toCategory = IsNull();
-    }
 
     return where;
 };

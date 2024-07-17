@@ -2,6 +2,7 @@ import { Controller, Get, Post, Patch, Delete, Query, Param, Body } from '@nestj
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { Transaction } from '../shared/entities/transaction.entity';
+import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 
 import { TransactionsService } from './transactions.service';
 import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
@@ -15,7 +16,7 @@ export class TransactionsController {
 
     @ApiOkResponse({ type: [Transaction] })
     @Get()
-    findAll(@Query() query: FindAllTransactionsDto): Promise<Transaction[]> {
+    findAll(@Query() query: FindAllTransactionsDto): Promise<PaginatedItemsResultDto<Transaction>> {
         return this.transactionsService.findAll(query);
     }
 
