@@ -5,6 +5,7 @@ import { FindOptionsRelations, Repository, DataSource, Not, FindOptionsWhere } f
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import MaximumEntitiesNumberException from '../shared/exceptions/maximum-entities-number.exception';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
+import { Transaction } from '../shared/entities/transaction.entity';
 import { ETransactionCategoryStatus } from '../shared/enums/transaction-category.enums';
 import { UsersService } from '../users/users.service';
 
@@ -30,6 +31,8 @@ export class TransactionCategoriesService {
     constructor(
         @InjectRepository(TransactionCategory)
         private readonly transactionCategoryRepository: Repository<TransactionCategory>,
+        @InjectRepository(Transaction)
+        private readonly transactionRepository: Repository<Transaction>,
         private readonly usersService: UsersService,
         private readonly dataSource: DataSource,
     ) {}
@@ -171,17 +174,27 @@ export class TransactionCategoriesService {
     ): Promise<TransactionCategory> {
         const oldTransactionCategory = await this.findOne(id);
         const oldCurrency = oldTransactionCategory.currency;
-
         if (oldCurrency === currency) {
             throw new BadRequestException('The new `currency` is the same like current one');
+        }
+
+        const relatedTransactions = await this.transactionRepository.count({
+            take: 1,
+            where: {
+                fromCategory: { id },
+                toCategory: { id },
+            },
+        });
+        if (relatedTransactions) {
+            throw new BadRequestException(
+                'The TransactionCategory has already related Transactions',
+            );
         }
 
         const transactionCategory = await this.transactionCategoryRepository.preload({
             id,
             currency,
         });
-
-        // TODO: update related transactions
 
         return this.transactionCategoryRepository.save(transactionCategory);
     }

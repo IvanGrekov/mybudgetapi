@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { FindOneOptions } from 'typeorm';
+import { FindOneOptions, QueryRunner } from 'typeorm';
 
 import ArchivedEntityException from '../../shared/exceptions/archived-entity.exception';
 import { getIdPointer } from '../../shared/utils/idPointer.utils';
@@ -8,6 +8,7 @@ import { Transaction } from '../../shared/entities/transaction.entity';
 import { User } from '../../shared/entities/user.entity';
 import { Account } from '../../shared/entities/account.entity';
 import { EAccountStatus } from '../../shared/enums/account.enums';
+import { ETransactionType } from '../../shared/enums/transaction.enums';
 
 import { CreateTransactionDto } from '../dtos/create-transaction.dto';
 
@@ -71,25 +72,20 @@ const validateCreateTransferTransactionDto: TValidateCreateTransferTransactionDt
     }
 };
 
-type TCreateTransferTransaction = ({
-    createTransactionDto,
-    findAccountById,
-    saveAccount,
-}: {
+type TCreateTransferTransaction = (args: {
     createTransactionDto: CreateTransactionDto;
+    queryRunner: QueryRunner;
     findUserById(id: number): Promise<User>;
     findAccountById(options: FindOneOptions<Account>): Promise<Account>;
-    saveAccount(entity: Account): Promise<Account>;
 }) => Promise<Transaction>;
 
 export const createTransferTransaction: TCreateTransferTransaction = async ({
     createTransactionDto: { userId, fromAccountId, toAccountId, currencyRate, value, description },
+    queryRunner,
     findUserById,
     findAccountById,
-    saveAccount,
 }) => {
     const user = await findUserById(userId);
-
     const fromAccount = await findAccountById({
         where: { id: fromAccountId },
         relations: {
@@ -112,25 +108,31 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
         currencyRate,
     });
 
-    const currentFromAccountBalance = fromAccount.balance;
     const newFromAccountBalance = fromAccount.balance - value;
-    const currentToAccountBalance = toAccount.balance;
     const newToAccountBalance = fromAccount.balance + value * (currencyRate || 1);
 
-    currentFromAccountBalance;
-    newFromAccountBalance;
-    currentToAccountBalance;
-    newToAccountBalance;
+    try {
+        queryRunner.manager.update(Account, fromAccountId, { balance: newFromAccountBalance });
+        queryRunner.manager.update(Account, toAccountId, { balance: newToAccountBalance });
 
-    user;
-    description;
-    saveAccount;
+        const transactionTemplate = queryRunner.manager.create(Transaction, {
+            user,
+            fromAccount,
+            fromAccountUpdatedBalance: newFromAccountBalance,
+            toAccount,
+            toAccountUpdatedBalance: newToAccountBalance,
+            type: ETransactionType.TRANSFER,
+            value,
+            description,
+            currency: fromAccount.currency,
+        });
+        const transaction = await queryRunner.manager.save(Transaction, transactionTemplate);
 
-    // TODO: add queryRunner (IG)
-    // TODO: update fromAccount balance (IG)
-    // TODO: update toAccount balance (IG)
-    // TODO: add fromAccountUpdatedBalance (IG)
-    // TODO: add toAccountUpdatedBalance (IG)
-    // TODO: add comission (IG)
-    return {} as Transaction;
+        return transaction;
+    } catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw err;
+    } finally {
+        await queryRunner.release();
+    }
 };

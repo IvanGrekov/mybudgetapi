@@ -1,6 +1,6 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsRelations, Repository } from 'typeorm';
+import { Repository, DataSource, FindOptionsRelations } from 'typeorm';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
@@ -29,6 +29,7 @@ export class TransactionsService {
         @InjectRepository(Transaction)
         private readonly transactionRepository: Repository<Transaction>,
         private readonly usersService: UsersService,
+        private readonly dataSource: DataSource,
     ) {}
 
     async findAll(query: FindAllTransactionsDto): Promise<PaginatedItemsResultDto<Transaction>> {
@@ -76,28 +77,35 @@ export class TransactionsService {
     async create(createTransactionDto: CreateTransactionDto): Promise<Transaction> {
         validateCreateTransactionProperties(createTransactionDto);
 
-        let transactionTemplate = null;
+        let transaction: Transaction | null = null;
+
+        // TODO: add comission (IG)
+        // TODO: add currency to createDto (IG)
 
         switch (createTransactionDto.type) {
             case ETransactionType.TRANSFER:
-                transactionTemplate = createTransferTransaction({
+                transaction = await createTransferTransaction({
                     createTransactionDto,
+                    queryRunner: this.dataSource.createQueryRunner(),
                     findUserById: this.usersService.findOne,
                     findAccountById: this.accountRepository.findOne,
-                    saveAccount: this.accountRepository.save,
                 });
                 break;
             case ETransactionType.EXPENSE:
-                transactionTemplate = createExpenseTransaction(createTransactionDto);
+                transaction = await createExpenseTransaction(createTransactionDto);
                 break;
             case ETransactionType.INCOME:
-                transactionTemplate = createIncomeTransaction(createTransactionDto);
+                transaction = await createIncomeTransaction(createTransactionDto);
                 break;
             default:
                 throw new BadRequestException('Unsupported Transaction type');
         }
 
-        return this.transactionRepository.save(transactionTemplate);
+        if (!transaction) {
+            throw new InternalServerErrorException('Transaction creation failed');
+        }
+
+        return transaction;
     }
 
     async edit(
@@ -113,6 +121,8 @@ export class TransactionsService {
 
     async delete(id: Transaction['id']): Promise<Transaction> {
         const transaction = await this.findOne(id);
+
+        // TODO: Update balance of accounts (IG)
 
         return this.transactionRepository.remove(transaction);
     }

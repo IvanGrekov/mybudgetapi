@@ -140,9 +140,19 @@ export class AccountsService {
     ): Promise<Account> {
         const oldAccount = await this.findOne(id);
         const oldCurrency = oldAccount.currency;
-
         if (oldCurrency === currency) {
             throw new BadRequestException('The new `currency` is the same like current one');
+        }
+
+        const relatedTransactions = await this.transactionRepository.count({
+            take: 1,
+            where: {
+                fromAccount: { id },
+                toAccount: { id },
+            },
+        });
+        if (relatedTransactions) {
+            throw new BadRequestException('The Account has already related Transactions');
         }
 
         const { balance, initBalance } = oldAccount;
@@ -152,8 +162,6 @@ export class AccountsService {
             balance: balance * rate,
             initBalance: initBalance * rate,
         });
-
-        // TODO: update related transactions
 
         return this.accountRepository.save(account);
     }
