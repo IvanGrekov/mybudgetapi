@@ -63,11 +63,17 @@ export class Transaction {
     @Column({ type: 'real' })
     value: number;
 
+    @Column({ type: 'real', nullable: true })
+    fee?: number;
+
     @Column({
         type: 'enum',
         enum: ECurrency,
     })
     currency: ECurrency;
+
+    @Column({ type: 'real', nullable: true })
+    currencyRate?: number;
 
     @Column({ default: '' })
     description: string;

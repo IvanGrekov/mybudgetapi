@@ -152,7 +152,7 @@ export class AccountsService {
             },
         });
         if (relatedTransactions) {
-            throw new BadRequestException('The Account has already related Transactions');
+            throw new BadRequestException('The Account already has related Transactions');
         }
 
         const { balance, initBalance } = oldAccount;

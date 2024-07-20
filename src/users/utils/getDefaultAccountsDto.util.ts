@@ -33,7 +33,7 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({ currency, langua
             type: EAccountType.SAVINGS,
             currency,
             balance: 100,
-            shouldHideFromOverallBalance: true,
+            shouldHideFromOverallBalance: false,
             order: 0,
         },
     ];

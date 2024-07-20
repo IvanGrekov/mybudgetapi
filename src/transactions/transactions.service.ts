@@ -6,6 +6,7 @@ import { calculateSkipOption } from '../shared/utils/pagination.utils';
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import { Transaction } from '../shared/entities/transaction.entity';
 import { Account } from '../shared/entities/account.entity';
+import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 import { ETransactionType } from '../shared/enums/transaction.enums';
 import { UsersService } from '../users/users.service';
@@ -26,6 +27,8 @@ export class TransactionsService {
     constructor(
         @InjectRepository(Account)
         private readonly accountRepository: Repository<Account>,
+        @InjectRepository(Account)
+        private readonly transactionCategoryRepository: Repository<TransactionCategory>,
         @InjectRepository(Transaction)
         private readonly transactionRepository: Repository<Transaction>,
         private readonly usersService: UsersService,
@@ -79,9 +82,6 @@ export class TransactionsService {
 
         let transaction: Transaction | null = null;
 
-        // TODO: add comission (IG)
-        // TODO: add currency to createDto (IG)
-
         switch (createTransactionDto.type) {
             case ETransactionType.TRANSFER:
                 transaction = await createTransferTransaction({
@@ -92,10 +92,22 @@ export class TransactionsService {
                 });
                 break;
             case ETransactionType.EXPENSE:
-                transaction = await createExpenseTransaction(createTransactionDto);
+                transaction = await createExpenseTransaction({
+                    createTransactionDto,
+                    queryRunner: this.dataSource.createQueryRunner(),
+                    findUserById: this.usersService.findOne,
+                    findAccountById: this.accountRepository.findOne,
+                    findTransactionCategoryById: this.transactionCategoryRepository.findOne,
+                });
                 break;
             case ETransactionType.INCOME:
-                transaction = await createIncomeTransaction(createTransactionDto);
+                transaction = await createIncomeTransaction({
+                    createTransactionDto,
+                    queryRunner: this.dataSource.createQueryRunner(),
+                    findUserById: this.usersService.findOne,
+                    findAccountById: this.accountRepository.findOne,
+                    findTransactionCategoryById: this.transactionCategoryRepository.findOne,
+                });
                 break;
             default:
                 throw new BadRequestException('Unsupported Transaction type');

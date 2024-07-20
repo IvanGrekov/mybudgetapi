@@ -2,12 +2,12 @@ import { BadRequestException } from '@nestjs/common';
 import { FindOneOptions, QueryRunner } from 'typeorm';
 
 import ArchivedEntityException from '../../shared/exceptions/archived-entity.exception';
-import { getIdPointer } from '../../shared/utils/idPointer.utils';
 import NotFoundException from '../../shared/exceptions/not-found.exception';
+import { getIdPointer } from '../../shared/utils/idPointer.utils';
 import { Transaction } from '../../shared/entities/transaction.entity';
 import { User } from '../../shared/entities/user.entity';
 import { Account } from '../../shared/entities/account.entity';
-import { EAccountStatus } from '../../shared/enums/account.enums';
+import { EAccountStatus, EAccountType } from '../../shared/enums/account.enums';
 import { ETransactionType } from '../../shared/enums/transaction.enums';
 
 import { CreateTransactionDto } from '../dtos/create-transaction.dto';
@@ -26,9 +26,9 @@ const validateCreateTransferTransactionDto: TValidateCreateTransferTransactionDt
     userId,
     fromAccountId,
     toAccountId,
+    currencyRate,
     fromAccount,
     toAccount,
-    currencyRate,
 }) => {
     if (!fromAccount || !toAccount) {
         const notFoundId = fromAccount ? toAccountId : fromAccountId;
@@ -39,8 +39,14 @@ const validateCreateTransferTransactionDto: TValidateCreateTransferTransactionDt
         user: fromAccountUser,
         status: fromAccountStatus,
         currency: fromAccountCurrency,
+        type: fromAccountType,
     } = fromAccount;
-    const { user: toAccountUser, status: toAccountStatus, currency: toAccountCurrency } = toAccount;
+    const {
+        user: toAccountUser,
+        status: toAccountStatus,
+        currency: toAccountCurrency,
+        type: toAccountType,
+    } = toAccount;
 
     if (userId !== fromAccountUser.id) {
         throw new BadRequestException(
@@ -70,6 +76,15 @@ const validateCreateTransferTransactionDto: TValidateCreateTransferTransactionDt
             'The `rate` must be provided only for Transaction between Accounts with different `currency`',
         );
     }
+
+    if (fromAccountType === EAccountType.I_OWE || toAccountType === EAccountType.I_OWE) {
+        throw new BadRequestException('`I_OWE` Account type is forbidden for Transfer Transaction');
+    }
+    if (toAccountType === EAccountType.OWE_ME) {
+        throw new BadRequestException(
+            'The `toAccountType` must not be of type `OWE_ME` for Transfer Transaction',
+        );
+    }
 };
 
 type TCreateTransferTransaction = (args: {
@@ -80,7 +95,15 @@ type TCreateTransferTransaction = (args: {
 }) => Promise<Transaction>;
 
 export const createTransferTransaction: TCreateTransferTransaction = async ({
-    createTransactionDto: { userId, fromAccountId, toAccountId, currencyRate, value, description },
+    createTransactionDto: {
+        userId,
+        fromAccountId,
+        toAccountId,
+        currencyRate,
+        value,
+        fee = 0,
+        description,
+    },
     queryRunner,
     findUserById,
     findAccountById,
@@ -103,12 +126,12 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
         userId,
         fromAccountId,
         toAccountId,
+        currencyRate,
         fromAccount,
         toAccount,
-        currencyRate,
     });
 
-    const newFromAccountBalance = fromAccount.balance - value;
+    const newFromAccountBalance = fromAccount.balance - value - fee;
     const newToAccountBalance = fromAccount.balance + value * (currencyRate || 1);
 
     try {
@@ -123,8 +146,10 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
             toAccountUpdatedBalance: newToAccountBalance,
             type: ETransactionType.TRANSFER,
             value,
+            fee,
             description,
             currency: fromAccount.currency,
+            currencyRate,
         });
         const transaction = await queryRunner.manager.save(Transaction, transactionTemplate);
 

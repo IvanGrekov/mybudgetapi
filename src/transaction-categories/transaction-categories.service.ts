@@ -187,7 +187,7 @@ export class TransactionCategoriesService {
         });
         if (relatedTransactions) {
             throw new BadRequestException(
-                'The TransactionCategory has already related Transactions',
+                'The TransactionCategory already has related Transactions',
             );
         }
 

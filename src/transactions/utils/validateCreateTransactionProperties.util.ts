@@ -10,24 +10,12 @@ interface ICreateTransactionBaseProperties {
     toCategoryId?: number;
 }
 
-type TValidateTransferType = (args: ICreateTransactionBaseProperties) => void;
-
-type TValidateExpenseType = (args: ICreateTransactionBaseProperties) => void;
-
-type TValidateIncomeType = (args: ICreateTransactionBaseProperties) => void;
-
-type TValidateCreateTransactionProperties = (
-    args: ICreateTransactionBaseProperties & {
-        type: ETransactionType;
-    },
-) => void;
-
-const validateTransferType: TValidateTransferType = ({
+const validateTransferType = ({
     fromAccountId,
     toAccountId,
     fromCategoryId,
     toCategoryId,
-}): void => {
+}: ICreateTransactionBaseProperties): void => {
     if (fromAccountId === toAccountId) {
         throw new BadRequestException(
             'Transaction type `TRANSFER` requires different `fromAccountId` and `toAccountId`',
@@ -47,12 +35,12 @@ const validateTransferType: TValidateTransferType = ({
     }
 };
 
-const validateExpenseType: TValidateExpenseType = ({
+const validateExpenseType = ({
     fromCategoryId,
     toAccountId,
     fromAccountId,
     toCategoryId,
-}): void => {
+}: ICreateTransactionBaseProperties): void => {
     if (fromCategoryId) {
         throw new BadRequestException('Transaction type `EXPENSE` does not allow `fromCategoryId`');
     }
@@ -70,12 +58,12 @@ const validateExpenseType: TValidateExpenseType = ({
     }
 };
 
-const validateIncomeType: TValidateIncomeType = ({
+const validateIncomeType = ({
     fromCategoryId,
     toAccountId,
     fromAccountId,
     toCategoryId,
-}): void => {
+}: ICreateTransactionBaseProperties): void => {
     if (fromAccountId) {
         throw new BadRequestException('Transaction type `INCOME` does not allow `fromAccountId`');
     }
@@ -92,6 +80,12 @@ const validateIncomeType: TValidateIncomeType = ({
         throw new BadRequestException('Transaction type `INCOME` requires `toAccountId`');
     }
 };
+
+type TValidateCreateTransactionProperties = (
+    args: ICreateTransactionBaseProperties & {
+        type: ETransactionType;
+    },
+) => void;
 
 export const validateCreateTransactionProperties: TValidateCreateTransactionProperties = ({
     fromAccountId,

@@ -38,6 +38,11 @@ export class CreateTransactionDto {
     @IsNumberBase()
     @IsPositive()
     @IsOptional()
+    readonly fee?: number;
+
+    @IsNumberBase()
+    @IsPositive()
+    @IsOptional()
     readonly currencyRate?: number;
 
     @IsString()
