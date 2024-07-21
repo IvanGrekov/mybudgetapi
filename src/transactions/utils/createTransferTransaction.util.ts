@@ -134,6 +134,9 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
     const newFromAccountBalance = fromAccount.balance - value - fee;
     const newToAccountBalance = fromAccount.balance + value * (currencyRate || 1);
 
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
         queryRunner.manager.update(Account, fromAccountId, { balance: newFromAccountBalance });
         queryRunner.manager.update(Account, toAccountId, { balance: newToAccountBalance });
@@ -152,6 +155,8 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
             currencyRate,
         });
         const transaction = await queryRunner.manager.save(Transaction, transactionTemplate);
+
+        await queryRunner.commitTransaction();
 
         return transaction;
     } catch (err) {

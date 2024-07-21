@@ -1,5 +1,5 @@
-import { PartialType, OmitType } from '@nestjs/mapped-types';
+import { PickType } from '@nestjs/mapped-types';
 
 import { CreateTransactionDto } from './create-transaction.dto';
 
-export class EditTransactionDto extends PartialType(OmitType(CreateTransactionDto, ['userId'])) {}
+export class EditTransactionDto extends PickType(CreateTransactionDto, ['description']) {}

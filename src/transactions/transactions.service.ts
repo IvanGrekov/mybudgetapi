@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, FindOptionsRelations } from 'typeorm';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
@@ -14,7 +14,6 @@ import { UsersService } from '../users/users.service';
 import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { EditTransactionDto } from './dtos/edit-transaction.dto';
-import { validateTransactionProperties } from './utils/validateTransactionProperties.util';
 import { validateFindAllTransactionProperties } from './utils/validateFindAllTransactionProperties.util';
 import { getFindAllWhereInput } from './utils/getFindAllWhereInput.util';
 import { validateCreateTransactionProperties } from './utils/validateCreateTransactionProperties.util';
@@ -80,65 +79,82 @@ export class TransactionsService {
     async create(createTransactionDto: CreateTransactionDto): Promise<Transaction> {
         validateCreateTransactionProperties(createTransactionDto);
 
-        let transaction: Transaction | null = null;
-
         switch (createTransactionDto.type) {
             case ETransactionType.TRANSFER:
-                transaction = await createTransferTransaction({
+                return createTransferTransaction({
                     createTransactionDto,
                     queryRunner: this.dataSource.createQueryRunner(),
                     findUserById: this.usersService.findOne,
                     findAccountById: this.accountRepository.findOne,
                 });
-                break;
             case ETransactionType.EXPENSE:
-                transaction = await createExpenseTransaction({
+                return createExpenseTransaction({
                     createTransactionDto,
                     queryRunner: this.dataSource.createQueryRunner(),
                     findUserById: this.usersService.findOne,
                     findAccountById: this.accountRepository.findOne,
                     findTransactionCategoryById: this.transactionCategoryRepository.findOne,
                 });
-                break;
             case ETransactionType.INCOME:
-                transaction = await createIncomeTransaction({
+                return createIncomeTransaction({
                     createTransactionDto,
                     queryRunner: this.dataSource.createQueryRunner(),
                     findUserById: this.usersService.findOne,
                     findAccountById: this.accountRepository.findOne,
                     findTransactionCategoryById: this.transactionCategoryRepository.findOne,
                 });
-                break;
             default:
                 throw new BadRequestException('Unsupported Transaction type');
         }
-
-        if (!transaction) {
-            throw new InternalServerErrorException('Transaction creation failed');
-        }
-
-        return transaction;
     }
 
-    async edit(
-        id: Transaction['id'],
-        editTransactionDto: EditTransactionDto,
-    ): Promise<Transaction> {
-        // TODO: edit only if transaction is recent
+    async edit(id: Transaction['id'], { description }: EditTransactionDto): Promise<Transaction> {
+        const transaction = await this.transactionRepository.preload({
+            id,
+            description,
+        });
 
-        validateTransactionProperties(editTransactionDto);
+        if (!transaction) {
+            throw new NotFoundException('Transaction', id);
+        }
 
-        throw new BadRequestException('Editing Transaction is not supported');
+        return this.transactionRepository.save(transaction);
     }
 
     async delete(id: Transaction['id']): Promise<Transaction> {
         const transaction = await this.findOne(id);
+        const { value, fee, fromAccount, toAccount } = transaction;
 
-        // TODO: Update balance of accounts (IG)
+        const queryRunner = this.dataSource.createQueryRunner();
 
-        return this.transactionRepository.remove(transaction);
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            if (fromAccount) {
+                const newFromAccountBalance = fromAccount.balance + value + fee;
+                queryRunner.manager.update(Account, fromAccount.id, {
+                    balance: newFromAccountBalance,
+                });
+            }
+
+            if (toAccount) {
+                const newToAccountBalance = toAccount.balance - value;
+                queryRunner.manager.update(Account, toAccount.id, {
+                    balance: newToAccountBalance,
+                });
+            }
+
+            queryRunner.manager.remove(transaction);
+
+            await queryRunner.commitTransaction();
+
+            return transaction;
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
     }
-
-    // TODO: Implement method to calculate transaction category balance
-    // TODO: Implement method to calculate account balance
 }

@@ -175,6 +175,4 @@ export class UsersService {
 
         return this.userRepository.remove(user);
     }
-
-    // TODO: Implement getting overall balance
 }

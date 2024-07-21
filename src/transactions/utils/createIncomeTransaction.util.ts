@@ -150,6 +150,9 @@ export const createIncomeTransaction: TCreateIncomeTransaction = async ({
 
     const newToAccountBalance = toAccount.balance + value - fee;
 
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
         queryRunner.manager.update(Account, toAccountId, { balance: newToAccountBalance });
 
@@ -166,6 +169,8 @@ export const createIncomeTransaction: TCreateIncomeTransaction = async ({
             currencyRate,
         });
         const transaction = await queryRunner.manager.save(Transaction, transactionTemplate);
+
+        await queryRunner.commitTransaction();
 
         return transaction;
     } catch (err) {
