@@ -46,10 +46,6 @@ export class UsersService {
         };
     }
 
-    async getNewName(): Promise<string> {
-        return this.userRepository.count().then((count) => `User${getIdPointer(count + 1)}`);
-    }
-
     async findOne(id: User['id'], relations?: FindOptionsRelations<User>): Promise<User> {
         const user = await this.userRepository.findOne({
             where: { id },
@@ -61,6 +57,10 @@ export class UsersService {
         }
 
         return user;
+    }
+
+    async getNewName(): Promise<string> {
+        return this.userRepository.count().then((count) => `User${getIdPointer(count + 1)}`);
     }
 
     async create(createUserDto: CreateUserDto): Promise<User> {

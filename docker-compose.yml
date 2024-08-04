@@ -1,11 +1,11 @@
 version: "3"
 services:
   db:
-    image:  postgres
+    image:  ${DB_IMAGE_NAME}
     restart: always
     ports:
-      - "5432:5432"
+      - "${DB_CONTAINER_PORT}:${DB_CONTAINER_INTERNAL_PORT}"
     environment:
       POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Cosonic56
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}

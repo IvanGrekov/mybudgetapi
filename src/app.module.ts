@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { SharedModule } from './shared/shared.module';
@@ -9,15 +10,16 @@ import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
     imports: [
+        ConfigModule.forRoot(),
         TypeOrmModule.forRoot({
             type: 'postgres',
             host: 'localhost',
-            port: 5432,
+            port: parseInt(process.env.DB_CONTAINER_PORT),
             database: 'postgres',
-            username: 'postgres',
-            password: 'Cosonic56',
+            username: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
             autoLoadEntities: true,
-            synchronize: true,
+            synchronize: process.env.NODE_ENV === 'dev',
         }),
         SharedModule,
         UsersModule,
