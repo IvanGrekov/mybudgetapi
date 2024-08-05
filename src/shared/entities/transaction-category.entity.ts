@@ -20,28 +20,28 @@ export class TransactionCategory {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, (user) => user.transactionCategories, {
+    @ManyToOne(() => User, ({ transactionCategories }) => transactionCategories, {
         onDelete: 'CASCADE',
     })
     user: User;
 
-    @OneToMany(() => Transaction, (transaction) => transaction.fromCategory, {
+    @OneToMany(() => Transaction, ({ fromCategory }) => fromCategory, {
         cascade: true,
     })
     outgoingTransactions: Transaction[];
 
-    @OneToMany(() => Transaction, (transaction) => transaction.toCategory, {
+    @OneToMany(() => Transaction, ({ toCategory }) => toCategory, {
         cascade: true,
     })
     incomingTransactions: Transaction[];
 
-    @OneToMany(() => TransactionCategory, (category) => category.parent, {
+    @OneToMany(() => TransactionCategory, ({ parent }) => parent, {
         cascade: true,
         nullable: true,
     })
     children: TransactionCategory[];
 
-    @ManyToOne(() => TransactionCategory, (category) => category.children, {
+    @ManyToOne(() => TransactionCategory, ({ children }) => children, {
         nullable: true,
         onDelete: 'CASCADE',
     })

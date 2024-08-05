@@ -11,12 +11,12 @@ export class Transaction {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, (user) => user.transactions, {
+    @ManyToOne(() => User, ({ transactions }) => transactions, {
         onDelete: 'CASCADE',
     })
     user: User;
 
-    @ManyToOne(() => Account, (account) => account.outgoingTransactions, {
+    @ManyToOne(() => Account, ({ outgoingTransactions }) => outgoingTransactions, {
         nullable: true,
         onDelete: 'CASCADE',
     })
@@ -25,7 +25,7 @@ export class Transaction {
     @Column({ nullable: true, type: 'real' })
     fromAccountUpdatedBalance?: number;
 
-    @ManyToOne(() => Account, (account) => account.incomingTransactions, {
+    @ManyToOne(() => Account, ({ incomingTransactions }) => incomingTransactions, {
         nullable: true,
         onDelete: 'CASCADE',
     })
@@ -34,24 +34,16 @@ export class Transaction {
     @Column({ nullable: true, type: 'real' })
     toAccountUpdatedBalance?: number;
 
-    @ManyToOne(
-        () => TransactionCategory,
-        (transactionCategory) => transactionCategory.outgoingTransactions,
-        {
-            nullable: true,
-            onDelete: 'CASCADE',
-        },
-    )
+    @ManyToOne(() => TransactionCategory, ({ outgoingTransactions }) => outgoingTransactions, {
+        nullable: true,
+        onDelete: 'CASCADE',
+    })
     fromCategory?: TransactionCategory;
 
-    @ManyToOne(
-        () => TransactionCategory,
-        (transactionCategory) => transactionCategory.incomingTransactions,
-        {
-            nullable: true,
-            onDelete: 'CASCADE',
-        },
-    )
+    @ManyToOne(() => TransactionCategory, ({ incomingTransactions }) => incomingTransactions, {
+        nullable: true,
+        onDelete: 'CASCADE',
+    })
     toCategory?: TransactionCategory;
 
     @Column({

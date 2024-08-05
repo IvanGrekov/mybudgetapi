@@ -17,17 +17,17 @@ export class Account {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, (user) => user.accounts, {
+    @ManyToOne(() => User, ({ accounts }) => accounts, {
         onDelete: 'CASCADE',
     })
     user: User;
 
-    @OneToMany(() => Transaction, (transaction) => transaction.fromAccount, {
+    @OneToMany(() => Transaction, ({ fromAccount }) => fromAccount, {
         cascade: true,
     })
     outgoingTransactions: Transaction[];
 
-    @OneToMany(() => Transaction, (transaction) => transaction.toAccount, {
+    @OneToMany(() => Transaction, ({ toAccount }) => toAccount, {
         cascade: true,
     })
     incomingTransactions: Transaction[];

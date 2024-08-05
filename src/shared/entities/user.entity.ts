@@ -13,17 +13,17 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @OneToMany(() => Account, (account) => account.user, {
+    @OneToMany(() => Account, ({ user }) => user, {
         cascade: true,
     })
     accounts: Account[];
 
-    @OneToMany(() => TransactionCategory, (transactionCategory) => transactionCategory.user, {
+    @OneToMany(() => TransactionCategory, ({ user }) => user, {
         cascade: true,
     })
     transactionCategories: TransactionCategory[];
 
-    @OneToMany(() => Transaction, (transaction) => transaction.user, {
+    @OneToMany(() => Transaction, ({ user }) => user, {
         cascade: true,
     })
     transactions: Transaction[];
