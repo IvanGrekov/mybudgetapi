@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, CreateDateColumn } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    Column,
+    CreateDateColumn,
+    Index,
+} from 'typeorm';
 
 import { User } from './user.entity';
 import { Account } from './account.entity';
@@ -6,6 +13,7 @@ import { TransactionCategory } from './transaction-category.entity';
 import { ECurrency } from '../enums/currency.enums';
 import { ETransactionType } from '../enums/transaction.enums';
 
+@Index(['createdAt'])
 @Entity()
 export class Transaction {
     @PrimaryGeneratedColumn()
