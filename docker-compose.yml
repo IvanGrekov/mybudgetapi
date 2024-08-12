@@ -6,6 +6,6 @@ services:
     ports:
       - "${DB_CONTAINER_PORT}:${DB_CONTAINER_INTERNAL_PORT}"
     environment:
-      POSTGRES_DB: postgres
+      POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
