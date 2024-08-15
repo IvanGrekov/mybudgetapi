@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
+import { HttpExceptionFilter } from './shared/filters/http-exception-filter.filter';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -18,6 +19,8 @@ async function bootstrap() {
             },
         }),
     );
+
+    app.useGlobalFilters(new HttpExceptionFilter());
 
     const config = new DocumentBuilder().setTitle('My Budget').setVersion('1.0').build();
     const document = SwaggerModule.createDocument(app, config);
