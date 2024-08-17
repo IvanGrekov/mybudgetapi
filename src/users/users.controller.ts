@@ -2,6 +2,7 @@ import { Controller, Get, Query, Post, Param, Body, Patch, Delete } from '@nestj
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { User } from '../shared/entities/user.entity';
+import { Public } from '../shared/decorators/public.decorator';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
 import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 
@@ -17,6 +18,7 @@ export class UsersController {
 
     @ApiOkResponse({ type: String })
     @Get('name')
+    @Public()
     getNewName(): Promise<string> {
         return this.usersService.getNewName();
     }
