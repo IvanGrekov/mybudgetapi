@@ -29,7 +29,17 @@ export class UsersController {
         return this.usersService.findAll(paginationQuery);
     }
 
-    @ApiOkResponse({ type: User })
+    @ApiOkResponse({
+        type: User,
+        example: {
+            id: 1,
+            nickname: 'Johndoe',
+            defaultCurrency: 'USD',
+            language: 'EN',
+            timeZone: 'UTC',
+            createdAt: '2021-06-17T09:00:00.000Z',
+        },
+    })
     @Get(':id')
     findOne(@Param('id') id: number): Promise<User> {
         return this.usersService.findOne(id);

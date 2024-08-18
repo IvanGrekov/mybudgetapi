@@ -1,4 +1,4 @@
-import { OmitType } from '@nestjs/mapped-types';
+import { OmitType } from '@nestjs/swagger';
 import { IsNumber as IsNumberBase } from 'class-validator';
 
 import { PreloadAccountDto } from '../../shared/dtos/preload-account.dto';

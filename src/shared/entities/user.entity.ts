@@ -7,6 +7,7 @@ import { Account } from './account.entity';
 import { TransactionCategory } from './transaction-category.entity';
 
 import { Transaction } from './transaction.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class User {
@@ -31,6 +32,10 @@ export class User {
     @Column()
     nickname: string;
 
+    @ApiProperty({
+        description: 'Default currency for users accounts and transactions',
+        enumName: 'ECurrency',
+    })
     @Column({
         type: 'enum',
         enum: ECurrency,

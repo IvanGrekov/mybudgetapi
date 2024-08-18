@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional } from 'class-validator';
-import { PartialType, OmitType } from '@nestjs/mapped-types';
+import { PartialType, OmitType } from '@nestjs/swagger';
 
 import { ETransactionCategoryStatus } from '../../shared/enums/transaction-category.enums';
 

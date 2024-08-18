@@ -1,5 +1,5 @@
 import { IsNumber as IsNumberBase, IsOptional } from 'class-validator';
-import { OmitType } from '@nestjs/mapped-types';
+import { OmitType } from '@nestjs/swagger';
 
 import { PreloadTransactionCategoryDto } from '../../shared/dtos/preload-transaction-category.dto';
 

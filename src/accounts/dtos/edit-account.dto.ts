@@ -1,4 +1,4 @@
-import { PartialType, OmitType } from '@nestjs/mapped-types';
+import { PartialType, OmitType } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 
 import { EAccountStatus } from '../../shared/enums/account.enums';

@@ -1,4 +1,4 @@
-import { PickType } from '@nestjs/mapped-types';
+import { PickType } from '@nestjs/swagger';
 import { IsNumber as IsNumberBase, IsPositive } from 'class-validator';
 
 import { PreloadAccountDto } from '../../shared/dtos/preload-account.dto';
