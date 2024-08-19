@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 import { HttpExceptionFilter } from './shared/filters/http-exception-filter.filter';
+import { RequestTimeoutInterceptor } from './shared/interceptors/request-timeout.interceptor';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -21,6 +22,8 @@ async function bootstrap() {
     );
 
     app.useGlobalFilters(new HttpExceptionFilter());
+
+    app.useGlobalInterceptors(new RequestTimeoutInterceptor());
 
     const config = new DocumentBuilder()
         .setTitle('My Budget')
