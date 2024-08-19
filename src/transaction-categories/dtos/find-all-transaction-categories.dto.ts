@@ -1,4 +1,5 @@
 import { IsNumber as IsNumberBase, IsEnum, IsOptional, IsBoolean } from 'class-validator';
+import { Type } from 'class-transformer';
 
 import {
     ETransactionCategoryType,
@@ -6,6 +7,7 @@ import {
 } from '../../shared/enums/transaction-category.enums';
 
 export class FindAllTransactionCategoriesDto {
+    @Type(() => Number)
     @IsNumberBase()
     readonly userId: number;
 
@@ -17,14 +19,17 @@ export class FindAllTransactionCategoriesDto {
     @IsOptional()
     readonly status?: ETransactionCategoryStatus;
 
+    @Type(() => Number)
     @IsNumberBase()
     @IsOptional()
     readonly excludeId?: number;
 
+    @Type(() => Number)
     @IsNumberBase()
     @IsOptional()
     readonly parentId?: number;
 
+    @Type(() => Boolean)
     @IsBoolean()
     @IsOptional()
     readonly shouldFilterChildTransactionCategories?: boolean;
