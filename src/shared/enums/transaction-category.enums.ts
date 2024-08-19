@@ -1,9 +1,9 @@
 export enum ETransactionCategoryType {
-    INCOME = 'income',
-    EXPENSE = 'expense',
+    INCOME = 'INCOME',
+    EXPENSE = 'EXPENSE',
 }
 
 export enum ETransactionCategoryStatus {
-    ACTIVE = 'active',
-    ARCHIVED = 'archived',
+    ACTIVE = 'ACTIVE',
+    ARCHIVED = 'ARCHIVED',
 }

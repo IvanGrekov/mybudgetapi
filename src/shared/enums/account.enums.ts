@@ -1,11 +1,11 @@
 export enum EAccountType {
-    REGULAR = 'regular',
-    SAVINGS = 'savings',
-    I_OWE = 'i_owe',
-    OWE_ME = 'owe_me',
+    REGULAR = 'REGULAR',
+    SAVINGS = 'SAVINGS',
+    I_OWE = 'I_OWE',
+    OWE_ME = 'OWE_ME',
 }
 
 export enum EAccountStatus {
-    ACTIVE = 'active',
-    ARCHIVED = 'archived',
+    ACTIVE = 'ACTIVE',
+    ARCHIVED = 'ARCHIVED',
 }
