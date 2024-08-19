@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Query, Param, Body } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
+import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { Transaction } from '../shared/entities/transaction.entity';
 import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 
@@ -22,7 +23,7 @@ export class TransactionsController {
 
     @ApiOkResponse({ type: Transaction })
     @Get(':id')
-    findOne(@Param('id') id: number): Promise<Transaction> {
+    findOne(@Param('id', CustomParseIntPipe) id: number): Promise<Transaction> {
         return this.transactionsService.findOne(id);
     }
 
@@ -35,7 +36,7 @@ export class TransactionsController {
     @ApiOkResponse({ type: Transaction })
     @Patch(':id')
     editOne(
-        @Param('id') id: number,
+        @Param('id', CustomParseIntPipe) id: number,
         @Body() editTransactionDto: EditTransactionDto,
     ): Promise<Transaction> {
         return this.transactionsService.edit(id, editTransactionDto);
@@ -43,7 +44,7 @@ export class TransactionsController {
 
     @ApiOkResponse({ type: Transaction })
     @Delete(':id')
-    delete(@Param('id') id: number): Promise<Transaction> {
+    delete(@Param('id', CustomParseIntPipe) id: number): Promise<Transaction> {
         return this.transactionsService.delete(id);
     }
 }

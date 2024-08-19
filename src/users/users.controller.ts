@@ -1,6 +1,7 @@
 import { Controller, Get, Query, Post, Param, Body, Patch, Delete } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
+import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { User } from '../shared/entities/user.entity';
 import { Public } from '../shared/decorators/public.decorator';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
@@ -41,7 +42,7 @@ export class UsersController {
         },
     })
     @Get(':id')
-    findOne(@Param('id') id: number): Promise<User> {
+    findOne(@Param('id', CustomParseIntPipe) id: number): Promise<User> {
         return this.usersService.findOne(id);
     }
 
@@ -53,7 +54,10 @@ export class UsersController {
 
     @ApiOkResponse({ type: User })
     @Patch(':id')
-    editOne(@Param('id') id: number, @Body() editUserDto: EditUserDto): Promise<User> {
+    editOne(
+        @Param('id', CustomParseIntPipe) id: number,
+        @Body() editUserDto: EditUserDto,
+    ): Promise<User> {
         return this.usersService.edit(id, editUserDto);
     }
 
@@ -68,7 +72,7 @@ export class UsersController {
 
     @ApiOkResponse({ type: User })
     @Delete(':id')
-    deleteOne(@Param('id') id: number): Promise<User> {
+    deleteOne(@Param('id', CustomParseIntPipe) id: number): Promise<User> {
         return this.usersService.delete(id);
     }
 }

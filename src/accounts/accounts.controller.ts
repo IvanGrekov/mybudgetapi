@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Query, Param, Body } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
+import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { Account } from '../shared/entities/account.entity';
 
 import { AccountsService } from './accounts.service';
@@ -23,7 +24,7 @@ export class AccountsController {
 
     @ApiOkResponse({ type: Account })
     @Get(':id')
-    findOne(@Param('id') id: number): Promise<Account> {
+    findOne(@Param('id', CustomParseIntPipe) id: number): Promise<Account> {
         return this.accountsService.findOne(id);
     }
 
@@ -35,14 +36,17 @@ export class AccountsController {
 
     @ApiOkResponse({ type: Account })
     @Patch(':id')
-    editOne(@Param('id') id: number, @Body() editAccountDto: EditAccountDto): Promise<Account> {
+    editOne(
+        @Param('id', CustomParseIntPipe) id: number,
+        @Body() editAccountDto: EditAccountDto,
+    ): Promise<Account> {
         return this.accountsService.edit(id, editAccountDto);
     }
 
     @ApiOkResponse({ type: Account })
     @Patch('currency/:id')
     editOnesCurrency(
-        @Param('id') id: number,
+        @Param('id', CustomParseIntPipe) id: number,
         @Body() editAccountCurrencyDto: EditAccountCurrencyDto,
     ): Promise<Account> {
         return this.accountsService.editCurrency(id, editAccountCurrencyDto);
@@ -51,7 +55,7 @@ export class AccountsController {
     @ApiOkResponse({ type: [Account] })
     @Patch('reorder/:id')
     reorderOne(
-        @Param('id') id: number,
+        @Param('id', CustomParseIntPipe) id: number,
         @Body() reorderAccountDto: ReorderAccountDto,
     ): Promise<Account[]> {
         return this.accountsService.reorder(id, reorderAccountDto);
@@ -59,7 +63,7 @@ export class AccountsController {
 
     @ApiOkResponse({ type: Account })
     @Delete(':id')
-    delete(@Param('id') id: number): Promise<Account[]> {
+    delete(@Param('id', CustomParseIntPipe) id: number): Promise<Account[]> {
         return this.accountsService.delete(id);
     }
 }

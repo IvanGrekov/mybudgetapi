@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Query, Param, Body } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
+import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 
 import { TransactionCategoriesService } from './transaction-categories.service';
@@ -24,7 +25,7 @@ export class TransactionCategoriesController {
 
     @ApiOkResponse({ type: TransactionCategory })
     @Get(':id')
-    findOne(@Param('id') id: number): Promise<TransactionCategory> {
+    findOne(@Param('id', CustomParseIntPipe) id: number): Promise<TransactionCategory> {
         return this.transactionCategoriesService.findOne(id);
     }
 
@@ -47,7 +48,7 @@ export class TransactionCategoriesController {
     @ApiOkResponse({ type: TransactionCategory })
     @Patch(':id')
     editOne(
-        @Param('id') id: number,
+        @Param('id', CustomParseIntPipe) id: number,
         @Body() editTransactionCategoryDto: EditTransactionCategoryDto,
     ): Promise<TransactionCategory> {
         return this.transactionCategoriesService.edit(id, editTransactionCategoryDto);
@@ -56,7 +57,7 @@ export class TransactionCategoriesController {
     @ApiOkResponse({ type: TransactionCategory })
     @Patch('currency/:id')
     editOnesCurrency(
-        @Param('id') id: number,
+        @Param('id', CustomParseIntPipe) id: number,
         @Body() editTransactionCategoryCurrencyDto: EditTransactionCategoryCurrencyDto,
     ): Promise<TransactionCategory> {
         return this.transactionCategoriesService.editCurrency(
@@ -68,7 +69,7 @@ export class TransactionCategoriesController {
     @ApiOkResponse({ type: TransactionCategory })
     @Delete(':id')
     delete(
-        @Param('id') id: number,
+        @Param('id', CustomParseIntPipe) id: number,
         @Query() deleteTransactionCategoryDto: DeleteTransactionCategoryDto,
     ): Promise<TransactionCategory[]> {
         return this.transactionCategoriesService.delete(id, deleteTransactionCategoryDto);
