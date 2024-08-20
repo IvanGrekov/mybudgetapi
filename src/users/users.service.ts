@@ -63,6 +63,13 @@ export class UsersService {
         return user;
     }
 
+    async findMe(token: string): Promise<User> {
+        const userId = 62; // TODO: Implement findMe by token
+        console.log('me token', token);
+
+        return this.findOne(userId);
+    }
+
     async create(createUserDto: CreateUserDto): Promise<User> {
         const { defaultCurrency: currency, language } = createUserDto;
         const defaultRelations = getDefaultRelations({
