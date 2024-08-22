@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
 
 import { ECurrency } from '../enums/currency.enums';
-import { ELanguage } from '../enums/language.enums';
 
 import { Account } from './account.entity';
 import { TransactionCategory } from './transaction-category.entity';
@@ -41,12 +40,6 @@ export class User {
         enum: ECurrency,
     })
     defaultCurrency: ECurrency;
-
-    @Column({
-        type: 'enum',
-        enum: ELanguage,
-    })
-    language: ELanguage;
 
     @Column()
     timeZone: string;
