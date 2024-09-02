@@ -13,28 +13,19 @@ import { TransactionsModule } from './transactions/transactions.module';
 @Module({
     imports: [
         TypeOrmModule.forRootAsync({
-            imports: [ConfigModule.forFeature(databaseConfig)],
-            inject: [databaseConfig.KEY],
-            useFactory: ({
-                host,
-                port,
-                name,
-                username,
-                password,
-                synchronize,
-            }: ConfigType<typeof databaseConfig>) => ({
+            imports: [ConfigModule.forFeature(databaseConfig), ConfigModule.forFeature(appConfig)],
+            inject: [databaseConfig.KEY, appConfig.KEY],
+            useFactory: (
+                config: ConfigType<typeof databaseConfig>,
+                { isDevelopment }: ConfigType<typeof appConfig>,
+            ) => ({
+                ...config,
                 type: 'postgres',
-                host,
-                port,
-                database: name,
-                username,
-                password,
-                synchronize,
-                autoLoadEntities: true,
+                synchronize: isDevelopment,
+                autoLoadEntities: isDevelopment,
             }),
         }),
         ConfigModule.forRoot({
-            load: [appConfig],
             validationSchema,
         }),
         SharedModule,
