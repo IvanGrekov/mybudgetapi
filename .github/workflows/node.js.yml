@@ -1,0 +1,35 @@
+name: mybudgetapi CI
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [20.12.2]
+
+    env:
+      NODE_ENV: ${{secrets.NODE_ENV}}
+      PORT: ${{secrets.PORT}}
+      DB_HOST: ${{secrets.DB_HOST}}
+      DB_NAME: ${{secrets.DB_NAME}}
+      DB_IMAGE_NAME: ${{secrets.DB_IMAGE_NAME}}
+      DB_CONTAINER_PORT: ${{secrets.DB_CONTAINER_PORT}}
+      DB_USER: ${{secrets.DB_USER}}
+      DB_PASSWORD: ${{secrets.DB_PASSWORD}}
+      API_KEY: ${{secrets.API_KEY}}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run build --if-present
