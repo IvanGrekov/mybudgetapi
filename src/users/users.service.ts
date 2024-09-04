@@ -31,7 +31,9 @@ export class UsersService {
     ) {}
 
     async getNewName(): Promise<string> {
-        return this.userRepository.count().then((count) => `User${getIdPointer(count + 1)}`);
+        return this.userRepository
+            .count()
+            .then((count) => `here it'sUser${getIdPointer(count + 1)}`);
     }
 
     async findAll(query: PaginationQueryDto): Promise<PaginatedItemsResultDto<User>> {
