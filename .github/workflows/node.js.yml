@@ -35,7 +35,6 @@ jobs:
         echo DB_USER=${{ secrets.DB_USER }} >> .env
         echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
         echo API_KEY=${{ secrets.API_KEY }} >> .env
-        cat .env
 
-    # - name: Build and deploy
-    #   run: docker-compose up -d --build
+    - name: Build and deploy
+      run: docker-compose up -d --build
