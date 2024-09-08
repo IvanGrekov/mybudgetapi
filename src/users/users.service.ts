@@ -71,9 +71,10 @@ export class UsersService {
     }
 
     async create(createUserDto: CreateUserDto): Promise<User> {
-        const { defaultCurrency: currency, language } = createUserDto;
+        const { defaultCurrency, language } = createUserDto;
+        const nickname = createUserDto.nickname || (await this.getNewName());
         const defaultRelations = getDefaultRelations({
-            currency,
+            currency: defaultCurrency,
             language,
             createAccount: this.accountRepository.create.bind(this.accountRepository),
             createTransactionCategory: this.transactionCategoryRepository.create.bind(
@@ -88,6 +89,7 @@ export class UsersService {
         try {
             const userTemplate = queryRunner.manager.create(User, {
                 ...createUserDto,
+                nickname,
                 ...defaultRelations,
             });
 
