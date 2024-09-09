@@ -24,8 +24,8 @@ export class AccountsController {
 
     @ApiOkResponse({ type: Account })
     @Get(':id')
-    findOne(@Param('id', CustomParseIntPipe) id: number): Promise<Account> {
-        return this.accountsService.findOne(id);
+    getOne(@Param('id', CustomParseIntPipe) id: number): Promise<Account> {
+        return this.accountsService.getOne(id);
     }
 
     @ApiOkResponse({ type: Account })

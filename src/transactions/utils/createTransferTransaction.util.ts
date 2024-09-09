@@ -90,7 +90,7 @@ const validateCreateTransferTransactionDto: TValidateCreateTransferTransactionDt
 type TCreateTransferTransaction = (args: {
     createTransactionDto: CreateTransactionDto;
     queryRunner: QueryRunner;
-    findUserById(id: number): Promise<User>;
+    getUserById(id: number): Promise<User>;
     findAccountById(options: FindOneOptions<Account>): Promise<Account>;
 }) => Promise<Transaction>;
 
@@ -105,10 +105,10 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
         description,
     },
     queryRunner,
-    findUserById,
+    getUserById,
     findAccountById,
 }) => {
-    const user = await findUserById(userId);
+    const user = await getUserById(userId);
     const fromAccount = await findAccountById({
         where: { id: fromAccountId },
         relations: {

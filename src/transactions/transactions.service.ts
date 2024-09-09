@@ -60,7 +60,7 @@ export class TransactionsService {
         };
     }
 
-    async findOne(
+    async getOne(
         id: Transaction['id'],
         relations?: FindOptionsRelations<Transaction>,
     ): Promise<Transaction> {
@@ -84,14 +84,14 @@ export class TransactionsService {
                 return createTransferTransaction({
                     createTransactionDto,
                     queryRunner: this.dataSource.createQueryRunner(),
-                    findUserById: this.usersService.findOne,
+                    getUserById: this.usersService.getOne,
                     findAccountById: this.accountRepository.findOne,
                 });
             case ETransactionType.EXPENSE:
                 return createExpenseTransaction({
                     createTransactionDto,
                     queryRunner: this.dataSource.createQueryRunner(),
-                    findUserById: this.usersService.findOne,
+                    getUserById: this.usersService.getOne,
                     findAccountById: this.accountRepository.findOne,
                     findTransactionCategoryById: this.transactionCategoryRepository.findOne,
                 });
@@ -99,7 +99,7 @@ export class TransactionsService {
                 return createIncomeTransaction({
                     createTransactionDto,
                     queryRunner: this.dataSource.createQueryRunner(),
-                    findUserById: this.usersService.findOne,
+                    getUserById: this.usersService.getOne,
                     findAccountById: this.accountRepository.findOne,
                     findTransactionCategoryById: this.transactionCategoryRepository.findOne,
                 });
@@ -122,7 +122,7 @@ export class TransactionsService {
     }
 
     async delete(id: Transaction['id']): Promise<Transaction> {
-        const transaction = await this.findOne(id);
+        const transaction = await this.getOne(id);
         const { value, fee, fromAccount, toAccount } = transaction;
 
         const queryRunner = this.dataSource.createQueryRunner();

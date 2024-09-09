@@ -103,7 +103,7 @@ const validateCreateIncomeTransactionDto: TValidateCreateIncomeTransactionDto = 
 type TCreateIncomeTransaction = (args: {
     createTransactionDto: CreateTransactionDto;
     queryRunner: QueryRunner;
-    findUserById(id: number): Promise<User>;
+    getUserById(id: number): Promise<User>;
     findAccountById(options: FindOneOptions<Account>): Promise<Account>;
     findTransactionCategoryById(
         options: FindOneOptions<TransactionCategory>,
@@ -121,11 +121,11 @@ export const createIncomeTransaction: TCreateIncomeTransaction = async ({
         description,
     },
     queryRunner,
-    findUserById,
+    getUserById,
     findAccountById,
     findTransactionCategoryById,
 }) => {
-    const user = await findUserById(userId);
+    const user = await getUserById(userId);
     const toAccount = await findAccountById({
         where: { id: toAccountId },
         relations: {

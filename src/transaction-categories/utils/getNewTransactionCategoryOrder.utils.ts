@@ -5,7 +5,7 @@ import { TransactionCategory } from '../../shared/entities/transaction-category.
 type TGetNewTransactionCategoryOrder = (args: {
     transactionCategoryTemplate: TransactionCategory;
     activeTransactionCategories: TransactionCategory[];
-    findOneTransactionCategory(
+    getOneTransactionCategory(
         id: TransactionCategory['id'],
         relations?: FindOptionsRelations<TransactionCategory>,
     ): Promise<TransactionCategory>;
@@ -14,12 +14,12 @@ type TGetNewTransactionCategoryOrder = (args: {
 export const getNewTransactionCategoryOrder: TGetNewTransactionCategoryOrder = async ({
     transactionCategoryTemplate,
     activeTransactionCategories,
-    findOneTransactionCategory,
+    getOneTransactionCategory,
 }) => {
     const { parent, type } = transactionCategoryTemplate;
 
     if (parent) {
-        const parentTransactionCategory = await findOneTransactionCategory(parent.id, {
+        const parentTransactionCategory = await getOneTransactionCategory(parent.id, {
             children: true,
         });
 

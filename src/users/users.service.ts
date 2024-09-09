@@ -2,16 +2,16 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsRelations, Repository } from 'typeorm';
 
-import NotFoundException from '../shared/exceptions/not-found.exception';
-import { getIdPointer } from '../shared/utils/idPointer.utils';
 import { User } from '../shared/entities/user.entity';
 import { Account } from '../shared/entities/account.entity';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
-import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
 import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
+import { CreateUserDto } from '../shared/dtos/create-user.dto';
+import NotFoundException from '../shared/exceptions/not-found.exception';
+import { getIdPointer } from '../shared/utils/idPointer.utils';
+import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
 
-import { CreateUserDto } from './dtos/create-user.dto';
 import { EditUserDto } from './dtos/edit-user.dto';
 import { EditUserCurrencyDto } from './dtos/create-user-currency.dto';
 import { getChildrenTransactionCategories } from './utils/getChildrenTransactionCategories.util';
@@ -50,7 +50,7 @@ export class UsersService {
         };
     }
 
-    async findOne(id: User['id'], relations?: FindOptionsRelations<User>): Promise<User> {
+    async getOne(id: User['id'], relations?: FindOptionsRelations<User>): Promise<User> {
         const user = await this.userRepository.findOne({
             where: { id },
             relations,
@@ -63,16 +63,15 @@ export class UsersService {
         return user;
     }
 
-    async findMe(token: string): Promise<User> {
+    async getMe(token: string): Promise<User> {
         const userId = 62; // TODO: Implement findMe by token
         console.log('me token', token);
 
-        return this.findOne(userId);
+        return this.getOne(userId);
     }
 
     async create(createUserDto: CreateUserDto): Promise<User> {
         const { defaultCurrency, language } = createUserDto;
-        const nickname = createUserDto.nickname || (await this.getNewName());
         const defaultRelations = getDefaultRelations({
             currency: defaultCurrency,
             language,
@@ -89,7 +88,6 @@ export class UsersService {
         try {
             const userTemplate = queryRunner.manager.create(User, {
                 ...createUserDto,
-                nickname,
                 ...defaultRelations,
             });
 
@@ -101,7 +99,7 @@ export class UsersService {
 
             await queryRunner.commitTransaction();
 
-            return this.findOne(user.id);
+            return this.getOne(user.id);
         } catch (err) {
             await queryRunner.rollbackTransaction();
             throw err;
@@ -127,7 +125,7 @@ export class UsersService {
         userId: User['id'],
         { defaultCurrency, ...args }: EditUserCurrencyDto,
     ): Promise<User> {
-        const { defaultCurrency: oldDefaultCurrency } = await this.findOne(userId);
+        const { defaultCurrency: oldDefaultCurrency } = await this.getOne(userId);
 
         if (oldDefaultCurrency === defaultCurrency) {
             throw new BadRequestException('The new `defaultCurrency` is the same like current one');
@@ -165,7 +163,7 @@ export class UsersService {
 
             await queryRunner.commitTransaction();
 
-            return this.findOne(userId, {
+            return this.getOne(userId, {
                 accounts: isAccountsCurrencySoftUpdate,
                 transactionCategories:
                     isTransactionCategoriesCurrencySoftUpdate ||
@@ -180,7 +178,7 @@ export class UsersService {
     }
 
     async delete(id: User['id']): Promise<User> {
-        const user = await this.findOne(id);
+        const user = await this.getOne(id);
 
         return this.userRepository.remove(user);
     }

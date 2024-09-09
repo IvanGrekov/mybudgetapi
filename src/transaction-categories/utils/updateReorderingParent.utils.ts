@@ -5,7 +5,7 @@ import { TransactionCategory } from '../../shared/entities/transaction-category.
 import { ReorderParentTransactionCategoryDto } from '../dtos/reorder-parent-transaction-category.dto';
 import { ETransactionCategoryStatus } from 'src/shared/enums/transaction-category.enums';
 
-type TFindOneTransactionCategory = (
+type TGetOneTransactionCategory = (
     id: TransactionCategory['id'],
     relations?: FindOptionsRelations<TransactionCategory>,
 ) => Promise<TransactionCategory>;
@@ -19,7 +19,7 @@ type TUpdateReorderingChild = (args: {
     id: number;
     order: number;
     parentTransactionCategory: TransactionCategory;
-    findOneTransactionCategory: TFindOneTransactionCategory;
+    getOneTransactionCategory: TGetOneTransactionCategory;
     updateTransactionCategory: TUpdateTransactionCategory;
 }) => Promise<void>;
 
@@ -27,10 +27,10 @@ const updateReorderingChild: TUpdateReorderingChild = async ({
     id,
     order,
     parentTransactionCategory,
-    findOneTransactionCategory,
+    getOneTransactionCategory,
     updateTransactionCategory,
 }) => {
-    const childTransactionCategory = await findOneTransactionCategory(id);
+    const childTransactionCategory = await getOneTransactionCategory(id);
 
     if (childTransactionCategory.status === ETransactionCategoryStatus.ARCHIVED) {
         throw new ArchivedEntityException('child transactionCategory', id);
@@ -44,17 +44,17 @@ const updateReorderingChild: TUpdateReorderingChild = async ({
 
 type TUpdateReorderingParent = (args: {
     parentNode: ReorderParentTransactionCategoryDto;
-    findOneTransactionCategory: TFindOneTransactionCategory;
+    getOneTransactionCategory: TGetOneTransactionCategory;
     updateTransactionCategory: TUpdateTransactionCategory;
 }) => Promise<void>;
 
 export const updateReorderingParent: TUpdateReorderingParent = async ({
     parentNode,
-    findOneTransactionCategory,
+    getOneTransactionCategory,
     updateTransactionCategory,
 }) => {
     const { id, order, childNodes } = parentNode;
-    const parentTransactionCategory = await findOneTransactionCategory(id, {
+    const parentTransactionCategory = await getOneTransactionCategory(id, {
         children: true,
     });
 
@@ -75,7 +75,7 @@ export const updateReorderingParent: TUpdateReorderingParent = async ({
         await updateReorderingChild({
             ...childNode,
             parentTransactionCategory,
-            findOneTransactionCategory,
+            getOneTransactionCategory,
             updateTransactionCategory,
         });
     }

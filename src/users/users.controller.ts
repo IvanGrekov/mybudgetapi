@@ -1,15 +1,15 @@
-import { Controller, Get, Query, Post, Param, Body, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Query, Param, Body, Patch, Delete } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { User } from '../shared/entities/user.entity';
+// import { CreateUserDto } from '../shared/dtos/create-user.dto';
 import { Public } from '../shared/decorators/public.decorator';
 import { AuthToken } from '../shared/decorators/authToken.decorator';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
 import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dtos/create-user.dto';
 import { EditUserDto } from './dtos/edit-user.dto';
 import { EditUserCurrencyDto } from './dtos/create-user-currency.dto';
 
@@ -27,8 +27,8 @@ export class UsersController {
 
     @ApiOkResponse({ type: User })
     @Get('me')
-    findMe(@AuthToken() token: string): Promise<User> {
-        return this.usersService.findMe(token);
+    getMe(@AuthToken() token: string): Promise<User> {
+        return this.usersService.getMe(token);
     }
 
     @ApiOkResponse({ type: [User] })
@@ -49,14 +49,8 @@ export class UsersController {
         },
     })
     @Get(':id')
-    findOne(@Param('id', CustomParseIntPipe) id: number): Promise<User> {
-        return this.usersService.findOne(id);
-    }
-
-    @ApiOkResponse({ type: User })
-    @Post()
-    create(@Body() createUserDto: CreateUserDto): Promise<User> {
-        return this.usersService.create(createUserDto);
+    getOne(@Param('id', CustomParseIntPipe) id: number): Promise<User> {
+        return this.usersService.getOne(id);
     }
 
     @ApiOkResponse({ type: User })

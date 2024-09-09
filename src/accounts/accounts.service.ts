@@ -50,7 +50,7 @@ export class AccountsService {
         });
     }
 
-    async findOne(id: Account['id'], relations?: FindOptionsRelations<Account>): Promise<Account> {
+    async getOne(id: Account['id'], relations?: FindOptionsRelations<Account>): Promise<Account> {
         const account = await this.accountRepository.findOne({
             where: { id },
             relations,
@@ -89,7 +89,7 @@ export class AccountsService {
     }
 
     async edit(id: Account['id'], editAccountDto: EditAccountDto): Promise<Account> {
-        const oldAccount = await this.findOne(id, { user: true });
+        const oldAccount = await this.getOne(id, { user: true });
         const order = await getOldAccountNewOrder({
             oldAccount,
             editAccountDto,
@@ -126,7 +126,7 @@ export class AccountsService {
                 userId: user.id,
                 account,
                 createQueryRunner: this.dataSource.createQueryRunner.bind(this.dataSource),
-                findOneAccount: this.findOne.bind(this),
+                getOneAccount: this.getOne.bind(this),
                 findAllAccounts: this.findAll.bind(this),
             });
         } else {
@@ -138,7 +138,7 @@ export class AccountsService {
         id: Account['id'],
         { currency, rate }: EditAccountCurrencyDto,
     ): Promise<Account> {
-        const oldAccount = await this.findOne(id);
+        const oldAccount = await this.getOne(id);
         const oldCurrency = oldAccount.currency;
         if (oldCurrency === currency) {
             throw new BadRequestException('The new `currency` is the same like current one');
@@ -167,7 +167,7 @@ export class AccountsService {
     }
 
     async reorder(id: Account['id'], { order }: ReorderAccountDto): Promise<Account[]> {
-        const account = await this.findOne(id, { user: true });
+        const account = await this.getOne(id, { user: true });
 
         if (account.status === EAccountStatus.ARCHIVED) {
             throw new ArchivedEntityException('account', id);
@@ -216,7 +216,7 @@ export class AccountsService {
     }
 
     async delete(id: Account['id']): Promise<Account[]> {
-        const account = await this.findOne(id, {
+        const account = await this.getOne(id, {
             user: true,
         });
 

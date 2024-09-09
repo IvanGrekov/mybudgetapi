@@ -75,7 +75,7 @@ export class TransactionCategoriesService {
         return sortChildTransactionCategories(filteredTransactionCategories);
     }
 
-    async findOne(
+    async getOne(
         id: TransactionCategory['id'],
         relations?: FindOptionsRelations<TransactionCategory>,
     ): Promise<TransactionCategory> {
@@ -96,7 +96,7 @@ export class TransactionCategoriesService {
     ): Promise<TransactionCategory> {
         const { userId, parentId, type } = createTransactionCategoryDto;
 
-        const user = await this.usersService.findOne(userId);
+        const user = await this.usersService.getOne(userId);
         const activeTransactionCategories = await this.findAll({
             userId,
             shouldFilterChildTransactionCategories: false,
@@ -115,13 +115,13 @@ export class TransactionCategoriesService {
             parentId,
             userId,
             type,
-            findOneTransactionCategory: this.findOne.bind(this),
+            getOneTransactionCategory: this.getOne.bind(this),
         });
 
         transactionCategoryTemplate.order = await getNewTransactionCategoryOrder({
             transactionCategoryTemplate,
             activeTransactionCategories,
-            findOneTransactionCategory: this.findOne.bind(this),
+            getOneTransactionCategory: this.getOne.bind(this),
         });
 
         return this.transactionCategoryRepository.save(transactionCategoryTemplate);
@@ -131,7 +131,7 @@ export class TransactionCategoriesService {
         id: TransactionCategory['id'],
         editTransactionCategoryDto: EditTransactionCategoryDto,
     ): Promise<TransactionCategory> {
-        const oldTransactionCategory = await this.findOne(id, {
+        const oldTransactionCategory = await this.getOne(id, {
             user: true,
             parent: true,
             children: true,
@@ -160,7 +160,7 @@ export class TransactionCategoriesService {
                 transactionCategory,
                 oldTransactionCategory,
                 createQueryRunner: this.dataSource.createQueryRunner.bind(this.dataSource),
-                findOneTransactionCategory: this.findOne.bind(this),
+                getOneTransactionCategory: this.getOne.bind(this),
                 findAllTransactionCategories: this.findAll.bind(this),
             });
         } else {
@@ -172,7 +172,7 @@ export class TransactionCategoriesService {
         id: TransactionCategory['id'],
         { currency }: EditTransactionCategoryCurrencyDto,
     ): Promise<TransactionCategory> {
-        const oldTransactionCategory = await this.findOne(id);
+        const oldTransactionCategory = await this.getOne(id);
         const oldCurrency = oldTransactionCategory.currency;
         if (oldCurrency === currency) {
             throw new BadRequestException('The new `currency` is the same like current one');
@@ -207,7 +207,7 @@ export class TransactionCategoriesService {
         const {
             user: { id: userId },
             type,
-        } = await this.findOne(parentNodes.at(0).id, {
+        } = await this.getOne(parentNodes.at(0).id, {
             user: true,
         });
         const currentTransactionCategories = await this.findAll({
@@ -226,7 +226,7 @@ export class TransactionCategoriesService {
             for (const parentNode of parentNodes) {
                 await updateReorderingParent({
                     parentNode,
-                    findOneTransactionCategory: this.findOne.bind(this),
+                    getOneTransactionCategory: this.getOne.bind(this),
                     updateTransactionCategory: (id, transactionCategory) =>
                         queryRunner.manager.update(TransactionCategory, id, transactionCategory),
                 });
@@ -250,7 +250,7 @@ export class TransactionCategoriesService {
         id: TransactionCategory['id'],
         { shouldRemoveChildTransactionCategories }: DeleteTransactionCategoryDto,
     ): Promise<TransactionCategory[]> {
-        const transactionCategory = await this.findOne(id, {
+        const transactionCategory = await this.getOne(id, {
             user: true,
             parent: true,
             children: true,

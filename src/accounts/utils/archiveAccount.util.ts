@@ -37,7 +37,7 @@ type TArchiveAccountArgs = (args: {
     account: Account;
     userId: number;
     createQueryRunner(): QueryRunner;
-    findOneAccount(id: number): Promise<Account>;
+    getOneAccount(id: number): Promise<Account>;
     findAllAccounts: TFindAllAccounts;
 }) => Promise<Account>;
 
@@ -45,7 +45,7 @@ export const archiveAccount: TArchiveAccountArgs = async ({
     account,
     userId,
     createQueryRunner,
-    findOneAccount,
+    getOneAccount,
     findAllAccounts,
 }) => {
     const { id: accountId, type } = account;
@@ -67,7 +67,7 @@ export const archiveAccount: TArchiveAccountArgs = async ({
 
         await queryRunner.commitTransaction();
 
-        return findOneAccount(accountId);
+        return getOneAccount(accountId);
     } catch (err) {
         await queryRunner.rollbackTransaction();
         throw err;

@@ -1,7 +1,7 @@
 import { PickType } from '@nestjs/swagger';
 import { IsNumber, IsPositive, IsBoolean, IsOptional } from 'class-validator';
 
-import { CreateUserDto } from './create-user.dto';
+import { CreateUserDto } from '../../shared/dtos/create-user.dto';
 
 export class EditUserCurrencyDto extends PickType(CreateUserDto, ['defaultCurrency']) {
     @IsNumber()

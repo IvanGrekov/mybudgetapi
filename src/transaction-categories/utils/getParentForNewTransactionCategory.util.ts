@@ -10,7 +10,7 @@ type TGetParentForNewTransactionCategory = (args: {
     parentId: number;
     userId: number;
     type: ETransactionCategoryType;
-    findOneTransactionCategory(
+    getOneTransactionCategory(
         id: TransactionCategory['id'],
         relations?: FindOptionsRelations<TransactionCategory>,
     ): Promise<TransactionCategory>;
@@ -20,13 +20,13 @@ export const getParentForNewTransactionCategory: TGetParentForNewTransactionCate
     parentId,
     type,
     userId,
-    findOneTransactionCategory,
+    getOneTransactionCategory,
 }) => {
     if (!parentId) {
         return null;
     }
 
-    const parentTransactionCategory = await findOneTransactionCategory(parentId, {
+    const parentTransactionCategory = await getOneTransactionCategory(parentId, {
         user: true,
         parent: true,
     });

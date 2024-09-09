@@ -25,8 +25,8 @@ export class TransactionCategoriesController {
 
     @ApiOkResponse({ type: TransactionCategory })
     @Get(':id')
-    findOne(@Param('id', CustomParseIntPipe) id: number): Promise<TransactionCategory> {
-        return this.transactionCategoriesService.findOne(id);
+    getOne(@Param('id', CustomParseIntPipe) id: number): Promise<TransactionCategory> {
+        return this.transactionCategoriesService.getOne(id);
     }
 
     @ApiOkResponse({ type: TransactionCategory })

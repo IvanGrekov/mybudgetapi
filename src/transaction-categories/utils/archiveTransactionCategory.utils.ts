@@ -36,7 +36,7 @@ type TArchiveTransactionCategory = (args: {
     transactionCategory: TransactionCategory;
     oldTransactionCategory: TransactionCategory;
     createQueryRunner(): QueryRunner;
-    findOneTransactionCategory(id: number): Promise<TransactionCategory>;
+    getOneTransactionCategory(id: number): Promise<TransactionCategory>;
     findAllTransactionCategories(
         args: FindAllTransactionCategoriesDto,
     ): Promise<TransactionCategory[]>;
@@ -96,7 +96,7 @@ export const archiveTransactionCategory: TArchiveTransactionCategory = async ({
     transactionCategory,
     oldTransactionCategory,
     createQueryRunner,
-    findOneTransactionCategory,
+    getOneTransactionCategory,
     findAllTransactionCategories,
 }) => {
     const { parent, children, type } = oldTransactionCategory;
@@ -142,7 +142,7 @@ export const archiveTransactionCategory: TArchiveTransactionCategory = async ({
 
         await queryRunner.commitTransaction();
 
-        return findOneTransactionCategory(transactionCategoryId);
+        return getOneTransactionCategory(transactionCategoryId);
     } catch (err) {
         await queryRunner.rollbackTransaction();
         throw err;
