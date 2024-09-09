@@ -67,7 +67,7 @@ export class AccountsService {
         validateAccountProperties(createAccountDto);
 
         const { userId, balance, type } = createAccountDto;
-        const user = await this.usersService.findOne(userId);
+        const user = await this.usersService.getOne(userId);
         const activeAccounts = await this.findAll({
             userId,
         });

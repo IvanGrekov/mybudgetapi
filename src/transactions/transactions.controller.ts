@@ -23,8 +23,8 @@ export class TransactionsController {
 
     @ApiOkResponse({ type: Transaction })
     @Get(':id')
-    findOne(@Param('id', CustomParseIntPipe) id: number): Promise<Transaction> {
-        return this.transactionsService.findOne(id);
+    getOne(@Param('id', CustomParseIntPipe) id: number): Promise<Transaction> {
+        return this.transactionsService.getOne(id);
     }
 
     @ApiOkResponse({ type: Transaction })
