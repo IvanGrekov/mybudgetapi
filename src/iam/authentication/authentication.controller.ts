@@ -8,16 +8,17 @@ import { Public } from '../../shared/decorators/public.decorator';
 import { AuthenticationService } from '../authentication/authentication.service';
 
 import { SignInDto } from './dtos/sign-in.dto';
+import { SignInResultDto } from './dtos/sign-in-result.dto';
 
 @ApiTags('authentication')
 @Controller('authentication')
 export class AuthenticationController {
     constructor(private readonly authenticationService: AuthenticationService) {}
 
-    @ApiOkResponse({ type: User })
+    @ApiOkResponse()
     @Post('sign-up')
     @Public()
-    async signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
+    async signUp(@Body() createUserDto: CreateUserDto): Promise<void> {
         return this.authenticationService.signUp(createUserDto);
     }
 
@@ -25,7 +26,7 @@ export class AuthenticationController {
     @HttpCode(HttpStatus.OK)
     @Post('sign-in')
     @Public()
-    async signIn(@Body() signInDto: SignInDto): Promise<User> {
+    async signIn(@Body() signInDto: SignInDto): Promise<SignInResultDto> {
         return this.authenticationService.signIn(signInDto);
     }
 }

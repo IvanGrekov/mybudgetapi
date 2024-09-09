@@ -1,14 +1,19 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Inject, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigType } from '@nestjs/config';
 import { Repository } from 'typeorm';
 
 import { User } from '../../shared/entities/user.entity';
 import { CreateUserDto } from '../../shared/dtos/create-user.dto';
 
-import { HashingService } from '../hashing/hashing.service';
 import { UsersService } from '../../users/users.service';
+import jwtConfig from '../../config/jwt.config';
+
+import { HashingService } from '../hashing/hashing.service';
 
 import { SignInDto } from './dtos/sign-in.dto';
+import { SignInResultDto } from './dtos/sign-in-result.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -17,6 +22,9 @@ export class AuthenticationService {
         private readonly usersService: UsersService,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        private readonly jwtService: JwtService,
+        @Inject(jwtConfig.KEY)
+        private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
     ) {}
 
     async findByEmail(email: string): Promise<User | null> {
@@ -25,7 +33,7 @@ export class AuthenticationService {
         return user || null;
     }
 
-    async signUp(createUserDto: CreateUserDto): Promise<User> {
+    async signUp(createUserDto: CreateUserDto): Promise<void> {
         const { email, password } = createUserDto;
 
         const user = await this.findByEmail(email);
@@ -35,13 +43,13 @@ export class AuthenticationService {
 
         const hashedPassword = await this.hashingService.hash(password);
 
-        return this.usersService.create({
+        await this.usersService.create({
             ...createUserDto,
             password: hashedPassword,
         });
     }
 
-    async signIn(signInDto: SignInDto): Promise<User> {
+    async signIn(signInDto: SignInDto): Promise<SignInResultDto> {
         const { email, password } = signInDto;
 
         const user = await this.findByEmail(email);
@@ -54,6 +62,19 @@ export class AuthenticationService {
             throw new UnauthorizedException('User not found');
         }
 
-        return user;
+        const accessToken = await this.jwtService.signAsync(
+            {
+                sub: user.id,
+                email: user.email,
+            },
+            {
+                secret: this.jwtConfiguration.secret,
+                audience: this.jwtConfiguration.audience,
+                issuer: this.jwtConfiguration.issuer,
+                expiresIn: this.jwtConfiguration.accessTokenTtl,
+            },
+        );
+
+        return { accessToken };
     }
 }

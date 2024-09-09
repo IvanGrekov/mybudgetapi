@@ -14,7 +14,7 @@ import { IamModule } from './iam/iam.module';
 @Module({
     imports: [
         TypeOrmModule.forRootAsync({
-            imports: [ConfigModule.forFeature(databaseConfig), ConfigModule.forFeature(appConfig)],
+            imports: [ConfigModule.forFeature(appConfig), ConfigModule.forFeature(databaseConfig)],
             inject: [databaseConfig.KEY, appConfig.KEY],
             useFactory: (
                 config: ConfigType<typeof databaseConfig>,
