@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
-import { HttpExceptionFilter } from './shared/filters/http-exception-filter.filter';
+import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 import { RequestTimeoutInterceptor } from './shared/interceptors/request-timeout.interceptor';
 import { AppModule } from './app.module';
 

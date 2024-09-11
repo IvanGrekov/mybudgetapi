@@ -12,6 +12,8 @@ import { getIdPointer } from '../shared/utils/idPointer.utils';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
 
+import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
+
 import { EditUserDto } from './dtos/edit-user.dto';
 import { EditUserCurrencyDto } from './dtos/create-user-currency.dto';
 import { getChildrenTransactionCategories } from './utils/getChildrenTransactionCategories.util';
@@ -63,11 +65,8 @@ export class UsersService {
         return user;
     }
 
-    async getMe(token: string): Promise<User> {
-        const userId = 62; // TODO: Implement findMe by token
-        console.log('me token', token);
-
-        return this.getOne(userId);
+    async getMe(sub: IActiveUser['sub']): Promise<User> {
+        return this.getOne(sub);
     }
 
     async create(createUserDto: CreateUserDto): Promise<User> {

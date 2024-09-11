@@ -3,12 +3,13 @@ import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { User } from '../shared/entities/user.entity';
-import { AuthToken } from '../shared/decorators/authToken.decorator';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
 import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 
 import { EAuthType } from '../iam/authentication/enums/auth-type.enum';
 import { Auth } from '../iam/authentication/decorators/auth.decorator';
+import { ActiveUser } from '../iam/decorators/active-user.decorator';
+import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
 
 import { UsersService } from './users.service';
 import { EditUserDto } from './dtos/edit-user.dto';
@@ -28,8 +29,8 @@ export class UsersController {
 
     @ApiOkResponse({ type: User })
     @Get('me')
-    getMe(@AuthToken() token: string): Promise<User> {
-        return this.usersService.getMe(token);
+    getMe(@ActiveUser('sub') activeUserId: IActiveUser['sub']): Promise<User> {
+        return this.usersService.getMe(activeUserId);
     }
 
     @ApiOkResponse({ type: [User] })

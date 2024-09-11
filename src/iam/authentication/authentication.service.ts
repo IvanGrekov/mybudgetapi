@@ -17,6 +17,7 @@ import { UsersService } from '../../users/users.service';
 import jwtConfig from '../../config/jwt.config';
 
 import { HashingService } from '../hashing/hashing.service';
+import { IActiveUser } from '../interfaces/active-user-data.interface';
 
 import { SignInDto } from './dtos/sign-in.dto';
 import { SignInResultDto } from './dtos/sign-in-result.dto';
@@ -69,13 +70,11 @@ export class AuthenticationService {
         }
 
         try {
-            const accessToken = await this.jwtService.signAsync(
-                {
-                    sub: user.id,
-                    email: user.email,
-                },
-                this.jwtConfiguration,
-            );
+            const activeUser: IActiveUser = {
+                sub: user.id,
+                email: user.email,
+            };
+            const accessToken = await this.jwtService.signAsync(activeUser, this.jwtConfiguration);
 
             return { accessToken };
         } catch (e) {
