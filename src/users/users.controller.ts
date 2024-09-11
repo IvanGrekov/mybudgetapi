@@ -3,11 +3,12 @@ import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { User } from '../shared/entities/user.entity';
-// import { CreateUserDto } from '../shared/dtos/create-user.dto';
-import { Public } from '../shared/decorators/public.decorator';
 import { AuthToken } from '../shared/decorators/authToken.decorator';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
 import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
+
+import { EAuthType } from '../iam/authentication/enums/auth-type.enum';
+import { Auth } from '../iam/authentication/decorators/auth.decorator';
 
 import { UsersService } from './users.service';
 import { EditUserDto } from './dtos/edit-user.dto';
@@ -20,7 +21,7 @@ export class UsersController {
 
     @ApiOkResponse({ type: String })
     @Get('name')
-    @Public()
+    @Auth(EAuthType.None)
     getNewName(): Promise<string> {
         return this.usersService.getNewName();
     }

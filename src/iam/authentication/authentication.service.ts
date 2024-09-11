@@ -1,4 +1,10 @@
-import { Injectable, Inject, ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+    Injectable,
+    Inject,
+    ConflictException,
+    UnauthorizedException,
+    InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigType } from '@nestjs/config';
@@ -62,19 +68,19 @@ export class AuthenticationService {
             throw new UnauthorizedException('User not found');
         }
 
-        const accessToken = await this.jwtService.signAsync(
-            {
-                sub: user.id,
-                email: user.email,
-            },
-            {
-                secret: this.jwtConfiguration.secret,
-                audience: this.jwtConfiguration.audience,
-                issuer: this.jwtConfiguration.issuer,
-                expiresIn: this.jwtConfiguration.accessTokenTtl,
-            },
-        );
+        try {
+            const accessToken = await this.jwtService.signAsync(
+                {
+                    sub: user.id,
+                    email: user.email,
+                },
+                this.jwtConfiguration,
+            );
 
-        return { accessToken };
+            return { accessToken };
+        } catch (e) {
+            console.log('AuthenticationService', JSON.stringify(e, null, 2));
+            throw new InternalServerErrorException();
+        }
     }
 }
