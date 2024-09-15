@@ -28,14 +28,14 @@ export class AccessTokenGuard implements CanActivate {
         const request = context.switchToHttp().getRequest<Request>();
         const authHeader = request.header('Authorization');
 
-        if (authHeader === this.authenticationConfiguration.apiKey) {
-            return true;
-        }
-
         const token = this.extractTokenFromHeader(authHeader);
 
         if (!token) {
             throw new UnauthorizedException();
+        }
+
+        if (token === this.authenticationConfiguration.apiKey) {
+            return true;
         }
 
         try {
