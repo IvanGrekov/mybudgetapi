@@ -19,8 +19,10 @@ import jwtConfig from '../../config/jwt.config';
 import { HashingService } from '../hashing/hashing.service';
 import { IActiveUser } from '../interfaces/active-user-data.interface';
 
+import { SignTokenDto } from './dtos/sign-token.dto';
 import { SignInDto } from './dtos/sign-in.dto';
-import { SignInResultDto } from './dtos/sign-in-result.dto';
+import { GeneratedTokensDto } from './dtos/generated-tokens.dto';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -34,10 +36,47 @@ export class AuthenticationService {
         private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
     ) {}
 
-    async findByEmail(email: string): Promise<User | null> {
+    private async findByEmail(email: string): Promise<User | null> {
         const user = await this.userRepository.findOne({ where: { email } });
 
         return user || null;
+    }
+
+    private async signToken<T extends { sub: number }>({
+        payload,
+        expiresIn,
+    }: SignTokenDto<T>): Promise<string> {
+        return this.jwtService.signAsync(payload, {
+            secret: this.jwtConfiguration.secret,
+            audience: this.jwtConfiguration.audience,
+            issuer: this.jwtConfiguration.issuer,
+            expiresIn,
+        });
+    }
+
+    private async generateTokens(user: User): Promise<GeneratedTokensDto> {
+        try {
+            const payload: IActiveUser = {
+                sub: user.id,
+                email: user.email,
+            };
+
+            const [accessToken, refreshToken] = await Promise.all([
+                this.signToken<IActiveUser>({
+                    payload,
+                    expiresIn: this.jwtConfiguration.accessTokenExpiresIn,
+                }),
+                this.signToken<IActiveUser>({
+                    payload,
+                    expiresIn: this.jwtConfiguration.refreshTokenExpiresIn,
+                }),
+            ]);
+
+            return { accessToken, refreshToken };
+        } catch (e) {
+            console.log('Tokens Signing Failed', JSON.stringify(e, null, 2));
+            throw new InternalServerErrorException();
+        }
     }
 
     async signUp(createUserDto: CreateUserDto): Promise<void> {
@@ -56,7 +95,7 @@ export class AuthenticationService {
         });
     }
 
-    async signIn(signInDto: SignInDto): Promise<SignInResultDto> {
+    async signIn(signInDto: SignInDto): Promise<GeneratedTokensDto> {
         const { email, password } = signInDto;
 
         const user = await this.findByEmail(email);
@@ -69,17 +108,26 @@ export class AuthenticationService {
             throw new UnauthorizedException('User not found');
         }
 
-        try {
-            const activeUser: IActiveUser = {
-                sub: user.id,
-                email: user.email,
-            };
-            const accessToken = await this.jwtService.signAsync(activeUser, this.jwtConfiguration);
+        return this.generateTokens(user);
+    }
 
-            return { accessToken };
+    async refreshToken({ refreshToken }: RefreshTokenDto): Promise<GeneratedTokensDto> {
+        try {
+            const { sub } = await this.jwtService.verifyAsync<IActiveUser>(refreshToken, {
+                secret: this.jwtConfiguration.secret,
+                audience: this.jwtConfiguration.audience,
+                issuer: this.jwtConfiguration.issuer,
+            });
+
+            const user = await this.userRepository.findOne({ where: { id: sub } });
+            if (!user) {
+                throw new UnauthorizedException('User not found');
+            }
+
+            return this.generateTokens(user);
         } catch (e) {
-            console.log('AuthenticationService', JSON.stringify(e, null, 2));
-            throw new InternalServerErrorException();
+            console.log('Refresh Token Verifying Failed', JSON.stringify(e, null, 2));
+            throw new UnauthorizedException();
         }
     }
 }

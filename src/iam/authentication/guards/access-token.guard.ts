@@ -39,12 +39,16 @@ export class AccessTokenGuard implements CanActivate {
         }
 
         try {
-            const payload = await this.jwtService.verifyAsync(token, this.jwtConfiguration);
+            const payload = await this.jwtService.verifyAsync(token, {
+                secret: this.jwtConfiguration.secret,
+                audience: this.jwtConfiguration.audience,
+                issuer: this.jwtConfiguration.issuer,
+            });
             request[REQUEST_USER_KEY] = payload;
 
             return true;
         } catch (e) {
-            console.log('AccessTokenGuard', JSON.stringify(e, null, 2));
+            console.log('Access Token Verifying Failed', JSON.stringify(e, null, 2));
             throw new UnauthorizedException();
         }
     }

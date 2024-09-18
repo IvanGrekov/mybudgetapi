@@ -8,17 +8,18 @@ import { Auth } from '../authentication/decorators/auth.decorator';
 import { AuthenticationService } from '../authentication/authentication.service';
 
 import { SignInDto } from './dtos/sign-in.dto';
-import { SignInResultDto } from './dtos/sign-in-result.dto';
+import { GeneratedTokensDto } from './dtos/generated-tokens.dto';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { EAuthType } from './enums/auth-type.enum';
 
 @ApiTags('authentication')
+@Auth(EAuthType.None)
 @Controller('authentication')
 export class AuthenticationController {
     constructor(private readonly authenticationService: AuthenticationService) {}
 
     @ApiOkResponse()
     @Post('sign-up')
-    @Auth(EAuthType.None)
     async signUp(@Body() createUserDto: CreateUserDto): Promise<void> {
         return this.authenticationService.signUp(createUserDto);
     }
@@ -26,8 +27,14 @@ export class AuthenticationController {
     @ApiOkResponse({ type: User })
     @HttpCode(HttpStatus.OK)
     @Post('sign-in')
-    @Auth(EAuthType.None)
-    async signIn(@Body() signInDto: SignInDto): Promise<SignInResultDto> {
+    async signIn(@Body() signInDto: SignInDto): Promise<GeneratedTokensDto> {
         return this.authenticationService.signIn(signInDto);
+    }
+
+    @ApiOkResponse()
+    @HttpCode(HttpStatus.OK)
+    @Post('refresh-token')
+    async refreshToken(@Body() refreshTokenDto: RefreshTokenDto): Promise<GeneratedTokensDto> {
+        return this.authenticationService.refreshToken(refreshTokenDto);
     }
 }
