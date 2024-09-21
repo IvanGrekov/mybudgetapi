@@ -9,6 +9,7 @@ import { User } from '../shared/entities/user.entity';
 import { UsersModule } from '../users/users.module';
 import jwtConfig from '../config/jwt.config';
 import authenticationConfig from '../config/authentication.config';
+import redisConfig from '../config/redis.config';
 
 import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
@@ -16,6 +17,7 @@ import { AuthenticationController } from './authentication/authentication.contro
 import { AuthenticationService } from './authentication/authentication.service';
 import { AuthenticationGuard } from './authentication/guards/authentication.guard';
 import { AccessTokenGuard } from './authentication/guards/access-token.guard';
+import { RefreshTokedIdsStorage } from './authentication/refresh-toked-ids.storage';
 
 @Module({
     imports: [
@@ -23,6 +25,7 @@ import { AccessTokenGuard } from './authentication/guards/access-token.guard';
         UsersModule,
         ConfigModule.forFeature(jwtConfig),
         ConfigModule.forFeature(authenticationConfig),
+        ConfigModule.forFeature(redisConfig),
         JwtModule.registerAsync(jwtConfig.asProvider()),
     ],
     providers: [
@@ -36,6 +39,7 @@ import { AccessTokenGuard } from './authentication/guards/access-token.guard';
         },
         AccessTokenGuard,
         AuthenticationService,
+        RefreshTokedIdsStorage,
     ],
     controllers: [AuthenticationController],
 })
