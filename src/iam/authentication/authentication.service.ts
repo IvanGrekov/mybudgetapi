@@ -88,7 +88,7 @@ export class AuthenticationService {
         }
     }
 
-    async signUp(createUserDto: CreateUserDto): Promise<void> {
+    async signUp(createUserDto: CreateUserDto): Promise<GeneratedTokensDto> {
         const { email, password } = createUserDto;
 
         const user = await this.findByEmail(email);
@@ -98,10 +98,12 @@ export class AuthenticationService {
 
         const hashedPassword = await this.hashingService.hash(password);
 
-        await this.usersService.create({
+        const newUser = await this.usersService.create({
             ...createUserDto,
             password: hashedPassword,
         });
+
+        return this.generateTokens(newUser);
     }
 
     async signIn(signInDto: SignInDto): Promise<GeneratedTokensDto> {

@@ -20,7 +20,7 @@ export class AuthenticationController {
 
     @ApiOkResponse()
     @Post('sign-up')
-    async signUp(@Body() createUserDto: CreateUserDto): Promise<void> {
+    async signUp(@Body() createUserDto: CreateUserDto): Promise<GeneratedTokensDto> {
         return this.authenticationService.signUp(createUserDto);
     }
 

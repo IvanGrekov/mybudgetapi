@@ -11,11 +11,14 @@ import NotFoundException from '../shared/exceptions/not-found.exception';
 import { getIdPointer } from '../shared/utils/idPointer.utils';
 import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
+import { DEFAULT_CURRENCY } from '../shared/constants/currency.constants';
+import { DEFAULT_LANGUAGE } from '../shared/constants/language.constants';
 
 import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
 
 import { EditUserDto } from './dtos/edit-user.dto';
-import { EditUserCurrencyDto } from './dtos/create-user-currency.dto';
+import { EditUserCurrencyDto } from './dtos/edit-user-currency.dto';
+import { EditUserRoleDto } from './dtos/edit-user-role.dto';
 import { getChildrenTransactionCategories } from './utils/getChildrenTransactionCategories.util';
 import { getDefaultRelations } from './utils/getDefaultRelations.util';
 import { updateRelationsCurrency } from './utils/updateRelationsCurrency.util';
@@ -70,7 +73,13 @@ export class UsersService {
     }
 
     async create(createUserDto: CreateUserDto): Promise<User> {
-        const { defaultCurrency, language } = createUserDto;
+        const {
+            defaultCurrency = DEFAULT_CURRENCY,
+            language = DEFAULT_LANGUAGE,
+            email,
+            nickname = email,
+        } = createUserDto;
+
         const defaultRelations = getDefaultRelations({
             currency: defaultCurrency,
             language,
@@ -87,6 +96,8 @@ export class UsersService {
         try {
             const userTemplate = queryRunner.manager.create(User, {
                 ...createUserDto,
+                email,
+                nickname,
                 ...defaultRelations,
             });
 
@@ -174,6 +185,19 @@ export class UsersService {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    async editRole(id: User['id'], editUserRoleDto: EditUserRoleDto): Promise<User> {
+        const user = await this.userRepository.preload({
+            id,
+            ...editUserRoleDto,
+        });
+
+        if (!user) {
+            throw new NotFoundException('User', id);
+        }
+
+        return this.userRepository.save(user);
     }
 
     async delete(id: User['id']): Promise<User> {

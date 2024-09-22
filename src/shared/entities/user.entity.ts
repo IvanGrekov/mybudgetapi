@@ -1,12 +1,14 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 import { ECurrency } from '../enums/currency.enums';
+import { EUserRole } from '../enums/user-role.enums';
 
 import { Account } from './account.entity';
 import { TransactionCategory } from './transaction-category.entity';
 
 import { Transaction } from './transaction.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { DEFAULT_CURRENCY } from '../constants/currency.constants';
 
 @Entity()
 export class User {
@@ -18,6 +20,13 @@ export class User {
 
     @Column()
     password: string;
+
+    @Column({
+        type: 'enum',
+        enum: EUserRole,
+        default: EUserRole.USER,
+    })
+    userRole: EUserRole;
 
     @OneToMany(() => Account, ({ user }) => user, {
         cascade: true,
@@ -44,10 +53,11 @@ export class User {
     @Column({
         type: 'enum',
         enum: ECurrency,
+        default: DEFAULT_CURRENCY,
     })
     defaultCurrency: ECurrency;
 
-    @Column()
+    @Column({ default: 'Europe/London' })
     timeZone: string;
 
     @CreateDateColumn()

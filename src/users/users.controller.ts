@@ -13,7 +13,8 @@ import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
 
 import { UsersService } from './users.service';
 import { EditUserDto } from './dtos/edit-user.dto';
-import { EditUserCurrencyDto } from './dtos/create-user-currency.dto';
+import { EditUserCurrencyDto } from './dtos/edit-user-currency.dto';
+import { EditUserRoleDto } from './dtos/edit-user-role.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -66,11 +67,17 @@ export class UsersController {
 
     @ApiOkResponse({ type: User })
     @Patch('currency/:id')
-    editOnesCurrency(
+    editCurrency(
         @Param('id') id: number,
         @Body() editUserCurrencyDto: EditUserCurrencyDto,
     ): Promise<User> {
         return this.usersService.editCurrency(id, editUserCurrencyDto);
+    }
+
+    @ApiOkResponse({ type: User })
+    @Patch('role/:id')
+    editRole(@Param('id') id: number, @Body() editUserRoleDto: EditUserRoleDto): Promise<User> {
+        return this.usersService.editRole(id, editUserRoleDto);
     }
 
     @ApiOkResponse({ type: User })
