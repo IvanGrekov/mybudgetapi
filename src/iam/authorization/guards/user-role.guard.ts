@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 import { USER_ROLE_KEY } from '../decorators/user-role.decorator';
@@ -28,10 +28,6 @@ export class UserRoleGuard implements CanActivate {
             return true;
         }
 
-        if (contextRoles.includes(user.role)) {
-            return true;
-        }
-
-        throw new UnauthorizedException();
+        return contextRoles.includes(user.role);
     }
 }

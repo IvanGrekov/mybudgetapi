@@ -18,6 +18,7 @@ export class User {
     @Column({ unique: true })
     email: string;
 
+    // TODO: Omit password from responses
     @Column()
     password: string;
 
