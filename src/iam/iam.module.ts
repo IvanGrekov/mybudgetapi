@@ -13,11 +13,14 @@ import redisConfig from '../config/redis.config';
 
 import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
+
 import { AuthenticationController } from './authentication/authentication.controller';
 import { AuthenticationService } from './authentication/authentication.service';
 import { AuthenticationGuard } from './authentication/guards/authentication.guard';
 import { AccessTokenGuard } from './authentication/guards/access-token.guard';
 import { RefreshTokedIdsStorage } from './authentication/refresh-toked-ids.storage';
+
+import { UserRoleGuard } from './authorization/guards/user-role.guard';
 
 @Module({
     imports: [
@@ -36,6 +39,10 @@ import { RefreshTokedIdsStorage } from './authentication/refresh-toked-ids.stora
         {
             provide: APP_GUARD,
             useClass: AuthenticationGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: UserRoleGuard,
         },
         AccessTokenGuard,
         AuthenticationService,

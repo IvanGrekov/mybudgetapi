@@ -4,5 +4,5 @@ import { EUserRole } from '../../shared/enums/user-role.enums';
 
 export class EditUserRoleDto {
     @IsEnum(EUserRole)
-    readonly userRole: EUserRole;
+    readonly role: EUserRole;
 }

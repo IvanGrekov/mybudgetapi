@@ -26,7 +26,7 @@ export class User {
         enum: EUserRole,
         default: EUserRole.USER,
     })
-    userRole: EUserRole;
+    role: EUserRole;
 
     @OneToMany(() => Account, ({ user }) => user, {
         cascade: true,

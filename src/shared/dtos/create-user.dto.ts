@@ -3,7 +3,6 @@ import { IsEmail, IsEnum, IsDefined, IsOptional } from 'class-validator';
 import IsString from '../property-decorators/is-string.decorator';
 import { ECurrency } from '../enums/currency.enums';
 import { ELanguage } from '../enums/language.enums';
-import { EUserRole } from '../enums/user-role.enums';
 
 import { NICKNAME_MIN_LENGTH, NICKNAME_MAX_LENGTH } from '../constants/nickname.constants';
 import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../constants/password.constants';
@@ -18,10 +17,6 @@ export class CreateUserDto {
         maxLength: PASSWORD_MAX_LENGTH,
     })
     password: string;
-
-    @IsOptional()
-    @IsEnum(EUserRole)
-    userRole?: EUserRole;
 
     @IsOptional()
     @IsString({

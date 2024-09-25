@@ -59,12 +59,12 @@ export class AuthenticationService {
         });
     }
 
-    private async generateTokens(user: User): Promise<GeneratedTokensDto> {
+    private async generateTokens({ id, email, role }: User): Promise<GeneratedTokensDto> {
         try {
-            const userId = user.id;
             const payload: IActiveUser = {
-                sub: userId,
-                email: user.email,
+                sub: id,
+                email,
+                role,
             };
             const refreshTokenId = randomUUID();
 
@@ -79,7 +79,7 @@ export class AuthenticationService {
                 }),
             ]);
 
-            await this.refreshTokenIdsStorage.insert(userId, refreshTokenId);
+            await this.refreshTokenIdsStorage.insert(id, refreshTokenId);
 
             return { accessToken, refreshToken };
         } catch (e) {
