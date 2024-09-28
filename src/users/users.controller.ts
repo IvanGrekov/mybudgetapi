@@ -1,4 +1,15 @@
-import { Controller, Get, Query, Param, Body, Patch, Delete } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Query,
+    Param,
+    Body,
+    Patch,
+    Delete,
+    UseInterceptors,
+    ClassSerializerInterceptor,
+    ForbiddenException,
+} from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
@@ -19,6 +30,8 @@ import { EditUserCurrencyDto } from './dtos/edit-user-currency.dto';
 import { EditUserRoleDto } from './dtos/edit-user-role.dto';
 
 @ApiTags('users')
+@Auth(EAuthType.Bearer, EAuthType.ApiKey)
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
@@ -56,7 +69,15 @@ export class UsersController {
     })
     @Get(':id')
     // TODO: Allow only for Admin if id is not equal to sub
-    getOne(@Param('id', CustomParseIntPipe) id: number): Promise<User> {
+    getOne(
+        @Param('id', CustomParseIntPipe) id: number,
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
+        @ActiveUser('role') activeUserRole: IActiveUser['role'],
+    ): Promise<User> {
+        if (id !== activeUserId && activeUserRole !== EUserRole.ADMIN) {
+            throw new ForbiddenException();
+        }
+
         return this.usersService.getOne(id);
     }
 

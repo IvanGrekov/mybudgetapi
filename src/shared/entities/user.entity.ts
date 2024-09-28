@@ -1,11 +1,13 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 
 import { ECurrency } from '../enums/currency.enums';
 import { EUserRole } from '../enums/user-role.enums';
 
 import { Account } from './account.entity';
 import { TransactionCategory } from './transaction-category.entity';
+import { ApiKey } from './api-key.entity';
 
 import { Transaction } from './transaction.entity';
 import { DEFAULT_CURRENCY } from '../constants/currency.constants';
@@ -18,8 +20,8 @@ export class User {
     @Column({ unique: true })
     email: string;
 
-    // TODO: Omit password from responses
     @Column()
+    @Exclude()
     password: string;
 
     @Column({
@@ -60,6 +62,11 @@ export class User {
 
     @Column({ default: 'Europe/London' })
     timeZone: string;
+
+    @OneToMany(() => ApiKey, ({ user }) => user, {
+        cascade: true,
+    })
+    apiKeys: ApiKey[];
 
     @CreateDateColumn()
     createdAt: Date;

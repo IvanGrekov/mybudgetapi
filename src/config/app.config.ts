@@ -23,5 +23,4 @@ export const validationSchema = Joi.object({
     JWT_TOKEN_ISSUER: Joi.string().required(),
     JWT_ACCESS_TOKEN_TTL: Joi.string().required(),
     JWT_REFRESH_TOKEN_TTL: Joi.string().required(),
-    API_KEY: Joi.string().required(),
 });

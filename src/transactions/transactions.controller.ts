@@ -5,12 +5,16 @@ import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { Transaction } from '../shared/entities/transaction.entity';
 import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 
+import { Auth } from '../iam/authentication/decorators/auth.decorator';
+import { EAuthType } from '../iam/authentication/enums/auth-type.enum';
+
 import { TransactionsService } from './transactions.service';
 import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { EditTransactionDto } from './dtos/edit-transaction.dto';
 
 @ApiTags('transactions')
+@Auth(EAuthType.Bearer, EAuthType.ApiKey)
 @Controller('transactions')
 export class TransactionsController {
     constructor(private readonly transactionsService: TransactionsService) {}

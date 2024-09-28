@@ -5,21 +5,24 @@ import { AUTH_TYPE_KEY } from '../decorators/auth.decorator';
 import { EAuthType } from '../enums/auth-type.enum';
 
 import { AccessTokenGuard } from './access-token.guard';
+import { ApiKeyGuard } from './api-key.guard';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
+    constructor(
+        private readonly reflector: Reflector,
+        private readonly accessTokenGuard: AccessTokenGuard,
+        private readonly apiKeyGuard: ApiKeyGuard,
+    ) {}
+
     private static readonly defaultAuthType = EAuthType.Bearer;
     private readonly authTypeGuardMap: Record<EAuthType, CanActivate | CanActivate[]> = {
         [EAuthType.Bearer]: this.accessTokenGuard,
+        [EAuthType.ApiKey]: this.apiKeyGuard,
         [EAuthType.None]: {
             canActivate: () => true,
         },
     };
-
-    constructor(
-        private readonly reflector: Reflector,
-        private readonly accessTokenGuard: AccessTokenGuard,
-    ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const authTypes = this.reflector.getAllAndOverride<EAuthType[]>(AUTH_TYPE_KEY, [

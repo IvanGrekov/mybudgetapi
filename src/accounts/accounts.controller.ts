@@ -4,6 +4,9 @@ import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { Account } from '../shared/entities/account.entity';
 
+import { Auth } from '../iam/authentication/decorators/auth.decorator';
+import { EAuthType } from '../iam/authentication/enums/auth-type.enum';
+
 import { AccountsService } from './accounts.service';
 import { FindAllAccountsDto } from './dtos/find-all-accounts.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
@@ -12,6 +15,7 @@ import { EditAccountCurrencyDto } from './dtos/edit-account-currency.dto';
 import { ReorderAccountDto } from './dtos/reorder-account.dto';
 
 @ApiTags('accounts')
+@Auth(EAuthType.Bearer, EAuthType.ApiKey)
 @Controller('accounts')
 export class AccountsController {
     constructor(private readonly accountsService: AccountsService) {}

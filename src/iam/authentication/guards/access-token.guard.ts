@@ -10,7 +10,6 @@ import { ConfigType } from '@nestjs/config';
 import { Request } from 'express';
 
 import jwtConfig from '../../../config/jwt.config';
-import authenticationConfig from '../../../config/authentication.config';
 
 import { REQUEST_USER_KEY } from '../../iam.constants';
 
@@ -20,22 +19,14 @@ export class AccessTokenGuard implements CanActivate {
         private readonly jwtService: JwtService,
         @Inject(jwtConfig.KEY)
         private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
-        @Inject(authenticationConfig.KEY)
-        private readonly authenticationConfiguration: ConfigType<typeof authenticationConfig>,
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest<Request>();
-        const authHeader = request.header('Authorization');
-
-        const token = this.extractTokenFromHeader(authHeader);
+        const token = this.extractTokenFromHeader(request);
 
         if (!token) {
             throw new UnauthorizedException();
-        }
-
-        if (token === this.authenticationConfiguration.apiKey) {
-            return true;
         }
 
         try {
@@ -53,7 +44,9 @@ export class AccessTokenGuard implements CanActivate {
         }
     }
 
-    private extractTokenFromHeader(authHeader?: string): string {
-        return authHeader?.split(' ').at(1) || '';
+    private extractTokenFromHeader(request: Request): string | undefined {
+        const [type, key] = request.header('Authorization')?.split(' ') || [];
+
+        return type?.toLowerCase() === 'bearer' ? key : undefined;
     }
 }

@@ -34,7 +34,6 @@ jobs:
         echo DB_CONTAINER_PORT=${{ secrets.DB_CONTAINER_PORT }} >> .env
         echo DB_USER=${{ secrets.DB_USER }} >> .env
         echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
-        echo API_KEY=${{ secrets.API_KEY }} >> .env
         echo JWT_SECRET=${{ secrets.JWT_SECRET }} >> .env
         echo JWT_TOKEN_AUDIENCE=${{ secrets.JWT_TOKEN_AUDIENCE }} >> .env
         echo JWT_TOKEN_ISSUER=${{ secrets.JWT_TOKEN_ISSUER }} >> .env

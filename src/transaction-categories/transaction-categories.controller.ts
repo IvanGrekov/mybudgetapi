@@ -4,6 +4,9 @@ import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 
+import { Auth } from '../iam/authentication/decorators/auth.decorator';
+import { EAuthType } from '../iam/authentication/enums/auth-type.enum';
+
 import { TransactionCategoriesService } from './transaction-categories.service';
 import { FindAllTransactionCategoriesDto } from './dtos/find-all-transaction-categories.dto';
 import { CreateTransactionCategoryDto } from './dtos/create-transaction-category.dto';
@@ -13,6 +16,7 @@ import { EditTransactionCategoryCurrencyDto } from './dtos/edit-transaction-cate
 import { DeleteTransactionCategoryDto } from './dtos/delete-transaction-category.dto';
 
 @ApiTags('transaction-categories')
+@Auth(EAuthType.Bearer, EAuthType.ApiKey)
 @Controller('transaction-categories')
 export class TransactionCategoriesController {
     constructor(private readonly transactionCategoriesService: TransactionCategoriesService) {}
