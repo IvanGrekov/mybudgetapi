@@ -39,6 +39,9 @@ jobs:
         echo JWT_TOKEN_ISSUER=${{ secrets.JWT_TOKEN_ISSUER }} >> .env
         echo JWT_ACCESS_TOKEN_TTL=${{ secrets.JWT_ACCESS_TOKEN_TTL }} >> .env
         echo JWT_REFRESH_TOKEN_TTL=${{ secrets.JWT_REFRESH_TOKEN_TTL }} >> .env
+        echo REDIS_HOST=${{ secrets.REDIS_HOST }} >> .env
+        echo REDIS_IMAGE_NAME=${{ secrets.REDIS_IMAGE_NAME }} >> .env
+        echo REDIS_CONTAINER_PORT=${{ secrets.REDIS_CONTAINER_PORT }} >> .env
 
     - name: Build and deploy
       run: docker-compose up -d --build
