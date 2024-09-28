@@ -1,4 +1,4 @@
-export interface GeneratedApiKeyPayload {
+export class GeneratedApiKeyDto {
     apiKey: string;
     hashedKey: string;
 }

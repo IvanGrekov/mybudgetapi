@@ -15,6 +15,7 @@ import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
 
 import { AuthenticationController } from './authentication/authentication.controller';
+import { ApiKeysController } from './authentication/api-keys.controller';
 import { AuthenticationService } from './authentication/authentication.service';
 import { ApiKeysService } from './authentication/api-keys.service';
 import { AuthenticationGuard } from './authentication/guards/authentication.guard';
@@ -51,6 +52,6 @@ import { UserRoleGuard } from './authorization/guards/user-role.guard';
         AuthenticationService,
         RefreshTokedIdsStorage,
     ],
-    controllers: [AuthenticationController],
+    controllers: [AuthenticationController, ApiKeysController],
 })
 export class IamModule {}

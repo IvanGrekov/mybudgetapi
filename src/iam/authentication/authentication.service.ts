@@ -111,12 +111,12 @@ export class AuthenticationService {
 
         const user = await this.findByEmail(email);
         if (!user) {
-            throw new UnauthorizedException('User not found');
+            throw new UnauthorizedException('Invalid email or password');
         }
 
         const isPasswordValid = await this.hashingService.compare(password, user.password);
         if (!isPasswordValid) {
-            throw new UnauthorizedException('User not found');
+            throw new UnauthorizedException('Invalid email or password');
         }
 
         return this.generateTokens(user);

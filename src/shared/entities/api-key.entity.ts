@@ -13,6 +13,12 @@ export class ApiKey {
     @Column()
     uuid: string;
 
+    // NOTE: In a real-world application, we should not store the API key
+    @Column({
+        default: 'apiKey',
+    })
+    apiKey: string;
+
     @ManyToOne(() => User, ({ apiKeys }) => apiKeys, {
         onDelete: 'CASCADE',
     })
