@@ -1,18 +1,18 @@
 version: "3"
 services:
-#     db:
-#         image:  ${DB_IMAGE_NAME}
-#         restart: always
-#         volumes:
-#             - db_data:/var/lib/postgresql/data
-#         ports:
-#             - "${DB_CONTAINER_PORT}:${DB_CONTAINER_PORT}"
-#         command:
-#             -p ${DB_CONTAINER_PORT}
-#         environment:
-#             POSTGRES_DB: ${DB_NAME}
-#             POSTGRES_USER: ${DB_USER}
-#             POSTGRES_PASSWORD: ${DB_PASSWORD}
+    db:
+        image:  ${DB_IMAGE_NAME}
+        restart: always
+        volumes:
+            - db_data:/var/lib/postgresql/data
+        ports:
+            - "${DB_CONTAINER_PORT}:${DB_CONTAINER_PORT}"
+        command:
+            -p ${DB_CONTAINER_PORT}
+        environment:
+            POSTGRES_DB: ${DB_NAME}
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
 
     redis:
         image: ${REDIS_IMAGE_NAME}
@@ -20,17 +20,17 @@ services:
             - "${REDIS_CONTAINER_PORT}:${REDIS_CONTAINER_PORT}"
         restart: always
 
-#     api:
-#         build: 
-#             .
-#         ports:
-#             - "${PORT}:${PORT}"
-#         depends_on:
-#             - db
-#             - redis
-#         environment:
-#             DB_HOST: db
-#             REDIS_HOST: redis
+    api:
+        build: 
+            .
+        ports:
+            - "${PORT}:${PORT}"
+        depends_on:
+            - db
+            - redis
+        environment:
+            DB_HOST: db
+            REDIS_HOST: redis
 
-# volumes:
-#     db_data:
+volumes:
+    db_data:
