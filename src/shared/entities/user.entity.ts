@@ -17,10 +17,14 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column({ nullable: true })
+    googleId: string;
+
     @Column({ unique: true })
     email: string;
 
-    @Column()
+    // NOTE: password is nullable because of included google authentication
+    @Column({ nullable: true })
     @Exclude()
     password: string;
 

@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsDefined, IsOptional } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString as IsStringBase } from 'class-validator';
 
 import IsString from '../property-decorators/is-string.decorator';
 import { ECurrency } from '../enums/currency.enums';
@@ -9,14 +9,18 @@ import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../constants/password.
 
 export class CreateUserDto {
     @IsEmail()
-    email: string;
+    readonly email: string;
 
-    @IsDefined()
+    @IsOptional()
+    @IsStringBase()
+    readonly googleId?: string;
+
+    @IsOptional()
     @IsString({
         minLength: PASSWORD_MIN_LENGTH,
         maxLength: PASSWORD_MAX_LENGTH,
     })
-    password: string;
+    readonly password?: string;
 
     @IsOptional()
     @IsString({

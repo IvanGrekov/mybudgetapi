@@ -59,7 +59,7 @@ export class AuthenticationService {
         });
     }
 
-    private async generateTokens({ id, email, role }: User): Promise<GeneratedTokensDto> {
+    async generateTokens({ id, email, role }: User): Promise<GeneratedTokensDto> {
         try {
             const payload: IActiveUser = {
                 sub: id,

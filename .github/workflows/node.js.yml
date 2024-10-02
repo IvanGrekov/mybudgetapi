@@ -42,6 +42,8 @@ jobs:
         echo REDIS_HOST=${{ secrets.REDIS_HOST }} >> .env
         echo REDIS_IMAGE_NAME=${{ secrets.REDIS_IMAGE_NAME }} >> .env
         echo REDIS_CONTAINER_PORT=${{ secrets.REDIS_CONTAINER_PORT }} >> .env
+        echo AUTH_CLIENT_SECRET=${{ secrets.AUTH_CLIENT_SECRET }} >> .env
+        echo AUTH_CLIENT_ID=${{ secrets.AUTH_CLIENT_ID }} >> .env
 
     - name: Build and deploy
       run: docker-compose up -d --build
