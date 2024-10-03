@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { ApiKey } from '../../../shared/entities/api-key.entity';
 
 import { IActiveUser } from '../../interfaces/active-user-data.interface';
-import { ApiKeysService } from '../api-keys.service';
+import { ApiKeysService } from '../services/api-keys.service';
 
 import { REQUEST_USER_KEY } from '../../iam.constants';
 

@@ -10,14 +10,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigType } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 
-import googleAuthenticationConfig from '../../config/google-authentication.config';
+import googleAuthenticationConfig from '../../../config/google-authentication.config';
 
-import { User } from '../../shared/entities/user.entity';
+import { User } from '../../../shared/entities/user.entity';
 
-import { UsersService } from '../../users/users.service';
+import { UsersService } from '../../../users/users.service';
 
 import { AuthenticationService } from './authentication.service';
-import { GeneratedTokensDto } from './dtos/generated-tokens.dto';
+import { GeneratedTokensDto } from '../dtos/generated-tokens.dto';
 
 @Injectable()
 export class GoogleAuthenticationService implements OnModuleInit {

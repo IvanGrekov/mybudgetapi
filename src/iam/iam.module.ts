@@ -15,15 +15,15 @@ import googleAuthenticationConfig from '../config/google-authentication.config';
 import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
 
-import { AuthenticationController } from './authentication/authentication.controller';
-import { ApiKeysController } from './authentication/api-keys.controller';
-import { AuthenticationService } from './authentication/authentication.service';
-import { ApiKeysService } from './authentication/api-keys.service';
+import { AuthenticationController } from './authentication/controllers/authentication.controller';
+import { ApiKeysController } from './authentication/controllers/api-keys.controller';
+import { AuthenticationService } from './authentication/services/authentication.service';
+import { ApiKeysService } from './authentication/services/api-keys.service';
 import { AuthenticationGuard } from './authentication/guards/authentication.guard';
 import { AccessTokenGuard } from './authentication/guards/access-token.guard';
 import { ApiKeyGuard } from './authentication/guards/api-key.guard';
-import { RefreshTokedIdsStorage } from './authentication/refresh-toked-ids.storage';
-import { GoogleAuthenticationService } from './authentication/google-authentication.service';
+import { RefreshTokedIdsStorage } from './authentication/storages/refresh-toked-ids.storage';
+import { GoogleAuthenticationService } from './authentication/services/google-authentication.service';
 import { UserRoleGuard } from './authorization/guards/user-role.guard';
 
 @Module({

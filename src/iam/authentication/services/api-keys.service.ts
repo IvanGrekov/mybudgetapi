@@ -3,14 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
 
-import { ApiKey } from '../../shared/entities/api-key.entity';
+import { ApiKey } from '../../../shared/entities/api-key.entity';
 
-import { UsersService } from '../../users/users.service';
+import { UsersService } from '../../../users/users.service';
 
-import { HashingService } from '../hashing/hashing.service';
-import { GetApiKeyByUserIdDto } from './dtos/get-api-key-by-user-id.dto';
-import { CreateApiKeyForUserDto } from './dtos/create-api-key-for-user.dto';
-import { GeneratedApiKeyDto } from './dtos/generated-api-key-payload.dto';
+import { HashingService } from '../../hashing/hashing.service';
+import { GetApiKeyByUserIdDto } from '../dtos/get-api-key-by-user-id.dto';
+import { CreateApiKeyForUserDto } from '../dtos/create-api-key-for-user.dto';
+import { GeneratedApiKeyDto } from '../dtos/generated-api-key-payload.dto';
 
 @Injectable()
 export class ApiKeysService {

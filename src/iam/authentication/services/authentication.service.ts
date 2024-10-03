@@ -11,22 +11,22 @@ import { ConfigType } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
 
-import { User } from '../../shared/entities/user.entity';
-import { CreateUserDto } from '../../shared/dtos/create-user.dto';
+import { User } from '../../../shared/entities/user.entity';
+import { CreateUserDto } from '../../../shared/dtos/create-user.dto';
 
-import { UsersService } from '../../users/users.service';
-import jwtConfig from '../../config/jwt.config';
+import { UsersService } from '../../../users/users.service';
+import jwtConfig from '../../../config/jwt.config';
 
-import { HashingService } from '../hashing/hashing.service';
-import { IActiveUser } from '../interfaces/active-user-data.interface';
+import { HashingService } from '../../hashing/hashing.service';
+import { IActiveUser } from '../../interfaces/active-user-data.interface';
 
-import { SignTokenDto } from './dtos/sign-token.dto';
-import { SignInDto } from './dtos/sign-in.dto';
-import { GeneratedTokensDto } from './dtos/generated-tokens.dto';
-import { RefreshTokenDto } from './dtos/refresh-token.dto';
-import { RefreshTokedIdsStorage } from './refresh-toked-ids.storage';
-import { IRefreshTokenPayload } from './interfaces/refresh-token-payload.interface';
-import InvalidatedRefreshToken from './exceptions/invalidated-refresh-token.exception';
+import { SignTokenDto } from '../dtos/sign-token.dto';
+import { SignInDto } from '../dtos/sign-in.dto';
+import { GeneratedTokensDto } from '../dtos/generated-tokens.dto';
+import { RefreshTokenDto } from '../dtos/refresh-token.dto';
+import { RefreshTokedIdsStorage } from '../storages/refresh-toked-ids.storage';
+import { IRefreshTokenPayload } from '../interfaces/refresh-token-payload.interface';
+import InvalidatedRefreshToken from '../exceptions/invalidated-refresh-token.exception';
 
 @Injectable()
 export class AuthenticationService {
