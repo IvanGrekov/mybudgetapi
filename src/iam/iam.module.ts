@@ -11,6 +11,7 @@ import { UsersModule } from '../users/users.module';
 import jwtConfig from '../config/jwt.config';
 import redisConfig from '../config/redis.config';
 import googleAuthenticationConfig from '../config/google-authentication.config';
+import tfaAuthenticationConfig from '../config/tfa-authentication.config';
 
 import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
@@ -24,6 +25,7 @@ import { AccessTokenGuard } from './authentication/guards/access-token.guard';
 import { ApiKeyGuard } from './authentication/guards/api-key.guard';
 import { RefreshTokedIdsStorage } from './authentication/storages/refresh-toked-ids.storage';
 import { GoogleAuthenticationService } from './authentication/services/google-authentication.service';
+import { TfaAuthenticationService } from './authentication/services/tfa-authentication.service';
 import { UserRoleGuard } from './authorization/guards/user-role.guard';
 
 @Module({
@@ -33,6 +35,7 @@ import { UserRoleGuard } from './authorization/guards/user-role.guard';
         ConfigModule.forFeature(jwtConfig),
         ConfigModule.forFeature(redisConfig),
         ConfigModule.forFeature(googleAuthenticationConfig),
+        ConfigModule.forFeature(tfaAuthenticationConfig),
         JwtModule.registerAsync(jwtConfig.asProvider()),
     ],
     providers: [
@@ -53,6 +56,7 @@ import { UserRoleGuard } from './authorization/guards/user-role.guard';
         ApiKeyGuard,
         AuthenticationService,
         GoogleAuthenticationService,
+        TfaAuthenticationService,
         RefreshTokedIdsStorage,
     ],
     controllers: [AuthenticationController, ApiKeysController],

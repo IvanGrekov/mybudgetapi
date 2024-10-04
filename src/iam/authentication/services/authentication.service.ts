@@ -13,6 +13,7 @@ import { randomUUID } from 'crypto';
 
 import { User } from '../../../shared/entities/user.entity';
 import { CreateUserDto } from '../../../shared/dtos/create-user.dto';
+import NotFoundException from '../../../shared/exceptions/not-found.exception';
 
 import { UsersService } from '../../../users/users.service';
 import jwtConfig from '../../../config/jwt.config';
@@ -25,6 +26,7 @@ import { SignInDto } from '../dtos/sign-in.dto';
 import { GeneratedTokensDto } from '../dtos/generated-tokens.dto';
 import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 import { RefreshTokedIdsStorage } from '../storages/refresh-toked-ids.storage';
+import { TfaAuthenticationService } from '../services/tfa-authentication.service';
 import { IRefreshTokenPayload } from '../interfaces/refresh-token-payload.interface';
 import InvalidatedRefreshToken from '../exceptions/invalidated-refresh-token.exception';
 
@@ -39,6 +41,7 @@ export class AuthenticationService {
         @Inject(jwtConfig.KEY)
         private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
         private readonly refreshTokenIdsStorage: RefreshTokedIdsStorage,
+        private readonly tfaAuthenticationService: TfaAuthenticationService,
     ) {}
 
     private async findByEmail(email: string): Promise<User | null> {
@@ -107,7 +110,7 @@ export class AuthenticationService {
     }
 
     async signIn(signInDto: SignInDto): Promise<GeneratedTokensDto> {
-        const { email, password } = signInDto;
+        const { email, password, tfaToken } = signInDto;
 
         const user = await this.findByEmail(email);
         if (!user) {
@@ -117,6 +120,17 @@ export class AuthenticationService {
         const isPasswordValid = await this.hashingService.compare(password, user.password);
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid email or password');
+        }
+
+        const { isTfaEnabled, tfaSecret } = user;
+        if (isTfaEnabled) {
+            const isTfaValid = this.tfaAuthenticationService.verifyToken({
+                token: tfaToken,
+                secret: tfaSecret,
+            });
+            if (!isTfaValid) {
+                throw new UnauthorizedException('Two-factor authentication failed');
+            }
         }
 
         return this.generateTokens(user);
@@ -135,7 +149,7 @@ export class AuthenticationService {
 
             const user = await this.userRepository.findOne({ where: { id: sub } });
             if (!user) {
-                throw new UnauthorizedException('User not found');
+                throw new NotFoundException('User');
             }
 
             const userId = user.id;

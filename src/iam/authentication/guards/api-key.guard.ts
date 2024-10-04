@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Request } from 'express';
 
 import { ApiKey } from '../../../shared/entities/api-key.entity';
+import NotFoundException from '../../../shared/exceptions/not-found.exception';
 
 import { IActiveUser } from '../../interfaces/active-user-data.interface';
 import { ApiKeysService } from '../services/api-keys.service';
@@ -35,7 +36,7 @@ export class ApiKeyGuard implements CanActivate {
             });
 
             if (!apiKeyEntity) {
-                throw new UnauthorizedException('API Key not found');
+                throw new NotFoundException('API Key');
             }
 
             const { key, user } = apiKeyEntity;

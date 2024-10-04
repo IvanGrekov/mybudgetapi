@@ -28,6 +28,13 @@ export class User {
     @Exclude()
     password: string;
 
+    @Column({ default: false })
+    isTfaEnabled: boolean;
+
+    @Column({ nullable: true })
+    @Exclude()
+    tfaSecret: string;
+
     @Column({
         type: 'enum',
         enum: EUserRole,

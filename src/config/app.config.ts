@@ -26,4 +26,6 @@ export const validationSchema = Joi.object({
 
     AUTH_CLIENT_ID: Joi.string().required(),
     AUTH_CLIENT_SECRET: Joi.string().required(),
+
+    TFA_APP_NAME: Joi.string().required(),
 });
