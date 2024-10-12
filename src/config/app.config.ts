@@ -23,9 +23,15 @@ export const validationSchema = Joi.object({
     JWT_TOKEN_ISSUER: Joi.string().required(),
     JWT_ACCESS_TOKEN_TTL: Joi.string().required(),
     JWT_REFRESH_TOKEN_TTL: Joi.string().required(),
+    JWT_RESET_PASSWORD_TTL: Joi.string().required(),
 
     AUTH_CLIENT_ID: Joi.string().required(),
     AUTH_CLIENT_SECRET: Joi.string().required(),
 
     TFA_APP_NAME: Joi.string().required(),
+
+    EMAIL_HOST: Joi.string().required(),
+    EMAIL_PORT: Joi.number().required(),
+    EMAIL_USERNAME: Joi.string().required(),
+    EMAIL_PASSWORD: Joi.string().required(),
 });

@@ -16,7 +16,7 @@ import googleAuthenticationConfig from '../../../config/google-authentication.co
 
 import { UsersService } from '../../../users/users.service';
 
-import { AuthenticationService } from './authentication.service';
+import { TokensService } from './tokens.service';
 import { GeneratedTokensDto } from '../dtos/generated-tokens.dto';
 
 @Injectable()
@@ -30,7 +30,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
         private readonly googleAuthenticationConfiguration: ConfigType<
             typeof googleAuthenticationConfig
         >,
-        private readonly authenticationService: AuthenticationService,
+        private readonly tokensService: TokensService,
         private readonly usersService: UsersService,
     ) {}
 
@@ -55,7 +55,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
                 });
             }
 
-            return this.authenticationService.generateTokens(user);
+            return this.tokensService.generateTokens(user);
         } catch (e) {
             if (e?.['code'] === '23505') {
                 throw new ConflictException('User with this email already exists');

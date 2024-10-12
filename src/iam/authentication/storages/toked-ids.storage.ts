@@ -6,10 +6,10 @@ import { User } from '../../../shared/entities/user.entity';
 
 import redisConfig from '../../../config/redis.config';
 
-import InvalidatedRefreshToken from '../exceptions/invalidated-refresh-token.exception';
+import InvalidatedToken from '../exceptions/invalidated-token.exception';
 
 @Injectable()
-export class RefreshTokedIdsStorage implements OnApplicationBootstrap, OnApplicationShutdown {
+export class TokedIdsStorage implements OnApplicationBootstrap, OnApplicationShutdown {
     constructor(
         @Inject(redisConfig.KEY)
         private readonly redisConfiguration: ConfigType<typeof redisConfig>,
@@ -29,25 +29,29 @@ export class RefreshTokedIdsStorage implements OnApplicationBootstrap, OnApplica
         return this.redisClient.quit();
     }
 
-    async insert(userId: User['id'], tokenId: string): Promise<void> {
-        await this.redisClient.set(this.getKey(userId), tokenId);
+    async insert(userId: User['id'], tokenId: string, keyPrefix?: string): Promise<void> {
+        await this.redisClient.set(this.getKey(userId, keyPrefix), tokenId);
+    }
+
+    async get(userId: User['id'], keyPrefix?: string): Promise<string> {
+        return this.redisClient.get(this.getKey(userId, keyPrefix));
     }
 
     async validate(userId: User['id'], tokenId: string): Promise<boolean> {
         const storedTokenId = await this.redisClient.get(this.getKey(userId));
 
         if (tokenId !== storedTokenId) {
-            throw new InvalidatedRefreshToken();
+            throw new InvalidatedToken();
         }
 
         return true;
     }
 
-    async invalidate(userId: User['id']): Promise<void> {
-        await this.redisClient.del(this.getKey(userId));
+    async invalidate(userId: User['id'], keyPrefix?: string): Promise<void> {
+        await this.redisClient.del(this.getKey(userId, keyPrefix));
     }
 
-    private getKey(userId: User['id']): string {
-        return `user-${userId}`;
+    private getKey(userId: User['id'], prefix = ''): string {
+        return `${prefix}_user-${userId}`;
     }
 }

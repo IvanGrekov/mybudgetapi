@@ -8,6 +8,7 @@ import { User } from '../../../shared/entities/user.entity';
 import NotFoundException from '../../../shared/exceptions/not-found.exception';
 
 import tfaAuthenticationConfig from '../../../config/tfa-authentication.config';
+import { UsersService } from '../../../users/users.service';
 
 import { IGeneratedTfaSecretPayload } from '../interfaces/generated-tfa-secret-payload.interface';
 import { IVerifyTfaTokenInput } from '../interfaces/verify-tfa-token-input.interface';
@@ -18,6 +19,7 @@ export class TfaAuthenticationService {
     constructor(
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        private readonly usersService: UsersService,
         @Inject(tfaAuthenticationConfig.KEY)
         private readonly tfaAuthenticationConfiguration: ConfigType<typeof tfaAuthenticationConfig>,
     ) {}
@@ -38,7 +40,7 @@ export class TfaAuthenticationService {
     }
 
     async enableTfaForUser({ email, tfaSecret }: EnableTfaForUserDto): Promise<void> {
-        const user = await this.userRepository.findOne({ where: { email } });
+        const user = await this.usersService.findByEmail(email);
         if (!user) {
             throw new NotFoundException('User');
         }

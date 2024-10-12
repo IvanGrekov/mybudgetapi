@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 import { User } from '../shared/entities/user.entity';
 import { ApiKey } from '../shared/entities/api-key.entity';
@@ -18,15 +19,18 @@ import { HashingService } from './hashing/hashing.service';
 
 import { AuthenticationController } from './authentication/controllers/authentication.controller';
 import { ApiKeysController } from './authentication/controllers/api-keys.controller';
+import { TokensService } from './authentication/services/tokens.service';
 import { AuthenticationService } from './authentication/services/authentication.service';
+import { ResetPasswordService } from './authentication/services/reset-password.service';
 import { ApiKeysService } from './authentication/services/api-keys.service';
 import { AuthenticationGuard } from './authentication/guards/authentication.guard';
 import { AccessTokenGuard } from './authentication/guards/access-token.guard';
 import { ApiKeyGuard } from './authentication/guards/api-key.guard';
-import { RefreshTokedIdsStorage } from './authentication/storages/refresh-toked-ids.storage';
+import { TokedIdsStorage } from './authentication/storages/toked-ids.storage';
 import { GoogleAuthenticationService } from './authentication/services/google-authentication.service';
 import { TfaAuthenticationService } from './authentication/services/tfa-authentication.service';
 import { UserRoleGuard } from './authorization/guards/user-role.guard';
+import emailConfig from 'src/config/email.config';
 
 @Module({
     imports: [
@@ -37,6 +41,20 @@ import { UserRoleGuard } from './authorization/guards/user-role.guard';
         ConfigModule.forFeature(googleAuthenticationConfig),
         ConfigModule.forFeature(tfaAuthenticationConfig),
         JwtModule.registerAsync(jwtConfig.asProvider()),
+        MailerModule.forRootAsync({
+            imports: [ConfigModule.forFeature(emailConfig)],
+            inject: [emailConfig.KEY],
+            useFactory: ({ host, port, user, pass }: ConfigType<typeof emailConfig>) => ({
+                transport: {
+                    host,
+                    port,
+                    auth: {
+                        user,
+                        pass,
+                    },
+                },
+            }),
+        }),
     ],
     providers: [
         {
@@ -54,10 +72,12 @@ import { UserRoleGuard } from './authorization/guards/user-role.guard';
         AccessTokenGuard,
         ApiKeysService,
         ApiKeyGuard,
+        TokensService,
         AuthenticationService,
+        ResetPasswordService,
         GoogleAuthenticationService,
         TfaAuthenticationService,
-        RefreshTokedIdsStorage,
+        TokedIdsStorage,
     ],
     controllers: [AuthenticationController, ApiKeysController],
 })

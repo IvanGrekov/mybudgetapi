@@ -18,6 +18,7 @@ export class User {
     id: number;
 
     @Column({ nullable: true })
+    @Exclude()
     googleId: string;
 
     @Column({ unique: true })
@@ -29,6 +30,7 @@ export class User {
     password: string;
 
     @Column({ default: false })
+    @Exclude()
     isTfaEnabled: boolean;
 
     @Column({ nullable: true })
@@ -77,6 +79,7 @@ export class User {
     @OneToMany(() => ApiKey, ({ user }) => user, {
         cascade: true,
     })
+    @Exclude()
     apiKeys: ApiKey[];
 
     @CreateDateColumn()

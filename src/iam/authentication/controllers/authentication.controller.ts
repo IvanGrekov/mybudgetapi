@@ -1,11 +1,14 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 import { Response } from 'express';
+import { toFileStream } from 'qrcode';
 
 import { CreateUserDto } from '../../../shared/dtos/create-user.dto';
 
 import { Auth } from '../decorators/auth.decorator';
+import { TokensService } from '../services/tokens.service';
 import { AuthenticationService } from '../services/authentication.service';
+import { ResetPasswordService } from '../services/reset-password.service';
 import { GoogleAuthenticationService } from '../services/google-authentication.service';
 import { TfaAuthenticationService } from '../services/tfa-authentication.service';
 
@@ -17,7 +20,8 @@ import { SignInDto } from '../dtos/sign-in.dto';
 import { GeneratedTokensDto } from '../dtos/generated-tokens.dto';
 import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 import { GoogleIdTokenDto } from '../dtos/google-id-token.dto';
-import { toFileStream } from 'qrcode';
+import { InitiateResetPasswordDto } from '../dtos/initiate-reset-password.dto';
+import { ResetPasswordDto } from '../dtos/reset-password.dto';
 
 @ApiTags('authentication')
 @Auth(EAuthType.None)
@@ -25,6 +29,8 @@ import { toFileStream } from 'qrcode';
 export class AuthenticationController {
     constructor(
         private readonly authenticationService: AuthenticationService,
+        private readonly tokensService: TokensService,
+        private readonly resetPasswordService: ResetPasswordService,
         private readonly googleAuthenticationService: GoogleAuthenticationService,
         private readonly tfaAuthenticationService: TfaAuthenticationService,
     ) {}
@@ -46,7 +52,7 @@ export class AuthenticationController {
     @HttpCode(HttpStatus.OK)
     @Post('refresh-token')
     async refreshToken(@Body() refreshTokenDto: RefreshTokenDto): Promise<GeneratedTokensDto> {
-        return this.authenticationService.refreshToken(refreshTokenDto);
+        return this.tokensService.refreshToken(refreshTokenDto);
     }
 
     @ApiOkResponse({ type: GeneratedTokensDto })
@@ -54,6 +60,19 @@ export class AuthenticationController {
     @Post('google')
     async googleSignIn(@Body() { token }: GoogleIdTokenDto): Promise<GeneratedTokensDto> {
         return this.googleAuthenticationService.authenticate(token);
+    }
+
+    @ApiOkResponse()
+    @HttpCode(HttpStatus.OK)
+    @Post('initiate-reset-password')
+    async initiateResetPassword(@Body() { email }: InitiateResetPasswordDto): Promise<void> {
+        return this.resetPasswordService.initiateResetPassword(email);
+    }
+
+    @ApiOkResponse({ type: GeneratedTokensDto })
+    @Post('reset-password')
+    async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<GeneratedTokensDto> {
+        return this.resetPasswordService.resetPassword(resetPasswordDto);
     }
 
     @Auth(EAuthType.Bearer, EAuthType.ApiKey)

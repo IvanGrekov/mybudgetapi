@@ -68,6 +68,12 @@ export class UsersService {
         return user;
     }
 
+    async findByEmail(email: string): Promise<User | null> {
+        const user = await this.userRepository.findOne({ where: { email } });
+
+        return user || null;
+    }
+
     async getMe(sub: IActiveUser['sub']): Promise<User> {
         return this.getOne(sub);
     }
