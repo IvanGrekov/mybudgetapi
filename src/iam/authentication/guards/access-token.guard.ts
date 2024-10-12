@@ -12,6 +12,8 @@ import { Request } from 'express';
 import jwtConfig from '../../../config/jwt.config';
 
 import { REQUEST_USER_KEY } from '../../iam.constants';
+import { IActiveUser } from '../../interfaces/active-user-data.interface';
+import { IRefreshTokenPayload } from '../interfaces/refresh-token-payload.interface';
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
@@ -30,11 +32,19 @@ export class AccessTokenGuard implements CanActivate {
         }
 
         try {
-            const payload = await this.jwtService.verifyAsync(token, {
-                secret: this.jwtConfiguration.secret,
-                audience: this.jwtConfiguration.audience,
-                issuer: this.jwtConfiguration.issuer,
-            });
+            const payload: IRefreshTokenPayload | IActiveUser = await this.jwtService.verifyAsync(
+                token,
+                {
+                    secret: this.jwtConfiguration.secret,
+                    audience: this.jwtConfiguration.audience,
+                    issuer: this.jwtConfiguration.issuer,
+                },
+            );
+
+            if (payload?.['refreshTokenId']) {
+                throw new UnauthorizedException('Refresh Token must not be used as a Bearer Token');
+            }
+
             request[REQUEST_USER_KEY] = payload;
 
             return true;
