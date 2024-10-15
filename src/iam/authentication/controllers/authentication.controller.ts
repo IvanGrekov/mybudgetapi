@@ -22,6 +22,7 @@ import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 import { GoogleIdTokenDto } from '../dtos/google-id-token.dto';
 import { InitiateResetPasswordDto } from '../dtos/initiate-reset-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
+import { InitiateResetPasswordResultDto } from '../dtos/initiate-reset-password-result.dto';
 
 @ApiTags('authentication')
 @Auth(EAuthType.None)
@@ -65,8 +66,12 @@ export class AuthenticationController {
     @ApiOkResponse()
     @HttpCode(HttpStatus.OK)
     @Post('initiate-reset-password')
-    async initiateResetPassword(@Body() { email }: InitiateResetPasswordDto): Promise<void> {
-        return this.resetPasswordService.initiateResetPassword(email);
+    async initiateResetPassword(
+        @Body() { email }: InitiateResetPasswordDto,
+    ): Promise<InitiateResetPasswordResultDto> {
+        await this.resetPasswordService.initiateResetPassword(email);
+
+        return { message: 'Reset password code has been sent' };
     }
 
     @ApiOkResponse({ type: GeneratedTokensDto })
