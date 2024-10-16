@@ -30,6 +30,7 @@ import { TokedIdsStorage } from './authentication/storages/toked-ids.storage';
 import { GoogleAuthenticationService } from './authentication/services/google-authentication.service';
 import { TfaAuthenticationService } from './authentication/services/tfa-authentication.service';
 import { UserRoleGuard } from './authorization/guards/user-role.guard';
+import { OnlyMeGuard } from './authorization/guards/only-me.guard';
 import emailConfig from 'src/config/email.config';
 
 @Module({
@@ -68,6 +69,10 @@ import emailConfig from 'src/config/email.config';
         {
             provide: APP_GUARD,
             useClass: UserRoleGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: OnlyMeGuard,
         },
         AccessTokenGuard,
         ApiKeysService,

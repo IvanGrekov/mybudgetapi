@@ -3,11 +3,17 @@ import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
+import { EUserRole } from '../shared/enums/user-role.enums';
 
 import { Auth } from '../iam/authentication/decorators/auth.decorator';
 import { EAuthType } from '../iam/authentication/enums/auth-type.enum';
+import { OnlyMe } from '../iam/authorization/decorators/only-me.decorator';
+import { ActiveUser } from '../iam/decorators/active-user.decorator';
+import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
+import { UserRole } from '../iam/authorization/decorators/user-role.decorator';
 
 import { TransactionCategoriesService } from './transaction-categories.service';
+import { FindMyTransactionCategoriesDto } from './dtos/find-my-transaction-categories.dto';
 import { FindAllTransactionCategoriesDto } from './dtos/find-all-transaction-categories.dto';
 import { CreateTransactionCategoryDto } from './dtos/create-transaction-category.dto';
 import { ReorderTransactionCategoriesDto } from './dtos/reorder-transaction-categories.dto';
@@ -17,12 +23,23 @@ import { DeleteTransactionCategoryDto } from './dtos/delete-transaction-category
 
 @ApiTags('transaction-categories')
 @Auth(EAuthType.Bearer, EAuthType.ApiKey)
+@OnlyMe()
 @Controller('transaction-categories')
 export class TransactionCategoriesController {
     constructor(private readonly transactionCategoriesService: TransactionCategoriesService) {}
 
     @ApiOkResponse({ type: [TransactionCategory] })
+    @Get('my')
+    findMy(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
+        @Query() dto: FindMyTransactionCategoriesDto,
+    ): Promise<TransactionCategory[]> {
+        return this.transactionCategoriesService.findAll({ userId: activeUserId, ...dto });
+    }
+
+    @ApiOkResponse({ type: [TransactionCategory] })
     @Get()
+    @UserRole(EUserRole.ADMIN)
     findAll(@Query() query: FindAllTransactionCategoriesDto): Promise<TransactionCategory[]> {
         return this.transactionCategoriesService.findAll(query);
     }

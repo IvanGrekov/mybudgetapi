@@ -8,7 +8,6 @@ import {
     Delete,
     UseInterceptors,
     ClassSerializerInterceptor,
-    ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
@@ -23,6 +22,7 @@ import { Auth } from '../iam/authentication/decorators/auth.decorator';
 import { ActiveUser } from '../iam/decorators/active-user.decorator';
 import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
 import { UserRole } from '../iam/authorization/decorators/user-role.decorator';
+import { OnlyMe } from '../iam/authorization/decorators/only-me.decorator';
 
 import { UsersService } from './users.service';
 import { EditUserDto } from './dtos/edit-user.dto';
@@ -68,21 +68,14 @@ export class UsersController {
         },
     })
     @Get(':id')
-    // TODO: Allow only for Admin if id is not equal to sub
-    getOne(
-        @Param('id', CustomParseIntPipe) id: number,
-        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
-        @ActiveUser('role') activeUserRole: IActiveUser['role'],
-    ): Promise<User> {
-        if (id !== activeUserId && activeUserRole !== EUserRole.ADMIN) {
-            throw new ForbiddenException();
-        }
-
+    @OnlyMe()
+    getOne(@Param('id', CustomParseIntPipe) id: number): Promise<User> {
         return this.usersService.getOne(id);
     }
 
     @ApiOkResponse({ type: User })
     @Patch(':id')
+    @OnlyMe()
     editOne(
         @Param('id', CustomParseIntPipe) id: number,
         @Body() editUserDto: EditUserDto,
@@ -92,6 +85,7 @@ export class UsersController {
 
     @ApiOkResponse({ type: User })
     @Patch('currency/:id')
+    @OnlyMe()
     editCurrency(
         @Param('id') id: number,
         @Body() editUserCurrencyDto: EditUserCurrencyDto,
@@ -108,6 +102,7 @@ export class UsersController {
 
     @ApiOkResponse({ type: User })
     @Delete(':id')
+    @OnlyMe()
     deleteOne(@Param('id', CustomParseIntPipe) id: number): Promise<User> {
         return this.usersService.delete(id);
     }
