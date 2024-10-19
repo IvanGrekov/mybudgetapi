@@ -1,6 +1,6 @@
 import { IsEmail, IsString } from 'class-validator';
 
-export class EnableTfaForUserDto {
+export class InitiateTfaEnablingDto {
     @IsEmail()
     readonly email: string;
 

@@ -30,7 +30,6 @@ export class User {
     password: string;
 
     @Column({ default: false })
-    @Exclude()
     isTfaEnabled: boolean;
 
     @Column({ nullable: true })

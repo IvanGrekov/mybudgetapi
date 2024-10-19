@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,7 +12,8 @@ import { UsersService } from '../../../users/users.service';
 
 import { IGeneratedTfaSecretPayload } from '../interfaces/generated-tfa-secret-payload.interface';
 import { IVerifyTfaTokenInput } from '../interfaces/verify-tfa-token-input.interface';
-import { EnableTfaForUserDto } from '../dtos/enable-tfa-for-user.dto';
+import { InitiateTfaEnablingDto } from '../dtos/initiate-tfa-enabling.dto';
+import { DisableTfaDto } from '../dtos/disable-tfa.dto';
 
 @Injectable()
 export class TfaAuthenticationService {
@@ -39,7 +40,7 @@ export class TfaAuthenticationService {
         return authenticator.verify(input);
     }
 
-    async enableTfaForUser({ email, tfaSecret }: EnableTfaForUserDto): Promise<void> {
+    async initiateTfaEnabling({ email, tfaSecret }: InitiateTfaEnablingDto): Promise<void> {
         const user = await this.usersService.findByEmail(email);
         if (!user) {
             throw new NotFoundException('User');
@@ -50,9 +51,53 @@ export class TfaAuthenticationService {
                 id: user.id,
             },
             {
-                isTfaEnabled: true,
                 // NOTE: Ideally, we should store the secret in a more secure way (e.g. encrypted)
                 tfaSecret,
+            },
+        );
+    }
+
+    async enableTfaForUser(email: string): Promise<void> {
+        const user = await this.usersService.findByEmail(email);
+        if (!user) {
+            throw new NotFoundException('User');
+        }
+
+        if (!user.tfaSecret) {
+            throw new ForbiddenException();
+        }
+
+        await this.userRepository.update(
+            {
+                id: user.id,
+            },
+            {
+                isTfaEnabled: true,
+            },
+        );
+    }
+
+    async disableTfaForUser({ email, tfaToken }: DisableTfaDto): Promise<void> {
+        const user = await this.usersService.findByEmail(email);
+        if (!user) {
+            throw new NotFoundException('User');
+        }
+
+        if (!user.isTfaEnabled) {
+            throw new ForbiddenException();
+        }
+
+        if (!this.verifyToken({ token: tfaToken, secret: user.tfaSecret })) {
+            throw new UnauthorizedException();
+        }
+
+        await this.userRepository.update(
+            {
+                id: user.id,
+            },
+            {
+                isTfaEnabled: false,
+                tfaSecret: null,
             },
         );
     }
