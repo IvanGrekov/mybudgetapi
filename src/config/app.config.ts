@@ -16,6 +16,7 @@ export const validationSchema = Joi.object({
     DB_PASSWORD: Joi.string().required(),
 
     REDIS_HOST: Joi.string().required(),
+    REDIS_IMAGE_NAME: Joi.string().required(),
     REDIS_CONTAINER_PORT: Joi.number().required(),
 
     JWT_SECRET: Joi.string().required(),
@@ -33,5 +34,6 @@ export const validationSchema = Joi.object({
     EMAIL_HOST: Joi.string().required(),
     EMAIL_PORT: Joi.number().required(),
     EMAIL_USERNAME: Joi.string().required(),
+    EMAIL_SENDER_DOMAIN: Joi.string().required(),
     EMAIL_PASSWORD: Joi.string().required(),
 });

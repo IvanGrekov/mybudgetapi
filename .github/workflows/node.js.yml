@@ -49,6 +49,7 @@ jobs:
         echo EMAIL_HOST=${{ secrets.EMAIL_HOST }} >> .env
         echo EMAIL_PORT=${{ secrets.EMAIL_PORT }} >> .env
         echo EMAIL_USERNAME=${{ secrets.EMAIL_USERNAME }} >> .env
+        echo EMAIL_SENDER_DOMAIN=${{ secrets.EMAIL_SENDER_DOMAIN }} >> .env
         echo EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }} >> .env
 
     - name: Build and deploy

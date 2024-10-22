@@ -13,6 +13,7 @@ import jwtConfig from '../config/jwt.config';
 import redisConfig from '../config/redis.config';
 import googleAuthenticationConfig from '../config/google-authentication.config';
 import tfaAuthenticationConfig from '../config/tfa-authentication.config';
+import emailConfig from '../config/email.config';
 
 import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
@@ -31,7 +32,6 @@ import { GoogleAuthenticationService } from './authentication/services/google-au
 import { TfaAuthenticationService } from './authentication/services/tfa-authentication.service';
 import { UserRoleGuard } from './authorization/guards/user-role.guard';
 import { OnlyMeGuard } from './authorization/guards/only-me.guard';
-import emailConfig from 'src/config/email.config';
 
 @Module({
     imports: [
@@ -41,6 +41,7 @@ import emailConfig from 'src/config/email.config';
         ConfigModule.forFeature(redisConfig),
         ConfigModule.forFeature(googleAuthenticationConfig),
         ConfigModule.forFeature(tfaAuthenticationConfig),
+        ConfigModule.forFeature(emailConfig),
         JwtModule.registerAsync(jwtConfig.asProvider()),
         MailerModule.forRootAsync({
             imports: [ConfigModule.forFeature(emailConfig)],

@@ -1,4 +1,9 @@
-import { Injectable, Inject, ForbiddenException } from '@nestjs/common';
+import {
+    Injectable,
+    Inject,
+    ForbiddenException,
+    ServiceUnavailableException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +15,7 @@ import NotFoundException from '../../../shared/exceptions/not-found.exception';
 
 import { UsersService } from '../../../users/users.service';
 import jwtConfig from '../../../config/jwt.config';
+import emailConfig from '../../../config/email.config';
 
 import { HashingService } from '../../hashing/hashing.service';
 
@@ -30,6 +36,8 @@ export class ResetPasswordService {
         private readonly jwtService: JwtService,
         @Inject(jwtConfig.KEY)
         private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+        @Inject(emailConfig.KEY)
+        private readonly emailConfiguration: ConfigType<typeof emailConfig>,
         private readonly tokenIdsStorage: TokedIdsStorage,
         private readonly tokensService: TokensService,
         private readonly mailService: MailerService,
@@ -47,12 +55,17 @@ export class ResetPasswordService {
             expiresIn: this.jwtConfiguration.resetPasswordTokenExpiresIn,
         });
 
-        await this.mailService.sendMail({
-            from: 'My Budget App <noreply@gmail.com>',
-            to: email,
-            subject: 'Verify your email to reset password',
-            html: `<h1>Verification Code:</h1><h2>${verificationCode}</h2>`,
-        });
+        await this.mailService
+            .sendMail({
+                from: `My Budget App <noreply@${this.emailConfiguration.senderDomain}>`,
+                to: email,
+                subject: 'Verify your email to reset password',
+                html: `<h1>Verification Code:</h1><h2>${verificationCode}</h2>`,
+            })
+            .catch((e) => {
+                console.log('Failed to send email', JSON.stringify(e, null, 2));
+                throw new ServiceUnavailableException();
+            });
 
         return this.tokenIdsStorage.insert(
             user.id,
