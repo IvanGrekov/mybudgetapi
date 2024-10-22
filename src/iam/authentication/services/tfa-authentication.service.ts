@@ -78,7 +78,7 @@ export class TfaAuthenticationService {
         }
 
         if (!this.verifyToken({ token: tfaToken, secret: user.tfaSecret })) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException('Invalid TFA token');
         }
 
         await this.userRepository.update(
@@ -102,7 +102,7 @@ export class TfaAuthenticationService {
         }
 
         if (!this.verifyToken({ token: tfaToken, secret: user.tfaSecret })) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException('Invalid TFA token');
         }
 
         await this.userRepository.update(
