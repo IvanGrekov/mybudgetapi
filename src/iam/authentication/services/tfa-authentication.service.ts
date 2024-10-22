@@ -1,4 +1,10 @@
-import { Injectable, Inject, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import {
+    Injectable,
+    Inject,
+    ForbiddenException,
+    UnauthorizedException,
+    BadRequestException,
+} from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,7 +19,7 @@ import { UsersService } from '../../../users/users.service';
 import { IGeneratedTfaSecretPayload } from '../interfaces/generated-tfa-secret-payload.interface';
 import { IVerifyTfaTokenInput } from '../interfaces/verify-tfa-token-input.interface';
 import { InitiateTfaEnablingDto } from '../dtos/initiate-tfa-enabling.dto';
-import { DisableTfaDto } from '../dtos/disable-tfa.dto';
+import { ManageTfaDto } from '../dtos/manage-tfa.dto';
 
 @Injectable()
 export class TfaAuthenticationService {
@@ -57,14 +63,22 @@ export class TfaAuthenticationService {
         );
     }
 
-    async enableTfaForUser(email: string): Promise<void> {
+    async enableTfaForUser({ email, tfaToken }: ManageTfaDto): Promise<void> {
         const user = await this.usersService.findByEmail(email);
         if (!user) {
             throw new NotFoundException('User');
         }
 
+        if (user.isTfaEnabled) {
+            throw new BadRequestException('TFA is already enabled');
+        }
+
         if (!user.tfaSecret) {
             throw new ForbiddenException();
+        }
+
+        if (!this.verifyToken({ token: tfaToken, secret: user.tfaSecret })) {
+            throw new UnauthorizedException();
         }
 
         await this.userRepository.update(
@@ -77,13 +91,13 @@ export class TfaAuthenticationService {
         );
     }
 
-    async disableTfaForUser({ email, tfaToken }: DisableTfaDto): Promise<void> {
+    async disableTfaForUser({ email, tfaToken }: ManageTfaDto): Promise<void> {
         const user = await this.usersService.findByEmail(email);
         if (!user) {
             throw new NotFoundException('User');
         }
 
-        if (!user.isTfaEnabled) {
+        if (!user.isTfaEnabled || !user.tfaSecret) {
             throw new ForbiddenException();
         }
 

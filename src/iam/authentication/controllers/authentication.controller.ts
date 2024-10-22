@@ -23,7 +23,7 @@ import { GoogleIdTokenDto } from '../dtos/google-id-token.dto';
 import { InitiateResetPasswordDto } from '../dtos/initiate-reset-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { InitiateResetPasswordResultDto } from '../dtos/initiate-reset-password-result.dto';
-import { DisableTfaDto } from '../dtos/disable-tfa.dto';
+import { ManageTfaDto } from '../dtos/manage-tfa.dto';
 
 @ApiTags('authentication')
 @Auth(EAuthType.None)
@@ -105,17 +105,23 @@ export class AuthenticationController {
     @ApiOkResponse()
     @HttpCode(HttpStatus.OK)
     @Post('enable-tfa')
-    async enableTfa(@ActiveUser('email') activeUserEmail: IActiveUser['email']): Promise<void> {
-        await this.tfaAuthenticationService.enableTfaForUser(activeUserEmail);
+    async enableTfa(
+        @ActiveUser('email') activeUserEmail: IActiveUser['email'],
+        @Body() { tfaToken }: Pick<ManageTfaDto, 'tfaToken'>,
+    ): Promise<void> {
+        await this.tfaAuthenticationService.enableTfaForUser({
+            email: activeUserEmail,
+            tfaToken,
+        });
     }
 
     @Auth(EAuthType.Bearer, EAuthType.ApiKey)
     @ApiOkResponse()
     @HttpCode(HttpStatus.OK)
-    @Post('enable-tfa')
+    @Post('disable-tfa')
     async disableTfa(
         @ActiveUser('email') activeUserEmail: IActiveUser['email'],
-        @Body() { tfaToken }: Pick<DisableTfaDto, 'tfaToken'>,
+        @Body() { tfaToken }: Pick<ManageTfaDto, 'tfaToken'>,
     ): Promise<void> {
         await this.tfaAuthenticationService.disableTfaForUser({
             email: activeUserEmail,
