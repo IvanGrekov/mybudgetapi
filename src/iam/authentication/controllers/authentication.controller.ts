@@ -102,7 +102,7 @@ export class AuthenticationController {
                 throw error;
             }
 
-            response.send({ dataUrl });
+            response.send({ dataUrl, secret });
         });
     }
 
