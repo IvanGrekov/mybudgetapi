@@ -63,7 +63,7 @@ export class ResetPasswordService {
                 html: `<h1>Verification Code:</h1><h2>${verificationCode}</h2>`,
             })
             .catch((e) => {
-                console.log('Failed to send email', JSON.stringify(e, null, 2));
+                console.log('Failed to send mail', JSON.stringify(e, null, 2));
                 throw new ServiceUnavailableException();
             });
 

@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 import { Response } from 'express';
-import { toFileStream } from 'qrcode';
+import { toDataURL } from 'qrcode';
 
 import { CreateUserDto } from '../../../shared/dtos/create-user.dto';
 
@@ -24,6 +24,7 @@ import { InitiateResetPasswordDto } from '../dtos/initiate-reset-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { InitiateResetPasswordResultDto } from '../dtos/initiate-reset-password-result.dto';
 import { ManageTfaDto } from '../dtos/manage-tfa.dto';
+import { InitiateTfaEnablingDtoResult } from '../dtos/initiate-tfa-enabling-result.dto';
 
 @ApiTags('authentication')
 @Auth(EAuthType.None)
@@ -82,7 +83,7 @@ export class AuthenticationController {
     }
 
     @Auth(EAuthType.Bearer, EAuthType.ApiKey)
-    @ApiOkResponse()
+    @ApiOkResponse({ type: InitiateTfaEnablingDtoResult })
     @HttpCode(HttpStatus.OK)
     @Post('initiate-tfa-enabling')
     async initiateTfaEnabling(
@@ -96,9 +97,13 @@ export class AuthenticationController {
             tfaSecret: secret,
         });
 
-        response.type('png');
+        toDataURL(uri, (error, dataUrl) => {
+            if (error) {
+                throw error;
+            }
 
-        return toFileStream(response, uri);
+            response.send({ dataUrl });
+        });
     }
 
     @Auth(EAuthType.Bearer, EAuthType.ApiKey)
