@@ -18,7 +18,6 @@ export class User {
     id: number;
 
     @Column({ nullable: true })
-    @Exclude()
     googleId: string;
 
     @Column({ unique: true })
