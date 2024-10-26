@@ -1,9 +1,11 @@
-import { PickType } from '@nestjs/swagger';
-import { IsNumber, IsPositive, IsBoolean, IsOptional } from 'class-validator';
+import { IsEnum, IsNumber, IsPositive, IsBoolean, IsOptional } from 'class-validator';
 
-import { CreateUserDto } from '../../shared/dtos/create-user.dto';
+import { ECurrency } from '../../shared/enums/currency.enums';
 
-export class EditUserCurrencyDto extends PickType(CreateUserDto, ['defaultCurrency']) {
+export class EditUserCurrencyDto {
+    @IsEnum(ECurrency)
+    readonly defaultCurrency: ECurrency;
+
     @IsNumber()
     @IsPositive()
     readonly rate: number;
