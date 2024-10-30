@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsRelations, DataSource, Not } from 'typeorm';
+import { Repository, DataSource, Not } from 'typeorm';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import MaximumEntitiesNumberException from '../shared/exceptions/maximum-entities-number.exception';
@@ -8,19 +8,23 @@ import ArchivedEntityException from '../shared/exceptions/archived-entity.except
 import { Account } from '../shared/entities/account.entity';
 import { Transaction } from '../shared/entities/transaction.entity';
 import { EAccountStatus } from '../shared/enums/account.enums';
+import { validateUserOwnership } from '../shared/utils/validateUserOwnership';
+
 import { UsersService } from '../users/users.service';
 
 import { FindAllAccountsDto } from './dtos/find-all-accounts.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
-import { EditAccountDto } from './dtos/edit-account.dto';
-import { EditAccountCurrencyDto } from './dtos/edit-account-currency.dto';
-import { ReorderAccountDto } from './dtos/reorder-account.dto';
 import { MAX_ACCOUNTS_PER_USER } from './constants/accounts-pagination.constants';
 import { validateAccountProperties } from './utils/validateAccountProperties.util';
 import { getNewAccountNewOrder } from './utils/getNewAccountNewOrder.util';
 import { getOldAccountNewOrder } from './utils/getOldAccountNewOrder.util';
 import { createBalanceCorrectionTransaction } from './utils/createBalanceCorrectionTransaction';
 import { archiveAccount } from './utils/archiveAccount.util';
+import { IGetOneAccountArgs } from './interfaces/get-one-account-args.interface';
+import { IEditAccountArgs } from './interfaces/edit-account-args.interface';
+import { IEditAccountCurrencyArgs } from './interfaces/edit-account-currency-args.interface';
+import { IReorderAccountArgs } from './interfaces/reorder-account-args.interface';
+import { IDeleteAccountArgs } from './interfaces/delete-account-args.interface';
 
 @Injectable()
 export class AccountsService {
@@ -50,10 +54,18 @@ export class AccountsService {
         });
     }
 
-    async getOne(id: Account['id'], relations?: FindOptionsRelations<Account>): Promise<Account> {
+    async getOne({ id, activeUserId, relations }: IGetOneAccountArgs): Promise<Account> {
         const account = await this.accountRepository.findOne({
             where: { id },
-            relations,
+            relations: {
+                user: true,
+                ...relations,
+            },
+        });
+
+        validateUserOwnership({
+            activeUserId,
+            entity: account,
         });
 
         if (!account) {
@@ -88,8 +100,8 @@ export class AccountsService {
         return this.accountRepository.save(accountTemplate);
     }
 
-    async edit(id: Account['id'], editAccountDto: EditAccountDto): Promise<Account> {
-        const oldAccount = await this.getOne(id, { user: true });
+    async edit({ id, activeUserId, editAccountDto }: IEditAccountArgs): Promise<Account> {
+        const oldAccount = await this.getOne({ id, activeUserId });
         const order = await getOldAccountNewOrder({
             oldAccount,
             editAccountDto,
@@ -134,11 +146,12 @@ export class AccountsService {
         }
     }
 
-    async editCurrency(
-        id: Account['id'],
-        { currency, rate }: EditAccountCurrencyDto,
-    ): Promise<Account> {
-        const oldAccount = await this.getOne(id);
+    async editCurrency({
+        id,
+        activeUserId,
+        editAccountCurrencyDto: { currency, rate },
+    }: IEditAccountCurrencyArgs): Promise<Account> {
+        const oldAccount = await this.getOne({ id, activeUserId });
         const oldCurrency = oldAccount.currency;
         if (oldCurrency === currency) {
             throw new BadRequestException('The new `currency` is the same like current one');
@@ -166,8 +179,12 @@ export class AccountsService {
         return this.accountRepository.save(account);
     }
 
-    async reorder(id: Account['id'], { order }: ReorderAccountDto): Promise<Account[]> {
-        const account = await this.getOne(id, { user: true });
+    async reorder({
+        id,
+        activeUserId,
+        reorderAccountDto: { order },
+    }: IReorderAccountArgs): Promise<Account[]> {
+        const account = await this.getOne({ id, activeUserId });
 
         if (account.status === EAccountStatus.ARCHIVED) {
             throw new ArchivedEntityException('account', id);
@@ -206,6 +223,7 @@ export class AccountsService {
 
             return this.findAll({
                 userId,
+                type,
             });
         } catch (err) {
             await queryRunner.rollbackTransaction();
@@ -215,10 +233,8 @@ export class AccountsService {
         }
     }
 
-    async delete(id: Account['id']): Promise<Account[]> {
-        const account = await this.getOne(id, {
-            user: true,
-        });
+    async delete({ id, activeUserId }: IDeleteAccountArgs): Promise<Account[]> {
+        const account = await this.getOne({ id, activeUserId });
 
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();

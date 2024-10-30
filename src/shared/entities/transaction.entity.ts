@@ -6,6 +6,7 @@ import {
     CreateDateColumn,
     Index,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 import { User } from './user.entity';
 import { Account } from './account.entity';
@@ -19,6 +20,7 @@ export class Transaction {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Exclude()
     @ManyToOne(() => User, ({ transactions }) => transactions, {
         onDelete: 'CASCADE',
     })

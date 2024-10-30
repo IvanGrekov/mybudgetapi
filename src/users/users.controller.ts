@@ -68,14 +68,18 @@ export class UsersController {
         },
     })
     @Get(':id')
-    @OnlyMe()
+    @OnlyMe({
+        paramsKey: 'id',
+    })
     getOne(@Param('id', CustomParseIntPipe) id: number): Promise<User> {
         return this.usersService.getOne(id);
     }
 
     @ApiOkResponse({ type: User })
     @Patch(':id')
-    @OnlyMe()
+    @OnlyMe({
+        paramsKey: 'id',
+    })
     editOne(
         @Param('id', CustomParseIntPipe) id: number,
         @Body() editUserDto: EditUserDto,
@@ -85,7 +89,9 @@ export class UsersController {
 
     @ApiOkResponse({ type: User })
     @Patch('currency/:id')
-    @OnlyMe()
+    @OnlyMe({
+        paramsKey: 'id',
+    })
     editCurrency(
         @Param('id') id: number,
         @Body() editUserCurrencyDto: EditUserCurrencyDto,
@@ -102,7 +108,9 @@ export class UsersController {
 
     @ApiOkResponse({ type: User })
     @Delete(':id')
-    @OnlyMe()
+    @OnlyMe({
+        paramsKey: 'id',
+    })
     deleteOne(@Param('id', CustomParseIntPipe) id: number): Promise<User> {
         return this.usersService.delete(id);
     }

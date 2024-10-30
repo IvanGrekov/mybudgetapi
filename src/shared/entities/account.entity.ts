@@ -6,6 +6,7 @@ import {
     Column,
     CreateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 import { User } from './user.entity';
 import { Transaction } from './transaction.entity';
@@ -20,16 +21,19 @@ export class Account {
     @ManyToOne(() => User, ({ accounts }) => accounts, {
         onDelete: 'CASCADE',
     })
+    @Exclude()
     user: User;
 
     @OneToMany(() => Transaction, ({ fromAccount }) => fromAccount, {
         cascade: true,
     })
+    @Exclude()
     outgoingTransactions: Transaction[];
 
     @OneToMany(() => Transaction, ({ toAccount }) => toAccount, {
         cascade: true,
     })
+    @Exclude()
     incomingTransactions: Transaction[];
 
     @Column()

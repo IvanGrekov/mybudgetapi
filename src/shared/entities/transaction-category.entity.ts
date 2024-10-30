@@ -6,6 +6,7 @@ import {
     OneToMany,
     CreateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 import { User } from './user.entity';
 import { Transaction } from './transaction.entity';
@@ -20,16 +21,19 @@ export class TransactionCategory {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Exclude()
     @ManyToOne(() => User, ({ transactionCategories }) => transactionCategories, {
         onDelete: 'CASCADE',
     })
     user: User;
 
+    @Exclude()
     @OneToMany(() => Transaction, ({ fromCategory }) => fromCategory, {
         cascade: true,
     })
     outgoingTransactions: Transaction[];
 
+    @Exclude()
     @OneToMany(() => Transaction, ({ toCategory }) => toCategory, {
         cascade: true,
     })

@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Patch, Delete, Query, Param, Body } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Patch,
+    Delete,
+    Query,
+    Param,
+    Body,
+    UseInterceptors,
+    ClassSerializerInterceptor,
+} from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
@@ -23,6 +34,7 @@ import { ReorderAccountDto } from './dtos/reorder-account.dto';
 @ApiTags('accounts')
 @Auth(EAuthType.Bearer, EAuthType.ApiKey)
 @OnlyMe()
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('accounts')
 export class AccountsController {
     constructor(private readonly accountsService: AccountsService) {}
@@ -45,8 +57,11 @@ export class AccountsController {
 
     @ApiOkResponse({ type: Account })
     @Get(':id')
-    getOne(@Param('id', CustomParseIntPipe) id: number): Promise<Account> {
-        return this.accountsService.getOne(id);
+    getOne(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
+        @Param('id', CustomParseIntPipe) id: number,
+    ): Promise<Account> {
+        return this.accountsService.getOne({ id, activeUserId });
     }
 
     @ApiOkResponse({ type: Account })
@@ -58,33 +73,39 @@ export class AccountsController {
     @ApiOkResponse({ type: Account })
     @Patch(':id')
     editOne(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
         @Param('id', CustomParseIntPipe) id: number,
         @Body() editAccountDto: EditAccountDto,
     ): Promise<Account> {
-        return this.accountsService.edit(id, editAccountDto);
+        return this.accountsService.edit({ id, activeUserId, editAccountDto });
     }
 
     @ApiOkResponse({ type: Account })
     @Patch('currency/:id')
     editOnesCurrency(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
         @Param('id', CustomParseIntPipe) id: number,
         @Body() editAccountCurrencyDto: EditAccountCurrencyDto,
     ): Promise<Account> {
-        return this.accountsService.editCurrency(id, editAccountCurrencyDto);
+        return this.accountsService.editCurrency({ id, activeUserId, editAccountCurrencyDto });
     }
 
     @ApiOkResponse({ type: [Account] })
     @Patch('reorder/:id')
     reorderOne(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
         @Param('id', CustomParseIntPipe) id: number,
         @Body() reorderAccountDto: ReorderAccountDto,
     ): Promise<Account[]> {
-        return this.accountsService.reorder(id, reorderAccountDto);
+        return this.accountsService.reorder({ id, activeUserId, reorderAccountDto });
     }
 
     @ApiOkResponse({ type: Account })
     @Delete(':id')
-    delete(@Param('id', CustomParseIntPipe) id: number): Promise<Account[]> {
-        return this.accountsService.delete(id);
+    delete(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
+        @Param('id', CustomParseIntPipe) id: number,
+    ): Promise<Account[]> {
+        return this.accountsService.delete({ id, activeUserId });
     }
 }

@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Patch, Delete, Query, Param, Body } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Patch,
+    Delete,
+    Query,
+    Param,
+    Body,
+    UseInterceptors,
+    ClassSerializerInterceptor,
+} from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
@@ -22,6 +33,7 @@ import { EditTransactionDto } from './dtos/edit-transaction.dto';
 @ApiTags('transactions')
 @Auth(EAuthType.Bearer, EAuthType.ApiKey)
 @OnlyMe()
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('transactions')
 export class TransactionsController {
     constructor(private readonly transactionsService: TransactionsService) {}
@@ -44,8 +56,11 @@ export class TransactionsController {
 
     @ApiOkResponse({ type: Transaction })
     @Get(':id')
-    getOne(@Param('id', CustomParseIntPipe) id: number): Promise<Transaction> {
-        return this.transactionsService.getOne(id);
+    getOne(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
+        @Param('id', CustomParseIntPipe) id: number,
+    ): Promise<Transaction> {
+        return this.transactionsService.getOne({ id, activeUserId });
     }
 
     @ApiOkResponse({ type: Transaction })
@@ -57,15 +72,19 @@ export class TransactionsController {
     @ApiOkResponse({ type: Transaction })
     @Patch(':id')
     editOne(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
         @Param('id', CustomParseIntPipe) id: number,
         @Body() editTransactionDto: EditTransactionDto,
     ): Promise<Transaction> {
-        return this.transactionsService.edit(id, editTransactionDto);
+        return this.transactionsService.edit({ id, activeUserId, editTransactionDto });
     }
 
     @ApiOkResponse({ type: Transaction })
     @Delete(':id')
-    delete(@Param('id', CustomParseIntPipe) id: number): Promise<Transaction> {
-        return this.transactionsService.delete(id);
+    delete(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
+        @Param('id', CustomParseIntPipe) id: number,
+    ): Promise<Transaction> {
+        return this.transactionsService.delete({ id, activeUserId });
     }
 }

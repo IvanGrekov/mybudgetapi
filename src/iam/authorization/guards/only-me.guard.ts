@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { ONLY_ME_KEY } from '../decorators/only-me.decorator';
+import { IOnlyMeArgs, ONLY_ME_KEY } from '../decorators/only-me.decorator';
 import { REQUEST_USER_KEY } from '../../iam.constants';
 import { IActiveUser } from '../../interfaces/active-user-data.interface';
 import { EUserRole } from '../../../shared/enums/user-role.enums';
@@ -11,35 +11,43 @@ export class OnlyMeGuard implements CanActivate {
     constructor(private readonly reflector: Reflector) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const contextOnlyMe = this.reflector.getAllAndOverride<boolean>(ONLY_ME_KEY, [
+        const contextOnlyMe = this.reflector.getAllAndOverride<IOnlyMeArgs>(ONLY_ME_KEY, [
             context.getHandler(),
             context.getClass(),
         ]);
 
-        if (!contextOnlyMe) {
+        if (!contextOnlyMe || !contextOnlyMe.isEnabled) {
             return true;
         }
 
+        const { paramsKey, bodyKey } = contextOnlyMe;
         const request = context.switchToHttp().getRequest();
+
         const user: IActiveUser = request[REQUEST_USER_KEY];
         const userId = user.sub;
-        const idFromParams = Number(request.params?.id);
-        const userIdFromBody = Number(request.body?.userId);
         const userRole = user.role;
 
         if (userRole === EUserRole.ADMIN) {
             return true;
         }
 
-        if (idFromParams === userId) {
+        const userIdFromQueryParams = Number(request.query?.[paramsKey]);
+        const userIdFromParams = Number(request.params?.[paramsKey]);
+        const userIdFromBody = Number(request.body?.[bodyKey]);
+
+        if (!userIdFromQueryParams && !userIdFromParams && !userIdFromBody) {
+            return true;
+        }
+
+        if (userIdFromQueryParams === userId) {
+            return true;
+        }
+
+        if (userIdFromParams === userId) {
             return true;
         }
 
         if (userIdFromBody === userId) {
-            return true;
-        }
-
-        if (!idFromParams && !userIdFromBody) {
             return true;
         }
 

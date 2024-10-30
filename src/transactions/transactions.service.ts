@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, FindOptionsRelations } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { calculateSkipOption } from '../shared/utils/pagination.utils';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
@@ -10,16 +10,19 @@ import { TransactionCategory } from '../shared/entities/transaction-category.ent
 import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
 import { ETransactionType } from '../shared/enums/transaction.enums';
 import { UsersService } from '../users/users.service';
+import { validateUserOwnership } from '../shared/utils/validateUserOwnership';
 
 import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
-import { EditTransactionDto } from './dtos/edit-transaction.dto';
 import { validateFindAllTransactionProperties } from './utils/validateFindAllTransactionProperties.util';
 import { getFindAllWhereInput } from './utils/getFindAllWhereInput.util';
 import { validateCreateTransactionProperties } from './utils/validateCreateTransactionProperties.util';
 import { createTransferTransaction } from './utils/createTransferTransaction.util';
 import { createExpenseTransaction } from './utils/createExpenseTransaction.util';
 import { createIncomeTransaction } from './utils/createIncomeTransaction.util';
+import { IGetOneTransactionArgs } from './interfaces/get-one-transaction-args.interface';
+import { IEditTransactionArgs } from './interfaces/edit-transaction-args.interface';
+import { IDeleteTransactionArgs } from './interfaces/delete-transaction-args.interface';
 
 @Injectable()
 export class TransactionsService {
@@ -60,13 +63,18 @@ export class TransactionsService {
         };
     }
 
-    async getOne(
-        id: Transaction['id'],
-        relations?: FindOptionsRelations<Transaction>,
-    ): Promise<Transaction> {
+    async getOne({ id, activeUserId, relations }: IGetOneTransactionArgs): Promise<Transaction> {
         const transaction = await this.transactionRepository.findOne({
             where: { id },
-            relations,
+            relations: {
+                user: true,
+                ...relations,
+            },
+        });
+
+        validateUserOwnership({
+            activeUserId,
+            entity: transaction,
         });
 
         if (!transaction) {
@@ -108,21 +116,26 @@ export class TransactionsService {
         }
     }
 
-    async edit(id: Transaction['id'], { description }: EditTransactionDto): Promise<Transaction> {
-        const transaction = await this.transactionRepository.preload({
+    async edit({
+        id,
+        activeUserId,
+        editTransactionDto: { description },
+    }: IEditTransactionArgs): Promise<Transaction> {
+        await this.getOne({ id, activeUserId });
+
+        const transactionTemplate = await this.transactionRepository.preload({
             id,
             description,
         });
 
-        if (!transaction) {
-            throw new NotFoundException('Transaction', id);
-        }
-
-        return this.transactionRepository.save(transaction);
+        return this.transactionRepository.save(transactionTemplate);
     }
 
-    async delete(id: Transaction['id']): Promise<Transaction> {
-        const transaction = await this.getOne(id);
+    async delete({ id, activeUserId }: IDeleteTransactionArgs): Promise<Transaction> {
+        const transaction = await this.getOne({
+            id,
+            activeUserId,
+        });
         const { value, fee, fromAccount, toAccount } = transaction;
 
         const queryRunner = this.dataSource.createQueryRunner();

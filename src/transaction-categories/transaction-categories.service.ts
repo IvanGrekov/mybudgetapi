@@ -1,20 +1,18 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsRelations, Repository, DataSource, Not, FindOptionsWhere } from 'typeorm';
+import { Repository, DataSource, Not, FindOptionsWhere } from 'typeorm';
 
 import NotFoundException from '../shared/exceptions/not-found.exception';
 import MaximumEntitiesNumberException from '../shared/exceptions/maximum-entities-number.exception';
 import { TransactionCategory } from '../shared/entities/transaction-category.entity';
 import { Transaction } from '../shared/entities/transaction.entity';
 import { ETransactionCategoryStatus } from '../shared/enums/transaction-category.enums';
+import { validateUserOwnership } from '../shared/utils/validateUserOwnership';
+
 import { UsersService } from '../users/users.service';
 
 import { FindAllTransactionCategoriesDto } from './dtos/find-all-transaction-categories.dto';
 import { CreateTransactionCategoryDto } from './dtos/create-transaction-category.dto';
-import { ReorderTransactionCategoriesDto } from './dtos/reorder-transaction-categories.dto';
-import { EditTransactionCategoryDto } from './dtos/edit-transaction-category.dto';
-import { DeleteTransactionCategoryDto } from './dtos/delete-transaction-category.dto';
-import { EditTransactionCategoryCurrencyDto } from './dtos/edit-transaction-category-currency.dto';
 import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './constants/transaction-categories-pagination.constants';
 import { getParentTransactionCategories } from './utils/getParentTransactionCategories.util';
 import { sortChildTransactionCategories } from './utils/sortChildTransactionCategories.util';
@@ -25,6 +23,11 @@ import { archiveTransactionCategory } from './utils/archiveTransactionCategory.u
 import { validateReorderingTransactionCategories } from './utils/validateReorderingTransactionCategories.util';
 import { updateReorderingParent } from './utils/updateReorderingParent.utils';
 import { extractChildrenTransactionCategories } from './utils/extractChildrenTransactionCategories';
+import { IGetOneTransactionCategoryArgs } from './interfaces/get-one-transaction-category-args.interface';
+import { IEditTransactionCategoryArgs } from './interfaces/edit-transaction-category-args.interface';
+import { IEditTransactionCategoryCurrencyArgs } from './interfaces/edit-transaction-category-currency-args.interface';
+import { IReorderTransactionCategoriesArgs } from './interfaces/reorder-transaction-categories-args.interface';
+import { IDeleteTransactionCategoryArgs } from './interfaces/delete-transaction-category-args.interface';
 
 @Injectable()
 export class TransactionCategoriesService {
@@ -75,13 +78,22 @@ export class TransactionCategoriesService {
         return sortChildTransactionCategories(filteredTransactionCategories);
     }
 
-    async getOne(
-        id: TransactionCategory['id'],
-        relations?: FindOptionsRelations<TransactionCategory>,
-    ): Promise<TransactionCategory> {
+    async getOne({
+        id,
+        activeUserId,
+        relations,
+    }: IGetOneTransactionCategoryArgs): Promise<TransactionCategory> {
         const transactionCategory = await this.transactionCategoryRepository.findOne({
             where: { id },
-            relations,
+            relations: {
+                user: true,
+                ...relations,
+            },
+        });
+
+        validateUserOwnership({
+            activeUserId,
+            entity: transactionCategory,
         });
 
         if (!transactionCategory) {
@@ -127,14 +139,18 @@ export class TransactionCategoriesService {
         return this.transactionCategoryRepository.save(transactionCategoryTemplate);
     }
 
-    async edit(
-        id: TransactionCategory['id'],
-        editTransactionCategoryDto: EditTransactionCategoryDto,
-    ): Promise<TransactionCategory> {
-        const oldTransactionCategory = await this.getOne(id, {
-            user: true,
-            parent: true,
-            children: true,
+    async edit({
+        id,
+        activeUserId,
+        editTransactionCategoryDto,
+    }: IEditTransactionCategoryArgs): Promise<TransactionCategory> {
+        const oldTransactionCategory = await this.getOne({
+            id,
+            activeUserId,
+            relations: {
+                parent: true,
+                children: true,
+            },
         });
 
         const order = await getOldTransactionCategoryNewOrder({
@@ -168,11 +184,15 @@ export class TransactionCategoriesService {
         }
     }
 
-    async editCurrency(
-        id: TransactionCategory['id'],
-        { currency }: EditTransactionCategoryCurrencyDto,
-    ): Promise<TransactionCategory> {
-        const oldTransactionCategory = await this.getOne(id);
+    async editCurrency({
+        id,
+        activeUserId,
+        editTransactionCategoryCurrencyDto: { currency },
+    }: IEditTransactionCategoryCurrencyArgs): Promise<TransactionCategory> {
+        const oldTransactionCategory = await this.getOne({
+            id,
+            activeUserId,
+        });
         const oldCurrency = oldTransactionCategory.currency;
         if (oldCurrency === currency) {
             throw new BadRequestException('The new `currency` is the same like current one');
@@ -199,7 +219,10 @@ export class TransactionCategoriesService {
         return this.transactionCategoryRepository.save(transactionCategory);
     }
 
-    async reorder({ parentNodes }: ReorderTransactionCategoriesDto) {
+    async reorder({
+        activeUserId,
+        reorderTransactionCategoriesDto: { parentNodes },
+    }: IReorderTransactionCategoriesArgs): Promise<TransactionCategory[]> {
         if (parentNodes.length === 0) {
             throw new BadRequestException('Items for reordering not provided');
         }
@@ -207,9 +230,7 @@ export class TransactionCategoriesService {
         const {
             user: { id: userId },
             type,
-        } = await this.getOne(parentNodes.at(0).id, {
-            user: true,
-        });
+        } = await this.getOne({ id: parentNodes.at(0).id, activeUserId });
         const currentTransactionCategories = await this.findAll({
             userId,
             type,
@@ -246,14 +267,19 @@ export class TransactionCategoriesService {
         }
     }
 
-    async delete(
-        id: TransactionCategory['id'],
-        { shouldRemoveChildTransactionCategories }: DeleteTransactionCategoryDto,
-    ): Promise<TransactionCategory[]> {
-        const transactionCategory = await this.getOne(id, {
-            user: true,
-            parent: true,
-            children: true,
+    async delete({
+        id,
+        activeUserId,
+        deleteTransactionCategoryDto: { shouldRemoveChildTransactionCategories },
+    }: IDeleteTransactionCategoryArgs): Promise<TransactionCategory[]> {
+        const transactionCategory = await this.getOne({
+            id,
+            activeUserId,
+            relations: {
+                user: true,
+                parent: true,
+                children: true,
+            },
         });
 
         const queryRunner = this.dataSource.createQueryRunner();

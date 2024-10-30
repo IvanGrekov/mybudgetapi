@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Patch, Delete, Query, Param, Body } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Patch,
+    Delete,
+    Query,
+    Param,
+    Body,
+    UseInterceptors,
+    ClassSerializerInterceptor,
+} from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
@@ -24,6 +35,7 @@ import { DeleteTransactionCategoryDto } from './dtos/delete-transaction-category
 @ApiTags('transaction-categories')
 @Auth(EAuthType.Bearer, EAuthType.ApiKey)
 @OnlyMe()
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('transaction-categories')
 export class TransactionCategoriesController {
     constructor(private readonly transactionCategoriesService: TransactionCategoriesService) {}
@@ -46,8 +58,14 @@ export class TransactionCategoriesController {
 
     @ApiOkResponse({ type: TransactionCategory })
     @Get(':id')
-    getOne(@Param('id', CustomParseIntPipe) id: number): Promise<TransactionCategory> {
-        return this.transactionCategoriesService.getOne(id);
+    getOne(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
+        @Param('id', CustomParseIntPipe) id: number,
+    ): Promise<TransactionCategory> {
+        return this.transactionCategoriesService.getOne({
+            id,
+            activeUserId,
+        });
     }
 
     @ApiOkResponse({ type: TransactionCategory })
@@ -58,41 +76,57 @@ export class TransactionCategoriesController {
         return this.transactionCategoriesService.create(createTransactionCategoryDto);
     }
 
-    @ApiOkResponse({ type: [TransactionCategory] })
-    @Patch('reorder')
-    reorderOne(
-        @Body() reorderTransactionCategoriesDto: ReorderTransactionCategoriesDto,
-    ): Promise<TransactionCategory[]> {
-        return this.transactionCategoriesService.reorder(reorderTransactionCategoriesDto);
-    }
-
     @ApiOkResponse({ type: TransactionCategory })
     @Patch(':id')
     editOne(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
         @Param('id', CustomParseIntPipe) id: number,
         @Body() editTransactionCategoryDto: EditTransactionCategoryDto,
     ): Promise<TransactionCategory> {
-        return this.transactionCategoriesService.edit(id, editTransactionCategoryDto);
+        return this.transactionCategoriesService.edit({
+            id,
+            activeUserId,
+            editTransactionCategoryDto,
+        });
     }
 
     @ApiOkResponse({ type: TransactionCategory })
     @Patch('currency/:id')
     editOnesCurrency(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
         @Param('id', CustomParseIntPipe) id: number,
         @Body() editTransactionCategoryCurrencyDto: EditTransactionCategoryCurrencyDto,
     ): Promise<TransactionCategory> {
-        return this.transactionCategoriesService.editCurrency(
+        return this.transactionCategoriesService.editCurrency({
             id,
+            activeUserId,
             editTransactionCategoryCurrencyDto,
-        );
+        });
+    }
+
+    @ApiOkResponse({ type: [TransactionCategory] })
+    @Patch('reorder')
+    reorder(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
+        @Body() reorderTransactionCategoriesDto: ReorderTransactionCategoriesDto,
+    ): Promise<TransactionCategory[]> {
+        return this.transactionCategoriesService.reorder({
+            activeUserId,
+            reorderTransactionCategoriesDto,
+        });
     }
 
     @ApiOkResponse({ type: TransactionCategory })
     @Delete(':id')
     delete(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
         @Param('id', CustomParseIntPipe) id: number,
         @Query() deleteTransactionCategoryDto: DeleteTransactionCategoryDto,
     ): Promise<TransactionCategory[]> {
-        return this.transactionCategoriesService.delete(id, deleteTransactionCategoryDto);
+        return this.transactionCategoriesService.delete({
+            id,
+            activeUserId,
+            deleteTransactionCategoryDto,
+        });
     }
 }
