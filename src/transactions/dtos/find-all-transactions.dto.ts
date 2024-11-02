@@ -1,5 +1,5 @@
 import { IsNumber as IsNumberBase, IsEnum, IsOptional, IsDateString } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 import { PaginationQueryDto } from '../../shared/dtos/pagination.dto';
 import { ETransactionType } from '../../shared/enums/transaction.enums';
@@ -20,9 +20,10 @@ export class FindAllTransactionsDto extends PaginationQueryDto {
     @IsOptional()
     readonly transactionCategoryId?: number;
 
-    @IsEnum(ETransactionType)
+    @Transform(({ value }) => value.split(','))
+    @IsEnum(ETransactionType, { each: true })
     @IsOptional()
-    readonly type?: ETransactionType;
+    readonly types?: ETransactionType[];
 
     @IsOptional()
     readonly search?: string;

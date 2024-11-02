@@ -43,7 +43,7 @@ export class TransactionsService {
         validateFindAllTransactionProperties(query);
 
         const [items, total] = await this.transactionRepository.findAndCount({
-            take: query.limit,
+            take: limit,
             skip: calculateSkipOption(query),
             where: getFindAllWhereInput(query),
             order: { createdAt: 'DESC' },
