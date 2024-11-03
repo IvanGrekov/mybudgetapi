@@ -2,15 +2,14 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } f
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 
-import { ECurrency } from '../enums/currency.enums';
-import { EUserRole } from '../enums/user-role.enums';
+import { ECurrency } from 'shared/enums/currency.enums';
+import { EUserRole } from 'shared/enums/user-role.enums';
+import { DEFAULT_CURRENCY } from 'shared/constants/currency.constants';
 
-import { Account } from './account.entity';
-import { TransactionCategory } from './transaction-category.entity';
-import { ApiKey } from './api-key.entity';
-
-import { Transaction } from './transaction.entity';
-import { DEFAULT_CURRENCY } from '../constants/currency.constants';
+import { Account } from 'shared/entities/account.entity';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { ApiKey } from 'shared/entities/api-key.entity';
+import { Transaction } from 'shared/entities/transaction.entity';
 
 @Entity()
 export class User {

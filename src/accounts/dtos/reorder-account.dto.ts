@@ -1,5 +1,6 @@
-import IsNumber from '../../shared/property-decorators/is-number.decorator';
-import { MAX_ACCOUNTS_PER_USER } from '../constants/accounts-pagination.constants';
+import IsNumber from 'shared/property-decorators/is-number.decorator';
+
+import { MAX_ACCOUNTS_PER_USER } from 'accounts/constants/accounts-pagination.constants';
 
 export class ReorderAccountDto {
     @IsNumber({

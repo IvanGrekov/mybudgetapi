@@ -1,7 +1,7 @@
-import { PreloadAccountDto } from '../../shared/dtos/preload-account.dto';
-import { ECurrency } from '../../shared/enums/currency.enums';
-import { ELanguage } from '../../shared/enums/language.enums';
-import { EAccountType } from '../../shared/enums/account.enums';
+import { PreloadAccountDto } from 'shared/dtos/preload-account.dto';
+import { ECurrency } from 'shared/enums/currency.enums';
+import { ELanguage } from 'shared/enums/language.enums';
+import { EAccountType } from 'shared/enums/account.enums';
 
 type TGetDefaultAccountsDto = (args: {
     currency: ECurrency;

@@ -2,11 +2,11 @@ import { Inject, Injectable, OnApplicationBootstrap, OnApplicationShutdown } fro
 import { ConfigType } from '@nestjs/config';
 import Redis from 'ioredis';
 
-import { User } from '../../../shared/entities/user.entity';
+import { User } from 'shared/entities/user.entity';
 
-import redisConfig from '../../../config/redis.config';
+import redisConfig from 'config/redis.config';
 
-import InvalidatedToken from '../exceptions/invalidated-token.exception';
+import InvalidatedToken from 'iam/authentication/exceptions/invalidated-token.exception';
 
 @Injectable()
 export class TokedIdsStorage implements OnApplicationBootstrap, OnApplicationShutdown {

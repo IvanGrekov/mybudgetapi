@@ -1,10 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { IOnlyMeArgs, ONLY_ME_KEY } from '../decorators/only-me.decorator';
-import { REQUEST_USER_KEY } from '../../iam.constants';
-import { IActiveUser } from '../../interfaces/active-user-data.interface';
-import { EUserRole } from '../../../shared/enums/user-role.enums';
+import { EUserRole } from 'shared/enums/user-role.enums';
+
+import { REQUEST_USER_KEY } from 'iam/iam.constants';
+import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
+
+import { IOnlyMeArgs, ONLY_ME_KEY } from 'iam/authorization/decorators/only-me.decorator';
 
 @Injectable()
 export class OnlyMeGuard implements CanActivate {

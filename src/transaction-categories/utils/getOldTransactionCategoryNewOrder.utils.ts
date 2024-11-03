@@ -1,9 +1,10 @@
 import { InternalServerErrorException } from '@nestjs/common';
 
-import { TransactionCategory } from '../../shared/entities/transaction-category.entity';
-import { ETransactionCategoryStatus } from '../../shared/enums/transaction-category.enums';
-import { EditTransactionCategoryDto } from '../dtos/edit-transaction-category.dto';
-import { FindAllTransactionCategoriesDto } from '../dtos/find-all-transaction-categories.dto';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { ETransactionCategoryStatus } from 'shared/enums/transaction-category.enums';
+
+import { EditTransactionCategoryDto } from 'transaction-categories/dtos/edit-transaction-category.dto';
+import { FindAllTransactionCategoriesDto } from 'transaction-categories/dtos/find-all-transaction-categories.dto';
 
 type TGetOldTransactionCategoryNewOrder = (args: {
     oldTransactionCategory: TransactionCategory;

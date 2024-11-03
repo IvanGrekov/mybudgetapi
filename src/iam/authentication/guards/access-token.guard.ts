@@ -9,11 +9,12 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import { Request } from 'express';
 
-import jwtConfig from '../../../config/jwt.config';
+import jwtConfig from 'config/jwt.config';
 
-import { REQUEST_USER_KEY } from '../../iam.constants';
-import { IActiveUser } from '../../interfaces/active-user-data.interface';
-import { IRefreshTokenPayload } from '../interfaces/refresh-token-payload.interface';
+import { REQUEST_USER_KEY } from 'iam/iam.constants';
+
+import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
+import { IRefreshTokenPayload } from 'iam/authentication/interfaces/refresh-token-payload.interface';
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {

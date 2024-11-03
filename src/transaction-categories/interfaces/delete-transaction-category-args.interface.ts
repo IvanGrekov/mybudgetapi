@@ -1,4 +1,4 @@
-import { DeleteTransactionCategoryDto } from '../dtos/delete-transaction-category.dto';
+import { DeleteTransactionCategoryDto } from 'transaction-categories/dtos/delete-transaction-category.dto';
 
 export interface IDeleteTransactionCategoryArgs {
     id: number;

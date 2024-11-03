@@ -1,11 +1,8 @@
 import { IsEmail, IsDefined, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import IsString from '../../../shared/property-decorators/is-string.decorator';
-import {
-    PASSWORD_MIN_LENGTH,
-    PASSWORD_MAX_LENGTH,
-} from '../../../shared/constants/password.constants';
+import IsString from 'shared/property-decorators/is-string.decorator';
+import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from 'shared/constants/password.constants';
 
 export class ResetPasswordDto {
     @IsEmail()

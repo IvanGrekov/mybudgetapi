@@ -1,9 +1,9 @@
 import { DeepPartial } from 'typeorm';
 
-import { Transaction } from '../../shared/entities/transaction.entity';
-import { Account } from '../../shared/entities/account.entity';
-import { User } from '../../shared/entities/user.entity';
-import { ETransactionType } from '../../shared/enums/transaction.enums';
+import { Transaction } from 'shared/entities/transaction.entity';
+import { Account } from 'shared/entities/account.entity';
+import { User } from 'shared/entities/user.entity';
+import { ETransactionType } from 'shared/enums/transaction.enums';
 
 type TCreateBalanceCorrectionTransaction = (args: {
     user: User;

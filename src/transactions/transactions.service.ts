@@ -1,28 +1,28 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { calculateSkipOption } from '../shared/utils/pagination.utils';
+import { calculateSkipOption } from 'shared/utils/pagination.utils';
 
-import NotFoundException from '../shared/exceptions/not-found.exception';
-import { Transaction } from '../shared/entities/transaction.entity';
-import { Account } from '../shared/entities/account.entity';
-import { TransactionCategory } from '../shared/entities/transaction-category.entity';
-import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
-import { ETransactionType } from '../shared/enums/transaction.enums';
-import { UsersService } from '../users/users.service';
-import { validateUserOwnership } from '../shared/utils/validateUserOwnership';
+import NotFoundException from 'shared/exceptions/not-found.exception';
+import { Transaction } from 'shared/entities/transaction.entity';
+import { Account } from 'shared/entities/account.entity';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { PaginatedItemsResultDto } from 'shared/dtos/paginated-items-result.dto';
+import { ETransactionType } from 'shared/enums/transaction.enums';
+import { UsersService } from 'users/users.service';
+import { validateUserOwnership } from 'shared/utils/validateUserOwnership';
 
-import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
-import { CreateTransactionDto } from './dtos/create-transaction.dto';
-import { validateFindAllTransactionProperties } from './utils/validateFindAllTransactionProperties.util';
-import { getFindAllWhereInput } from './utils/getFindAllWhereInput.util';
-import { validateCreateTransactionProperties } from './utils/validateCreateTransactionProperties.util';
-import { createTransferTransaction } from './utils/createTransferTransaction.util';
-import { createExpenseTransaction } from './utils/createExpenseTransaction.util';
-import { createIncomeTransaction } from './utils/createIncomeTransaction.util';
-import { IGetOneTransactionArgs } from './interfaces/get-one-transaction-args.interface';
-import { IEditTransactionArgs } from './interfaces/edit-transaction-args.interface';
-import { IDeleteTransactionArgs } from './interfaces/delete-transaction-args.interface';
+import { FindAllTransactionsDto } from 'transactions/dtos/find-all-transactions.dto';
+import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
+import { validateFindAllTransactionProperties } from 'transactions/utils/validateFindAllTransactionProperties.util';
+import { getFindAllWhereInput } from 'transactions/utils/getFindAllWhereInput.util';
+import { validateCreateTransactionProperties } from 'transactions/utils/validateCreateTransactionProperties.util';
+import { createTransferTransaction } from 'transactions/utils/createTransferTransaction.util';
+import { createExpenseTransaction } from 'transactions/utils/createExpenseTransaction.util';
+import { createIncomeTransaction } from 'transactions/utils/createIncomeTransaction.util';
+import { IGetOneTransactionArgs } from 'transactions/interfaces/get-one-transaction-args.interface';
+import { IEditTransactionArgs } from 'transactions/interfaces/edit-transaction-args.interface';
+import { IDeleteTransactionArgs } from 'transactions/interfaces/delete-transaction-args.interface';
 
 @Injectable()
 export class TransactionsService {

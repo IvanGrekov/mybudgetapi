@@ -1,4 +1,4 @@
-import { TransactionCategory } from '../../shared/entities/transaction-category.entity';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
 
 const sortTransactionCategories = <T extends { order: number }>(
     transactionCategories: T[],

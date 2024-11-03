@@ -3,28 +3,28 @@ import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 import { Response } from 'express';
 import { toDataURL } from 'qrcode';
 
-import { CreateUserDto } from '../../../shared/dtos/create-user.dto';
+import { CreateUserDto } from 'shared/dtos/create-user.dto';
 
-import { Auth } from '../decorators/auth.decorator';
-import { TokensService } from '../services/tokens.service';
-import { AuthenticationService } from '../services/authentication.service';
-import { ResetPasswordService } from '../services/reset-password.service';
-import { GoogleAuthenticationService } from '../services/google-authentication.service';
-import { TfaAuthenticationService } from '../services/tfa-authentication.service';
+import { ActiveUser } from 'iam/decorators/active-user.decorator';
+import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
 
-import { ActiveUser } from '../../decorators/active-user.decorator';
-import { IActiveUser } from '../../interfaces/active-user-data.interface';
+import { Auth } from 'iam/authentication/decorators/auth.decorator';
+import { TokensService } from 'iam/authentication/services/tokens.service';
+import { AuthenticationService } from 'iam/authentication/services/authentication.service';
+import { ResetPasswordService } from 'iam/authentication/services/reset-password.service';
+import { GoogleAuthenticationService } from 'iam/authentication/services/google-authentication.service';
+import { TfaAuthenticationService } from 'iam/authentication/services/tfa-authentication.service';
 
-import { EAuthType } from '../enums/auth-type.enum';
-import { SignInDto } from '../dtos/sign-in.dto';
-import { GeneratedTokensDto } from '../dtos/generated-tokens.dto';
-import { RefreshTokenDto } from '../dtos/refresh-token.dto';
-import { GoogleIdTokenDto } from '../dtos/google-id-token.dto';
-import { InitiateResetPasswordDto } from '../dtos/initiate-reset-password.dto';
-import { ResetPasswordDto } from '../dtos/reset-password.dto';
-import { InitiateResetPasswordResultDto } from '../dtos/initiate-reset-password-result.dto';
-import { ManageTfaDto } from '../dtos/manage-tfa.dto';
-import { InitiateTfaEnablingDtoResult } from '../dtos/initiate-tfa-enabling-result.dto';
+import { EAuthType } from 'iam/authentication/enums/auth-type.enum';
+import { SignInDto } from 'iam/authentication/dtos/sign-in.dto';
+import { GeneratedTokensDto } from 'iam/authentication/dtos/generated-tokens.dto';
+import { RefreshTokenDto } from 'iam/authentication/dtos/refresh-token.dto';
+import { GoogleIdTokenDto } from 'iam/authentication/dtos/google-id-token.dto';
+import { InitiateResetPasswordDto } from 'iam/authentication/dtos/initiate-reset-password.dto';
+import { ResetPasswordDto } from 'iam/authentication/dtos/reset-password.dto';
+import { InitiateResetPasswordResultDto } from 'iam/authentication/dtos/initiate-reset-password-result.dto';
+import { ManageTfaDto } from 'iam/authentication/dtos/manage-tfa.dto';
+import { InitiateTfaEnablingDtoResult } from 'iam/authentication/dtos/initiate-tfa-enabling-result.dto';
 
 @ApiTags('authentication')
 @Auth(EAuthType.None)

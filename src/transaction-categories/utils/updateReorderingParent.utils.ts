@@ -1,9 +1,10 @@
 import { FindOptionsRelations, UpdateResult } from 'typeorm';
 
-import ArchivedEntityException from '../../shared/exceptions/archived-entity.exception';
-import { TransactionCategory } from '../../shared/entities/transaction-category.entity';
-import { ReorderParentTransactionCategoryDto } from '../dtos/reorder-parent-transaction-category.dto';
-import { ETransactionCategoryStatus } from 'src/shared/enums/transaction-category.enums';
+import ArchivedEntityException from 'shared/exceptions/archived-entity.exception';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { ETransactionCategoryStatus } from 'shared/enums/transaction-category.enums';
+
+import { ReorderParentTransactionCategoryDto } from 'transaction-categories/dtos/reorder-parent-transaction-category.dto';
 
 type TGetOneTransactionCategory = (
     id: TransactionCategory['id'],

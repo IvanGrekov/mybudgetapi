@@ -8,20 +8,20 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 
-import { User } from '../../../shared/entities/user.entity';
-import NotFoundException from '../../../shared/exceptions/not-found.exception';
+import { User } from 'shared/entities/user.entity';
+import NotFoundException from 'shared/exceptions/not-found.exception';
 
-import { UsersService } from '../../../users/users.service';
-import jwtConfig from '../../../config/jwt.config';
+import { UsersService } from 'users/users.service';
+import jwtConfig from 'config/jwt.config';
 
-import { IActiveUser } from '../../interfaces/active-user-data.interface';
+import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
 
-import { SignTokenDto } from '../dtos/sign-token.dto';
-import { GeneratedTokensDto } from '../dtos/generated-tokens.dto';
-import { RefreshTokenDto } from '../dtos/refresh-token.dto';
-import { TokedIdsStorage } from '../storages/toked-ids.storage';
-import { IRefreshTokenPayload } from '../interfaces/refresh-token-payload.interface';
-import InvalidatedToken from '../exceptions/invalidated-token.exception';
+import { SignTokenDto } from 'iam/authentication/dtos/sign-token.dto';
+import { GeneratedTokensDto } from 'iam/authentication/dtos/generated-tokens.dto';
+import { RefreshTokenDto } from 'iam/authentication/dtos/refresh-token.dto';
+import { TokedIdsStorage } from 'iam/authentication/storages/toked-ids.storage';
+import { IRefreshTokenPayload } from 'iam/authentication/interfaces/refresh-token-payload.interface';
+import InvalidatedToken from 'iam/authentication/exceptions/invalidated-token.exception';
 
 @Injectable()
 export class TokensService {

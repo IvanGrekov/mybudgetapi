@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 
-import { getIdPointer, getMultipleIdPointers } from '../../shared/utils/idPointer.utils';
-import { TransactionCategory } from '../../shared/entities/transaction-category.entity';
+import { getIdPointer, getMultipleIdPointers } from 'shared/utils/idPointer.utils';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
 
-import { ReorderParentTransactionCategoryDto } from '../dtos/reorder-parent-transaction-category.dto';
+import { ReorderParentTransactionCategoryDto } from 'transaction-categories/dtos/reorder-parent-transaction-category.dto';
 
 const getReorderingNodeIds = (parentNodes: ReorderParentTransactionCategoryDto[]): number[] => {
     const nodeIds = new Set<number>();

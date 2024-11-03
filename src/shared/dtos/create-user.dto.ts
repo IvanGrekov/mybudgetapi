@@ -1,11 +1,11 @@
 import { IsEmail, IsEnum, IsOptional, IsString as IsStringBase } from 'class-validator';
 
-import IsString from '../property-decorators/is-string.decorator';
-import { ECurrency } from '../enums/currency.enums';
-import { ELanguage } from '../enums/language.enums';
+import IsString from 'shared/property-decorators/is-string.decorator';
+import { ECurrency } from 'shared/enums/currency.enums';
+import { ELanguage } from 'shared/enums/language.enums';
 
-import { NICKNAME_MIN_LENGTH, NICKNAME_MAX_LENGTH } from '../constants/nickname.constants';
-import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../constants/password.constants';
+import { NICKNAME_MIN_LENGTH, NICKNAME_MAX_LENGTH } from 'shared/constants/nickname.constants';
+import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from 'shared/constants/password.constants';
 
 export class CreateUserDto {
     @IsEmail()

@@ -1,15 +1,15 @@
 import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
 
-import { CreateUserDto } from '../../../shared/dtos/create-user.dto';
+import { CreateUserDto } from 'shared/dtos/create-user.dto';
 
-import { UsersService } from '../../../users/users.service';
+import { UsersService } from 'users/users.service';
 
-import { HashingService } from '../../hashing/hashing.service';
+import { HashingService } from 'iam/hashing/hashing.service';
 
-import { TokensService } from './tokens.service';
-import { SignInDto } from '../dtos/sign-in.dto';
-import { GeneratedTokensDto } from '../dtos/generated-tokens.dto';
-import { TfaAuthenticationService } from '../services/tfa-authentication.service';
+import { TokensService } from 'iam/authentication/services/tokens.service';
+import { SignInDto } from 'iam/authentication/dtos/sign-in.dto';
+import { GeneratedTokensDto } from 'iam/authentication/dtos/generated-tokens.dto';
+import { TfaAuthenticationService } from 'iam/authentication/services/tfa-authentication.service';
 
 @Injectable()
 export class AuthenticationService {

@@ -12,24 +12,24 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
-import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
-import { Account } from '../shared/entities/account.entity';
-import { EUserRole } from '../shared/enums/user-role.enums';
+import { CustomParseIntPipe } from 'shared/pipes/custom-parse-int.pipe';
+import { Account } from 'shared/entities/account.entity';
+import { EUserRole } from 'shared/enums/user-role.enums';
 
-import { Auth } from '../iam/authentication/decorators/auth.decorator';
-import { EAuthType } from '../iam/authentication/enums/auth-type.enum';
-import { OnlyMe } from '../iam/authorization/decorators/only-me.decorator';
-import { ActiveUser } from '../iam/decorators/active-user.decorator';
-import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
-import { UserRole } from '../iam/authorization/decorators/user-role.decorator';
+import { Auth } from 'iam/authentication/decorators/auth.decorator';
+import { EAuthType } from 'iam/authentication/enums/auth-type.enum';
+import { OnlyMe } from 'iam/authorization/decorators/only-me.decorator';
+import { ActiveUser } from 'iam/decorators/active-user.decorator';
+import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
+import { UserRole } from 'iam/authorization/decorators/user-role.decorator';
 
-import { AccountsService } from './accounts.service';
-import { FindMyAccountsDto } from './dtos/find-my-accounts.dto';
-import { FindAllAccountsDto } from './dtos/find-all-accounts.dto';
-import { CreateAccountDto } from './dtos/create-account.dto';
-import { EditAccountDto } from './dtos/edit-account.dto';
-import { EditAccountCurrencyDto } from './dtos/edit-account-currency.dto';
-import { ReorderAccountDto } from './dtos/reorder-account.dto';
+import { AccountsService } from 'accounts/accounts.service';
+import { FindMyAccountsDto } from 'accounts/dtos/find-my-accounts.dto';
+import { FindAllAccountsDto } from 'accounts/dtos/find-all-accounts.dto';
+import { CreateAccountDto } from 'accounts/dtos/create-account.dto';
+import { EditAccountDto } from 'accounts/dtos/edit-account.dto';
+import { EditAccountCurrencyDto } from 'accounts/dtos/edit-account-currency.dto';
+import { ReorderAccountDto } from 'accounts/dtos/reorder-account.dto';
 
 @ApiTags('accounts')
 @Auth(EAuthType.Bearer, EAuthType.ApiKey)

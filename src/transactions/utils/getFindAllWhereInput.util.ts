@@ -1,8 +1,8 @@
 import { Between, MoreThanOrEqual, LessThanOrEqual, FindOptionsWhere, Like, In } from 'typeorm';
 
-import { Transaction } from '../../shared/entities/transaction.entity';
+import { Transaction } from 'shared/entities/transaction.entity';
 
-import { FindAllTransactionsDto } from '../dtos/find-all-transactions.dto';
+import { FindAllTransactionsDto } from 'transactions/dtos/find-all-transactions.dto';
 
 const getCreatedAtFilter = (from?: string, to?: string) => {
     if (from && to) {

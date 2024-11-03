@@ -8,13 +8,13 @@ import {
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
-import { User } from './user.entity';
-import { Transaction } from './transaction.entity';
-import { ECurrency } from '../enums/currency.enums';
+import { User } from 'shared/entities/user.entity';
+import { Transaction } from 'shared/entities/transaction.entity';
+import { ECurrency } from 'shared/enums/currency.enums';
 import {
     ETransactionCategoryType,
     ETransactionCategoryStatus,
-} from '../enums/transaction-category.enums';
+} from 'shared/enums/transaction-category.enums';
 
 @Entity()
 export class TransactionCategory {

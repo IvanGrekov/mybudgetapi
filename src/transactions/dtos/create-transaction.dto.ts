@@ -6,7 +6,7 @@ import {
     IsString,
 } from 'class-validator';
 
-import { ETransactionType } from '../../shared/enums/transaction.enums';
+import { ETransactionType } from 'shared/enums/transaction.enums';
 
 export class CreateTransactionDto {
     @IsNumberBase()

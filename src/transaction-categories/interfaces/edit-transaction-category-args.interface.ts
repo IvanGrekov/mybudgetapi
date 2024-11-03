@@ -1,4 +1,4 @@
-import { EditTransactionCategoryDto } from '../dtos/edit-transaction-category.dto';
+import { EditTransactionCategoryDto } from 'transaction-categories/dtos/edit-transaction-category.dto';
 
 export interface IEditTransactionCategoryArgs {
     id: number;

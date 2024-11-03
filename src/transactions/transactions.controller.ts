@@ -12,23 +12,23 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
-import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
-import { Transaction } from '../shared/entities/transaction.entity';
-import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
-import { EUserRole } from '../shared/enums/user-role.enums';
+import { CustomParseIntPipe } from 'shared/pipes/custom-parse-int.pipe';
+import { Transaction } from 'shared/entities/transaction.entity';
+import { PaginatedItemsResultDto } from 'shared/dtos/paginated-items-result.dto';
+import { EUserRole } from 'shared/enums/user-role.enums';
 
-import { Auth } from '../iam/authentication/decorators/auth.decorator';
-import { EAuthType } from '../iam/authentication/enums/auth-type.enum';
-import { OnlyMe } from '../iam/authorization/decorators/only-me.decorator';
-import { ActiveUser } from '../iam/decorators/active-user.decorator';
-import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
-import { UserRole } from '../iam/authorization/decorators/user-role.decorator';
+import { Auth } from 'iam/authentication/decorators/auth.decorator';
+import { EAuthType } from 'iam/authentication/enums/auth-type.enum';
+import { OnlyMe } from 'iam/authorization/decorators/only-me.decorator';
+import { ActiveUser } from 'iam/decorators/active-user.decorator';
+import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
+import { UserRole } from 'iam/authorization/decorators/user-role.decorator';
 
-import { TransactionsService } from './transactions.service';
-import { FindAllTransactionsDto } from './dtos/find-all-transactions.dto';
-import { FindMyTransactionsDto } from './dtos/find-my-transactions.dto';
-import { CreateTransactionDto } from './dtos/create-transaction.dto';
-import { EditTransactionDto } from './dtos/edit-transaction.dto';
+import { TransactionsService } from 'transactions/transactions.service';
+import { FindAllTransactionsDto } from 'transactions/dtos/find-all-transactions.dto';
+import { FindMyTransactionsDto } from 'transactions/dtos/find-my-transactions.dto';
+import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
+import { EditTransactionDto } from 'transactions/dtos/edit-transaction.dto';
 
 @ApiTags('transactions')
 @Auth(EAuthType.Bearer, EAuthType.ApiKey)

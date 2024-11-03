@@ -1,12 +1,12 @@
 import { DeepPartial } from 'typeorm';
 
-import { Account } from '../../shared/entities/account.entity';
-import { TransactionCategory } from '../../shared/entities/transaction-category.entity';
-import { ECurrency } from '../../shared/enums/currency.enums';
-import { ELanguage } from '../../shared/enums/language.enums';
+import { Account } from 'shared/entities/account.entity';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { ECurrency } from 'shared/enums/currency.enums';
+import { ELanguage } from 'shared/enums/language.enums';
 
-import { getDefaultAccountsDto } from './getDefaultAccountsDto.util';
-import { getDefaultTransactionCategoriesDto } from './getDefaultTransactionCategoriesDto.util';
+import { getDefaultAccountsDto } from 'users/utils/getDefaultAccountsDto.util';
+import { getDefaultTransactionCategoriesDto } from 'users/utils/getDefaultTransactionCategoriesDto.util';
 
 type TCreateAccount = (entityLike: DeepPartial<Account>) => Account;
 

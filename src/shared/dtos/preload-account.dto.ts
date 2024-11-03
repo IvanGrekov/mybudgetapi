@@ -1,9 +1,9 @@
 import { IsDefined, IsEnum, IsBoolean, IsOptional } from 'class-validator';
 
-import IsNumber from '../property-decorators/is-number.decorator';
-import IsString from '../property-decorators/is-string.decorator';
-import { ECurrency } from '../enums/currency.enums';
-import { EAccountType } from '../enums/account.enums';
+import IsNumber from 'shared/property-decorators/is-number.decorator';
+import IsString from 'shared/property-decorators/is-string.decorator';
+import { ECurrency } from 'shared/enums/currency.enums';
+import { EAccountType } from 'shared/enums/account.enums';
 
 export class PreloadAccountDto {
     @IsDefined()

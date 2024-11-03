@@ -2,7 +2,7 @@ import { applyDecorators } from '@nestjs/common';
 
 import { IsString as IsStringBase, MinLength, MaxLength } from 'class-validator';
 
-import { DEFAULT_MIN_LENGTH, DEFAULT_MAX_LENGTH } from '../constants/string-fields.constants';
+import { DEFAULT_MIN_LENGTH, DEFAULT_MAX_LENGTH } from 'shared/constants/string-fields.constants';
 
 interface IIsStringOptions {
     minLength?: number;

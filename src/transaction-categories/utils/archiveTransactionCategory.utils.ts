@@ -1,9 +1,10 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { QueryRunner, UpdateResult } from 'typeorm';
 
-import { TransactionCategory } from '../../shared/entities/transaction-category.entity';
-import { ETransactionCategoryType } from '../../shared/enums/transaction-category.enums';
-import { FindAllTransactionCategoriesDto } from '../dtos/find-all-transaction-categories.dto';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { ETransactionCategoryType } from 'shared/enums/transaction-category.enums';
+
+import { FindAllTransactionCategoriesDto } from 'transaction-categories/dtos/find-all-transaction-categories.dto';
 
 type TSyncTransactionCategoriesOrder = (args: {
     userId: number;

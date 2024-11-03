@@ -1,4 +1,4 @@
-import { EditAccountDto } from '../dtos/edit-account.dto';
+import { EditAccountDto } from 'accounts/dtos/edit-account.dto';
 
 export interface IEditAccountArgs {
     id: number;

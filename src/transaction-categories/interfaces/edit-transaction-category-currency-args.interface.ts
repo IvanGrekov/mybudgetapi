@@ -1,4 +1,4 @@
-import { EditTransactionCategoryCurrencyDto } from '../dtos/edit-transaction-category-currency.dto';
+import { EditTransactionCategoryCurrencyDto } from 'transaction-categories/dtos/edit-transaction-category-currency.dto';
 
 export interface IEditTransactionCategoryCurrencyArgs {
     id: number;

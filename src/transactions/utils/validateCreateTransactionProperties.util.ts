@@ -1,7 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 
-import { validateTransactionProperties } from './validateTransactionProperties.util';
-import { ETransactionType } from '../../shared/enums/transaction.enums';
+import { ETransactionType } from 'shared/enums/transaction.enums';
+
+import { validateTransactionProperties } from 'transactions/utils/validateTransactionProperties.util';
 
 interface ICreateTransactionBaseProperties {
     fromAccountId?: number;

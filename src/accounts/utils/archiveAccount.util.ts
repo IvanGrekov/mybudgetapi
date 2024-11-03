@@ -1,9 +1,9 @@
 import { QueryRunner, UpdateResult } from 'typeorm';
 
-import { EAccountType } from '../../shared/enums/account.enums';
-import { Account } from '../../shared/entities/account.entity';
+import { EAccountType } from 'shared/enums/account.enums';
+import { Account } from 'shared/entities/account.entity';
 
-import { FindAllAccountsDto } from '../dtos/find-all-accounts.dto';
+import { FindAllAccountsDto } from 'accounts/dtos/find-all-accounts.dto';
 
 type TFindAllAccounts = (args: FindAllAccountsDto) => Promise<Account[]>;
 

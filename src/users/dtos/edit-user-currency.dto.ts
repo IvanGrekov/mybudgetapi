@@ -1,6 +1,6 @@
 import { IsEnum, IsNumber, IsPositive, IsBoolean, IsOptional } from 'class-validator';
 
-import { ECurrency } from '../../shared/enums/currency.enums';
+import { ECurrency } from 'shared/enums/currency.enums';
 
 export class EditUserCurrencyDto {
     @IsEnum(ECurrency)

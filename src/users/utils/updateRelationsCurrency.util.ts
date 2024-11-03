@@ -1,8 +1,8 @@
 import { QueryRunner } from 'typeorm';
 
-import { Account } from '../../shared/entities/account.entity';
-import { TransactionCategory } from '../../shared/entities/transaction-category.entity';
-import { ECurrency } from '../../shared/enums/currency.enums';
+import { Account } from 'shared/entities/account.entity';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { ECurrency } from 'shared/enums/currency.enums';
 
 type TUpdateRelationsCurrency = (args: {
     queryRunner: QueryRunner;

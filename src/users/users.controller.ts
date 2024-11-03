@@ -11,23 +11,23 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
-import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
-import { User } from '../shared/entities/user.entity';
-import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
-import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
-import { EUserRole } from '../shared/enums/user-role.enums';
+import { CustomParseIntPipe } from 'shared/pipes/custom-parse-int.pipe';
+import { User } from 'shared/entities/user.entity';
+import { PaginationQueryDto } from 'shared/dtos/pagination.dto';
+import { PaginatedItemsResultDto } from 'shared/dtos/paginated-items-result.dto';
+import { EUserRole } from 'shared/enums/user-role.enums';
 
-import { EAuthType } from '../iam/authentication/enums/auth-type.enum';
-import { Auth } from '../iam/authentication/decorators/auth.decorator';
-import { ActiveUser } from '../iam/decorators/active-user.decorator';
-import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
-import { UserRole } from '../iam/authorization/decorators/user-role.decorator';
-import { OnlyMe } from '../iam/authorization/decorators/only-me.decorator';
+import { EAuthType } from 'iam/authentication/enums/auth-type.enum';
+import { Auth } from 'iam/authentication/decorators/auth.decorator';
+import { ActiveUser } from 'iam/decorators/active-user.decorator';
+import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
+import { UserRole } from 'iam/authorization/decorators/user-role.decorator';
+import { OnlyMe } from 'iam/authorization/decorators/only-me.decorator';
 
-import { UsersService } from './users.service';
-import { EditUserDto } from './dtos/edit-user.dto';
-import { EditUserCurrencyDto } from './dtos/edit-user-currency.dto';
-import { EditUserRoleDto } from './dtos/edit-user-role.dto';
+import { UsersService } from 'users/users.service';
+import { EditUserDto } from 'users/dtos/edit-user.dto';
+import { EditUserCurrencyDto } from 'users/dtos/edit-user-currency.dto';
+import { EditUserRoleDto } from 'users/dtos/edit-user-role.dto';
 
 @ApiTags('users')
 @Auth(EAuthType.Bearer, EAuthType.ApiKey)

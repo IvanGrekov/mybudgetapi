@@ -2,26 +2,26 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsRelations, Repository } from 'typeorm';
 
-import { User } from '../shared/entities/user.entity';
-import { Account } from '../shared/entities/account.entity';
-import { TransactionCategory } from '../shared/entities/transaction-category.entity';
-import { PaginatedItemsResultDto } from '../shared/dtos/paginated-items-result.dto';
-import { CreateUserDto } from '../shared/dtos/create-user.dto';
-import NotFoundException from '../shared/exceptions/not-found.exception';
-import { getIdPointer } from '../shared/utils/idPointer.utils';
-import { PaginationQueryDto } from '../shared/dtos/pagination.dto';
-import { calculateSkipOption } from '../shared/utils/pagination.utils';
-import { DEFAULT_CURRENCY } from '../shared/constants/currency.constants';
-import { DEFAULT_LANGUAGE } from '../shared/constants/language.constants';
+import { User } from 'shared/entities/user.entity';
+import { Account } from 'shared/entities/account.entity';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { PaginatedItemsResultDto } from 'shared/dtos/paginated-items-result.dto';
+import { CreateUserDto } from 'shared/dtos/create-user.dto';
+import NotFoundException from 'shared/exceptions/not-found.exception';
+import { getIdPointer } from 'shared/utils/idPointer.utils';
+import { PaginationQueryDto } from 'shared/dtos/pagination.dto';
+import { calculateSkipOption } from 'shared/utils/pagination.utils';
+import { DEFAULT_CURRENCY } from 'shared/constants/currency.constants';
+import { DEFAULT_LANGUAGE } from 'shared/constants/language.constants';
 
-import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
+import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
 
-import { EditUserDto } from './dtos/edit-user.dto';
-import { EditUserCurrencyDto } from './dtos/edit-user-currency.dto';
-import { EditUserRoleDto } from './dtos/edit-user-role.dto';
-import { getChildrenTransactionCategories } from './utils/getChildrenTransactionCategories.util';
-import { getDefaultRelations } from './utils/getDefaultRelations.util';
-import { updateRelationsCurrency } from './utils/updateRelationsCurrency.util';
+import { EditUserDto } from 'users/dtos/edit-user.dto';
+import { EditUserCurrencyDto } from 'users/dtos/edit-user-currency.dto';
+import { EditUserRoleDto } from 'users/dtos/edit-user-role.dto';
+import { getChildrenTransactionCategories } from 'users/utils/getChildrenTransactionCategories.util';
+import { getDefaultRelations } from 'users/utils/getDefaultRelations.util';
+import { updateRelationsCurrency } from 'users/utils/updateRelationsCurrency.util';
 
 @Injectable()
 export class UsersService {

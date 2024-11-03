@@ -1,14 +1,14 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
-import { EUserRole } from '../../../shared/enums/user-role.enums';
-import { ApiKey } from '../../../shared/entities/api-key.entity';
+import { EUserRole } from 'shared/enums/user-role.enums';
+import { ApiKey } from 'shared/entities/api-key.entity';
 
-import { UserRole } from '../../authorization/decorators/user-role.decorator';
-import { GeneratedApiKeyDto } from '../dtos/generated-api-key-payload.dto';
-import { ApiKeysService } from '../services/api-keys.service';
-import { CreateApiKeyForUserDto } from '../dtos/create-api-key-for-user.dto';
-import { GetApiKeyByUserIdDto } from '../dtos/get-api-key-by-user-id.dto';
+import { UserRole } from 'iam/authorization/decorators/user-role.decorator';
+import { GeneratedApiKeyDto } from 'iam/authentication/dtos/generated-api-key-payload.dto';
+import { ApiKeysService } from 'iam/authentication/services/api-keys.service';
+import { CreateApiKeyForUserDto } from 'iam/authentication/dtos/create-api-key-for-user.dto';
+import { GetApiKeyByUserIdDto } from 'iam/authentication/dtos/get-api-key-by-user-id.dto';
 
 @ApiTags('api-keys')
 @UserRole(EUserRole.ADMIN)

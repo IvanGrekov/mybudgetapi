@@ -1,7 +1,7 @@
 import { ForbiddenException } from '@nestjs/common';
 
-import { User } from '../entities/user.entity';
-import { EUserRole } from '../enums/user-role.enums';
+import { User } from 'shared/entities/user.entity';
+import { EUserRole } from 'shared/enums/user-role.enums';
 
 type TValidateUserOwnership = (args: { activeUserId?: number; entity: { user: User } }) => void;
 

@@ -8,10 +8,10 @@ import {
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
-import { User } from './user.entity';
-import { Transaction } from './transaction.entity';
-import { ECurrency } from '../enums/currency.enums';
-import { EAccountType, EAccountStatus } from '../enums/account.enums';
+import { User } from 'shared/entities/user.entity';
+import { Transaction } from 'shared/entities/transaction.entity';
+import { ECurrency } from 'shared/enums/currency.enums';
+import { EAccountType, EAccountStatus } from 'shared/enums/account.enums';
 
 @Entity()
 export class Account {

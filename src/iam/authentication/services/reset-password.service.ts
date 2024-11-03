@@ -10,21 +10,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
 
-import { User } from '../../../shared/entities/user.entity';
-import NotFoundException from '../../../shared/exceptions/not-found.exception';
+import { User } from 'shared/entities/user.entity';
+import NotFoundException from 'shared/exceptions/not-found.exception';
 
-import { UsersService } from '../../../users/users.service';
-import jwtConfig from '../../../config/jwt.config';
-import emailConfig from '../../../config/email.config';
+import { UsersService } from 'users/users.service';
 
-import { HashingService } from '../../hashing/hashing.service';
+import jwtConfig from 'config/jwt.config';
+import emailConfig from 'config/email.config';
 
-import { TokensService } from './tokens.service';
-import { GeneratedTokensDto } from '../dtos/generated-tokens.dto';
-import { ResetPasswordDto } from '../dtos/reset-password.dto';
-import { TokedIdsStorage } from '../storages/toked-ids.storage';
-import InvalidatedToken from '../exceptions/invalidated-token.exception';
-import { RESET_PASSWORD_TOKEN_STORE_PREFIX } from '../constants/reset-password-token-store-prefix';
+import { HashingService } from 'iam/hashing/hashing.service';
+
+import { TokensService } from 'iam/authentication/services/tokens.service';
+import { GeneratedTokensDto } from 'iam/authentication/dtos/generated-tokens.dto';
+import { ResetPasswordDto } from 'iam/authentication/dtos/reset-password.dto';
+import { TokedIdsStorage } from 'iam/authentication/storages/toked-ids.storage';
+import InvalidatedToken from 'iam/authentication/exceptions/invalidated-token.exception';
+import { RESET_PASSWORD_TOKEN_STORE_PREFIX } from 'iam/authentication/constants/reset-password-token-store-prefix';
 
 @Injectable()
 export class ResetPasswordService {

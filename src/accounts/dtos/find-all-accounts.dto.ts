@@ -1,7 +1,7 @@
 import { IsNumber as IsNumberBase, IsEnum, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { EAccountType, EAccountStatus } from '../../shared/enums/account.enums';
+import { EAccountType, EAccountStatus } from 'shared/enums/account.enums';
 
 export class FindAllAccountsDto {
     @Type(() => Number)

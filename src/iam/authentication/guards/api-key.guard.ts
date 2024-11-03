@@ -3,13 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Request } from 'express';
 
-import { ApiKey } from '../../../shared/entities/api-key.entity';
-import NotFoundException from '../../../shared/exceptions/not-found.exception';
+import { ApiKey } from 'shared/entities/api-key.entity';
+import NotFoundException from 'shared/exceptions/not-found.exception';
 
-import { IActiveUser } from '../../interfaces/active-user-data.interface';
-import { ApiKeysService } from '../services/api-keys.service';
+import { REQUEST_USER_KEY } from 'iam/iam.constants';
+import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
 
-import { REQUEST_USER_KEY } from '../../iam.constants';
+import { ApiKeysService } from 'iam/authentication/services/api-keys.service';
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {

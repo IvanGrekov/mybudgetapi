@@ -2,32 +2,32 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, Not, FindOptionsWhere } from 'typeorm';
 
-import NotFoundException from '../shared/exceptions/not-found.exception';
-import MaximumEntitiesNumberException from '../shared/exceptions/maximum-entities-number.exception';
-import { TransactionCategory } from '../shared/entities/transaction-category.entity';
-import { Transaction } from '../shared/entities/transaction.entity';
-import { ETransactionCategoryStatus } from '../shared/enums/transaction-category.enums';
-import { validateUserOwnership } from '../shared/utils/validateUserOwnership';
+import NotFoundException from 'shared/exceptions/not-found.exception';
+import MaximumEntitiesNumberException from 'shared/exceptions/maximum-entities-number.exception';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { Transaction } from 'shared/entities/transaction.entity';
+import { ETransactionCategoryStatus } from 'shared/enums/transaction-category.enums';
+import { validateUserOwnership } from 'shared/utils/validateUserOwnership';
 
-import { UsersService } from '../users/users.service';
+import { UsersService } from 'users/users.service';
 
-import { FindAllTransactionCategoriesDto } from './dtos/find-all-transaction-categories.dto';
-import { CreateTransactionCategoryDto } from './dtos/create-transaction-category.dto';
-import { MAX_TRANSACTION_CATEGORIES_PER_USER } from './constants/transaction-categories-pagination.constants';
-import { getParentTransactionCategories } from './utils/getParentTransactionCategories.util';
-import { sortChildTransactionCategories } from './utils/sortChildTransactionCategories.util';
-import { getParentForNewTransactionCategory } from './utils/getParentForNewTransactionCategory.util';
-import { getNewTransactionCategoryOrder } from './utils/getNewTransactionCategoryOrder.utils';
-import { getOldTransactionCategoryNewOrder } from './utils/getOldTransactionCategoryNewOrder.utils';
-import { archiveTransactionCategory } from './utils/archiveTransactionCategory.utils';
-import { validateReorderingTransactionCategories } from './utils/validateReorderingTransactionCategories.util';
-import { updateReorderingParent } from './utils/updateReorderingParent.utils';
-import { extractChildrenTransactionCategories } from './utils/extractChildrenTransactionCategories';
-import { IGetOneTransactionCategoryArgs } from './interfaces/get-one-transaction-category-args.interface';
-import { IEditTransactionCategoryArgs } from './interfaces/edit-transaction-category-args.interface';
-import { IEditTransactionCategoryCurrencyArgs } from './interfaces/edit-transaction-category-currency-args.interface';
-import { IReorderTransactionCategoriesArgs } from './interfaces/reorder-transaction-categories-args.interface';
-import { IDeleteTransactionCategoryArgs } from './interfaces/delete-transaction-category-args.interface';
+import { FindAllTransactionCategoriesDto } from 'transaction-categories/dtos/find-all-transaction-categories.dto';
+import { CreateTransactionCategoryDto } from 'transaction-categories/dtos/create-transaction-category.dto';
+import { MAX_TRANSACTION_CATEGORIES_PER_USER } from 'transaction-categories/constants/transaction-categories-pagination.constants';
+import { getParentTransactionCategories } from 'transaction-categories/utils/getParentTransactionCategories.util';
+import { sortChildTransactionCategories } from 'transaction-categories/utils/sortChildTransactionCategories.util';
+import { getParentForNewTransactionCategory } from 'transaction-categories/utils/getParentForNewTransactionCategory.util';
+import { getNewTransactionCategoryOrder } from 'transaction-categories/utils/getNewTransactionCategoryOrder.utils';
+import { getOldTransactionCategoryNewOrder } from 'transaction-categories/utils/getOldTransactionCategoryNewOrder.utils';
+import { archiveTransactionCategory } from 'transaction-categories/utils/archiveTransactionCategory.utils';
+import { validateReorderingTransactionCategories } from 'transaction-categories/utils/validateReorderingTransactionCategories.util';
+import { updateReorderingParent } from 'transaction-categories/utils/updateReorderingParent.utils';
+import { extractChildrenTransactionCategories } from 'transaction-categories/utils/extractChildrenTransactionCategories';
+import { IGetOneTransactionCategoryArgs } from 'transaction-categories/interfaces/get-one-transaction-category-args.interface';
+import { IEditTransactionCategoryArgs } from 'transaction-categories/interfaces/edit-transaction-category-args.interface';
+import { IEditTransactionCategoryCurrencyArgs } from 'transaction-categories/interfaces/edit-transaction-category-currency-args.interface';
+import { IReorderTransactionCategoriesArgs } from 'transaction-categories/interfaces/reorder-transaction-categories-args.interface';
+import { IDeleteTransactionCategoryArgs } from 'transaction-categories/interfaces/delete-transaction-category-args.interface';
 
 @Injectable()
 export class TransactionCategoriesService {

@@ -2,29 +2,29 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, Not } from 'typeorm';
 
-import NotFoundException from '../shared/exceptions/not-found.exception';
-import MaximumEntitiesNumberException from '../shared/exceptions/maximum-entities-number.exception';
-import ArchivedEntityException from '../shared/exceptions/archived-entity.exception';
-import { Account } from '../shared/entities/account.entity';
-import { Transaction } from '../shared/entities/transaction.entity';
-import { EAccountStatus } from '../shared/enums/account.enums';
-import { validateUserOwnership } from '../shared/utils/validateUserOwnership';
+import NotFoundException from 'shared/exceptions/not-found.exception';
+import MaximumEntitiesNumberException from 'shared/exceptions/maximum-entities-number.exception';
+import ArchivedEntityException from 'shared/exceptions/archived-entity.exception';
+import { Account } from 'shared/entities/account.entity';
+import { Transaction } from 'shared/entities/transaction.entity';
+import { EAccountStatus } from 'shared/enums/account.enums';
+import { validateUserOwnership } from 'shared/utils/validateUserOwnership';
 
-import { UsersService } from '../users/users.service';
+import { UsersService } from 'users/users.service';
 
-import { FindAllAccountsDto } from './dtos/find-all-accounts.dto';
-import { CreateAccountDto } from './dtos/create-account.dto';
-import { MAX_ACCOUNTS_PER_USER } from './constants/accounts-pagination.constants';
-import { validateAccountProperties } from './utils/validateAccountProperties.util';
-import { getNewAccountNewOrder } from './utils/getNewAccountNewOrder.util';
-import { getOldAccountNewOrder } from './utils/getOldAccountNewOrder.util';
-import { createBalanceCorrectionTransaction } from './utils/createBalanceCorrectionTransaction';
-import { archiveAccount } from './utils/archiveAccount.util';
-import { IGetOneAccountArgs } from './interfaces/get-one-account-args.interface';
-import { IEditAccountArgs } from './interfaces/edit-account-args.interface';
-import { IEditAccountCurrencyArgs } from './interfaces/edit-account-currency-args.interface';
-import { IReorderAccountArgs } from './interfaces/reorder-account-args.interface';
-import { IDeleteAccountArgs } from './interfaces/delete-account-args.interface';
+import { FindAllAccountsDto } from 'accounts/dtos/find-all-accounts.dto';
+import { CreateAccountDto } from 'accounts/dtos/create-account.dto';
+import { MAX_ACCOUNTS_PER_USER } from 'accounts/constants/accounts-pagination.constants';
+import { validateAccountProperties } from 'accounts/utils/validateAccountProperties.util';
+import { getNewAccountNewOrder } from 'accounts/utils/getNewAccountNewOrder.util';
+import { getOldAccountNewOrder } from 'accounts/utils/getOldAccountNewOrder.util';
+import { createBalanceCorrectionTransaction } from 'accounts/utils/createBalanceCorrectionTransaction';
+import { archiveAccount } from 'accounts/utils/archiveAccount.util';
+import { IGetOneAccountArgs } from 'accounts/interfaces/get-one-account-args.interface';
+import { IEditAccountArgs } from 'accounts/interfaces/edit-account-args.interface';
+import { IEditAccountCurrencyArgs } from 'accounts/interfaces/edit-account-currency-args.interface';
+import { IReorderAccountArgs } from 'accounts/interfaces/reorder-account-args.interface';
+import { IDeleteAccountArgs } from 'accounts/interfaces/delete-account-args.interface';
 
 @Injectable()
 export class AccountsService {

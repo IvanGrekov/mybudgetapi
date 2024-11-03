@@ -1,6 +1,6 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 
-import { LoggingMiddleware } from './middlewares/logging.middleware';
+import { LoggingMiddleware } from 'shared/middlewares/logging.middleware';
 
 @Module({
     imports: [],

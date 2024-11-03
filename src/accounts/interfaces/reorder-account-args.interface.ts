@@ -1,4 +1,4 @@
-import { ReorderAccountDto } from '../dtos/reorder-account.dto';
+import { ReorderAccountDto } from 'accounts/dtos/reorder-account.dto';
 
 export interface IReorderAccountArgs {
     id: number;

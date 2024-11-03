@@ -1,7 +1,7 @@
 import { IsOptional, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { ReorderTransactionCategoryDto } from './reorder-transaction-category.dto';
+import { ReorderTransactionCategoryDto } from 'transaction-categories/dtos/reorder-transaction-category.dto';
 
 export class ReorderParentTransactionCategoryDto extends ReorderTransactionCategoryDto {
     @IsArray()

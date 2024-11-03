@@ -8,11 +8,11 @@ import {
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
-import { User } from './user.entity';
-import { Account } from './account.entity';
-import { TransactionCategory } from './transaction-category.entity';
-import { ECurrency } from '../enums/currency.enums';
-import { ETransactionType } from '../enums/transaction.enums';
+import { User } from 'shared/entities/user.entity';
+import { Account } from 'shared/entities/account.entity';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { ECurrency } from 'shared/enums/currency.enums';
+import { ETransactionType } from 'shared/enums/transaction.enums';
 
 @Index(['createdAt'])
 @Entity()

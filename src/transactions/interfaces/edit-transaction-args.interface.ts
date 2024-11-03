@@ -1,4 +1,4 @@
-import { EditTransactionDto } from '../dtos/edit-transaction.dto';
+import { EditTransactionDto } from 'transactions/dtos/edit-transaction.dto';
 
 export interface IEditTransactionArgs {
     id: number;

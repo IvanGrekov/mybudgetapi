@@ -1,16 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
 import { FindOneOptions, QueryRunner } from 'typeorm';
 
-import ArchivedEntityException from '../../shared/exceptions/archived-entity.exception';
-import NotFoundException from '../../shared/exceptions/not-found.exception';
-import { getIdPointer } from '../../shared/utils/idPointer.utils';
-import { Transaction } from '../../shared/entities/transaction.entity';
-import { User } from '../../shared/entities/user.entity';
-import { Account } from '../../shared/entities/account.entity';
-import { EAccountStatus, EAccountType } from '../../shared/enums/account.enums';
-import { ETransactionType } from '../../shared/enums/transaction.enums';
+import ArchivedEntityException from 'shared/exceptions/archived-entity.exception';
+import NotFoundException from 'shared/exceptions/not-found.exception';
+import { getIdPointer } from 'shared/utils/idPointer.utils';
+import { Transaction } from 'shared/entities/transaction.entity';
+import { User } from 'shared/entities/user.entity';
+import { Account } from 'shared/entities/account.entity';
+import { EAccountStatus, EAccountType } from 'shared/enums/account.enums';
+import { ETransactionType } from 'shared/enums/transaction.enums';
 
-import { CreateTransactionDto } from '../dtos/create-transaction.dto';
+import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
 
 type TValidateCreateTransferTransactionDto = (
     args: Pick<

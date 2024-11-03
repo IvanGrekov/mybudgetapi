@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 
-import { EAccountType } from '../../shared/enums/account.enums';
+import { EAccountType } from 'shared/enums/account.enums';
 
 interface IValidateAccountPropertiesArgs {
     type?: EAccountType;

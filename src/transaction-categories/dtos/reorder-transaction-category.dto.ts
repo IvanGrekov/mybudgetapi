@@ -1,8 +1,8 @@
 import { IsNumber as IsNumberBase, IsDefined } from 'class-validator';
 
-import IsNumber from '../../shared/property-decorators/is-number.decorator';
+import IsNumber from 'shared/property-decorators/is-number.decorator';
 
-import { MAX_TRANSACTION_CATEGORIES_PER_USER } from '../constants/transaction-categories-pagination.constants';
+import { MAX_TRANSACTION_CATEGORIES_PER_USER } from 'transaction-categories/constants/transaction-categories-pagination.constants';
 
 export class ReorderTransactionCategoryDto {
     @IsNumberBase()

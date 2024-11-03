@@ -1,7 +1,7 @@
 import { IsInt, IsOptional, IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '../constants/pagination.constants';
+import { DEFAULT_LIMIT, DEFAULT_OFFSET } from 'shared/constants/pagination.constants';
 
 export class PaginationQueryDto {
     @Type(() => Number)

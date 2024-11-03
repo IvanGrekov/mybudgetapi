@@ -10,16 +10,17 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { authenticator } from 'otplib';
 
-import { User } from '../../../shared/entities/user.entity';
-import NotFoundException from '../../../shared/exceptions/not-found.exception';
+import { User } from 'shared/entities/user.entity';
+import NotFoundException from 'shared/exceptions/not-found.exception';
 
-import tfaAuthenticationConfig from '../../../config/tfa-authentication.config';
-import { UsersService } from '../../../users/users.service';
+import tfaAuthenticationConfig from 'config/tfa-authentication.config';
 
-import { IGeneratedTfaSecretPayload } from '../interfaces/generated-tfa-secret-payload.interface';
-import { IVerifyTfaTokenInput } from '../interfaces/verify-tfa-token-input.interface';
-import { InitiateTfaEnablingDto } from '../dtos/initiate-tfa-enabling.dto';
-import { ManageTfaDto } from '../dtos/manage-tfa.dto';
+import { UsersService } from 'users/users.service';
+
+import { IGeneratedTfaSecretPayload } from 'iam/authentication/interfaces/generated-tfa-secret-payload.interface';
+import { IVerifyTfaTokenInput } from 'iam/authentication/interfaces/verify-tfa-token-input.interface';
+import { InitiateTfaEnablingDto } from 'iam/authentication/dtos/initiate-tfa-enabling.dto';
+import { ManageTfaDto } from 'iam/authentication/dtos/manage-tfa.dto';
 
 @Injectable()
 export class TfaAuthenticationService {

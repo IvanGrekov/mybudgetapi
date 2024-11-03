@@ -1,8 +1,8 @@
 import { IsNumber as IsNumberBase, IsEnum, IsOptional, IsDateString } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
-import { PaginationQueryDto } from '../../shared/dtos/pagination.dto';
-import { ETransactionType } from '../../shared/enums/transaction.enums';
+import { PaginationQueryDto } from 'shared/dtos/pagination.dto';
+import { ETransactionType } from 'shared/enums/transaction.enums';
 
 export class FindAllTransactionsDto extends PaginationQueryDto {
     @Type(() => Number)

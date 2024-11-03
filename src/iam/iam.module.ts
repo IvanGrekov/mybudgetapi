@@ -5,33 +5,32 @@ import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { MailerModule } from '@nestjs-modules/mailer';
 
-import { User } from '../shared/entities/user.entity';
-import { ApiKey } from '../shared/entities/api-key.entity';
+import { User } from 'shared/entities/user.entity';
+import { ApiKey } from 'shared/entities/api-key.entity';
 
-import { UsersModule } from '../users/users.module';
-import jwtConfig from '../config/jwt.config';
-import redisConfig from '../config/redis.config';
-import googleAuthenticationConfig from '../config/google-authentication.config';
-import tfaAuthenticationConfig from '../config/tfa-authentication.config';
-import emailConfig from '../config/email.config';
+import { UsersModule } from 'users/users.module';
+import jwtConfig from 'config/jwt.config';
+import redisConfig from 'config/redis.config';
+import googleAuthenticationConfig from 'config/google-authentication.config';
+import tfaAuthenticationConfig from 'config/tfa-authentication.config';
+import emailConfig from 'config/email.config';
 
-import { BcryptService } from './hashing/bcrypt.service';
-import { HashingService } from './hashing/hashing.service';
-
-import { AuthenticationController } from './authentication/controllers/authentication.controller';
-import { ApiKeysController } from './authentication/controllers/api-keys.controller';
-import { TokensService } from './authentication/services/tokens.service';
-import { AuthenticationService } from './authentication/services/authentication.service';
-import { ResetPasswordService } from './authentication/services/reset-password.service';
-import { ApiKeysService } from './authentication/services/api-keys.service';
-import { AuthenticationGuard } from './authentication/guards/authentication.guard';
-import { AccessTokenGuard } from './authentication/guards/access-token.guard';
-import { ApiKeyGuard } from './authentication/guards/api-key.guard';
-import { TokedIdsStorage } from './authentication/storages/toked-ids.storage';
-import { GoogleAuthenticationService } from './authentication/services/google-authentication.service';
-import { TfaAuthenticationService } from './authentication/services/tfa-authentication.service';
-import { UserRoleGuard } from './authorization/guards/user-role.guard';
-import { OnlyMeGuard } from './authorization/guards/only-me.guard';
+import { BcryptService } from 'iam/hashing/bcrypt.service';
+import { HashingService } from 'iam/hashing/hashing.service';
+import { AuthenticationController } from 'iam/authentication/controllers/authentication.controller';
+import { ApiKeysController } from 'iam/authentication/controllers/api-keys.controller';
+import { TokensService } from 'iam/authentication/services/tokens.service';
+import { AuthenticationService } from 'iam/authentication/services/authentication.service';
+import { ResetPasswordService } from 'iam/authentication/services/reset-password.service';
+import { ApiKeysService } from 'iam/authentication/services/api-keys.service';
+import { AuthenticationGuard } from 'iam/authentication/guards/authentication.guard';
+import { AccessTokenGuard } from 'iam/authentication/guards/access-token.guard';
+import { ApiKeyGuard } from 'iam/authentication/guards/api-key.guard';
+import { TokedIdsStorage } from 'iam/authentication/storages/toked-ids.storage';
+import { GoogleAuthenticationService } from 'iam/authentication/services/google-authentication.service';
+import { TfaAuthenticationService } from 'iam/authentication/services/tfa-authentication.service';
+import { UserRoleGuard } from 'iam/authorization/guards/user-role.guard';
+import { OnlyMeGuard } from 'iam/authorization/guards/only-me.guard';
 
 @Module({
     imports: [

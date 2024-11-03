@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-import { capitalize } from '../utils/string.utils';
-import { getIdPointer } from '../utils/idPointer.utils';
+import { capitalize } from 'shared/utils/string.utils';
+import { getIdPointer } from 'shared/utils/idPointer.utils';
 
 export default class NotFoundException extends HttpException {
     constructor(model: string, id?: string | number) {

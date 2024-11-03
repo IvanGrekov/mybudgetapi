@@ -2,9 +2,9 @@ import { ConflictException } from '@nestjs/common';
 
 import { FindOptionsRelations } from 'typeorm';
 
-import { getIdPointer } from '../../shared/utils/idPointer.utils';
-import { TransactionCategory } from '../../shared/entities/transaction-category.entity';
-import { ETransactionCategoryType } from '../../shared/enums/transaction-category.enums';
+import { getIdPointer } from 'shared/utils/idPointer.utils';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { ETransactionCategoryType } from 'shared/enums/transaction-category.enums';
 
 type TGetParentForNewTransactionCategory = (args: {
     parentId: number;

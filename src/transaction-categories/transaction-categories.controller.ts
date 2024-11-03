@@ -12,25 +12,25 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
-import { CustomParseIntPipe } from '../shared/pipes/custom-parse-int.pipe';
-import { TransactionCategory } from '../shared/entities/transaction-category.entity';
-import { EUserRole } from '../shared/enums/user-role.enums';
+import { CustomParseIntPipe } from 'shared/pipes/custom-parse-int.pipe';
+import { TransactionCategory } from 'shared/entities/transaction-category.entity';
+import { EUserRole } from 'shared/enums/user-role.enums';
 
-import { Auth } from '../iam/authentication/decorators/auth.decorator';
-import { EAuthType } from '../iam/authentication/enums/auth-type.enum';
-import { OnlyMe } from '../iam/authorization/decorators/only-me.decorator';
-import { ActiveUser } from '../iam/decorators/active-user.decorator';
-import { IActiveUser } from '../iam/interfaces/active-user-data.interface';
-import { UserRole } from '../iam/authorization/decorators/user-role.decorator';
+import { Auth } from 'iam/authentication/decorators/auth.decorator';
+import { EAuthType } from 'iam/authentication/enums/auth-type.enum';
+import { OnlyMe } from 'iam/authorization/decorators/only-me.decorator';
+import { ActiveUser } from 'iam/decorators/active-user.decorator';
+import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
+import { UserRole } from 'iam/authorization/decorators/user-role.decorator';
 
-import { TransactionCategoriesService } from './transaction-categories.service';
-import { FindMyTransactionCategoriesDto } from './dtos/find-my-transaction-categories.dto';
-import { FindAllTransactionCategoriesDto } from './dtos/find-all-transaction-categories.dto';
-import { CreateTransactionCategoryDto } from './dtos/create-transaction-category.dto';
-import { ReorderTransactionCategoriesDto } from './dtos/reorder-transaction-categories.dto';
-import { EditTransactionCategoryDto } from './dtos/edit-transaction-category.dto';
-import { EditTransactionCategoryCurrencyDto } from './dtos/edit-transaction-category-currency.dto';
-import { DeleteTransactionCategoryDto } from './dtos/delete-transaction-category.dto';
+import { TransactionCategoriesService } from 'transaction-categories/transaction-categories.service';
+import { FindMyTransactionCategoriesDto } from 'transaction-categories/dtos/find-my-transaction-categories.dto';
+import { FindAllTransactionCategoriesDto } from 'transaction-categories/dtos/find-all-transaction-categories.dto';
+import { CreateTransactionCategoryDto } from 'transaction-categories/dtos/create-transaction-category.dto';
+import { ReorderTransactionCategoriesDto } from 'transaction-categories/dtos/reorder-transaction-categories.dto';
+import { EditTransactionCategoryDto } from 'transaction-categories/dtos/edit-transaction-category.dto';
+import { EditTransactionCategoryCurrencyDto } from 'transaction-categories/dtos/edit-transaction-category-currency.dto';
+import { DeleteTransactionCategoryDto } from 'transaction-categories/dtos/delete-transaction-category.dto';
 
 @ApiTags('transaction-categories')
 @Auth(EAuthType.Bearer, EAuthType.ApiKey)

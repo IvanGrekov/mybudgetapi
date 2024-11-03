@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 import {
     ETransactionCategoryType,
     ETransactionCategoryStatus,
-} from '../../shared/enums/transaction-category.enums';
+} from 'shared/enums/transaction-category.enums';
 
 export class FindAllTransactionCategoriesDto {
     @Type(() => Number)

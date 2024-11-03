@@ -1,4 +1,4 @@
-import { User } from '../../shared/entities/user.entity';
+import { User } from 'shared/entities/user.entity';
 
 export interface IActiveUser {
     sub: User['id'];
