@@ -138,7 +138,11 @@ export class AccountsService {
                 userId: user.id,
                 account,
                 createQueryRunner: this.dataSource.createQueryRunner.bind(this.dataSource),
-                getOneAccount: this.getOne.bind(this),
+                getOneAccount: (accountId) =>
+                    this.getOne({
+                        id: accountId,
+                        activeUserId,
+                    }),
                 findAllAccounts: this.findAll.bind(this),
             });
         } else {

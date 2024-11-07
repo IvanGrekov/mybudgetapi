@@ -46,7 +46,10 @@ export class TransactionCategoriesController {
         @ActiveUser('sub') activeUserId: IActiveUser['sub'],
         @Query() dto: FindMyTransactionCategoriesDto,
     ): Promise<TransactionCategory[]> {
-        return this.transactionCategoriesService.findAll({ userId: activeUserId, ...dto });
+        return this.transactionCategoriesService.findAll({
+            userId: activeUserId,
+            ...dto,
+        });
     }
 
     @ApiOkResponse({ type: [TransactionCategory] })
@@ -76,6 +79,18 @@ export class TransactionCategoriesController {
         return this.transactionCategoriesService.create(createTransactionCategoryDto);
     }
 
+    @ApiOkResponse({ type: [TransactionCategory] })
+    @Patch('reorder')
+    reorder(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
+        @Body() reorderTransactionCategoriesDto: ReorderTransactionCategoriesDto,
+    ): Promise<TransactionCategory[]> {
+        return this.transactionCategoriesService.reorder({
+            activeUserId,
+            reorderTransactionCategoriesDto,
+        });
+    }
+
     @ApiOkResponse({ type: TransactionCategory })
     @Patch(':id')
     editOne(
@@ -101,18 +116,6 @@ export class TransactionCategoriesController {
             id,
             activeUserId,
             editTransactionCategoryCurrencyDto,
-        });
-    }
-
-    @ApiOkResponse({ type: [TransactionCategory] })
-    @Patch('reorder')
-    reorder(
-        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
-        @Body() reorderTransactionCategoriesDto: ReorderTransactionCategoriesDto,
-    ): Promise<TransactionCategory[]> {
-        return this.transactionCategoriesService.reorder({
-            activeUserId,
-            reorderTransactionCategoriesDto,
         });
     }
 

@@ -127,13 +127,23 @@ export class TransactionCategoriesService {
             parentId,
             userId,
             type,
-            getOneTransactionCategory: this.getOne.bind(this),
+            getOneTransactionCategory: (id, relations) =>
+                this.getOne({
+                    id,
+                    activeUserId: userId,
+                    relations,
+                }),
         });
 
         transactionCategoryTemplate.order = await getNewTransactionCategoryOrder({
             transactionCategoryTemplate,
             activeTransactionCategories,
-            getOneTransactionCategory: this.getOne.bind(this),
+            getOneTransactionCategory: (id, relations) =>
+                this.getOne({
+                    id,
+                    activeUserId: userId,
+                    relations,
+                }),
         });
 
         return this.transactionCategoryRepository.save(transactionCategoryTemplate);
@@ -176,7 +186,11 @@ export class TransactionCategoriesService {
                 transactionCategory,
                 oldTransactionCategory,
                 createQueryRunner: this.dataSource.createQueryRunner.bind(this.dataSource),
-                getOneTransactionCategory: this.getOne.bind(this),
+                getOneTransactionCategory: (id) =>
+                    this.getOne({
+                        id,
+                        activeUserId,
+                    }),
                 findAllTransactionCategories: this.findAll.bind(this),
             });
         } else {
@@ -227,12 +241,9 @@ export class TransactionCategoriesService {
             throw new BadRequestException('Items for reordering not provided');
         }
 
-        const {
-            user: { id: userId },
-            type,
-        } = await this.getOne({ id: parentNodes.at(0).id, activeUserId });
+        const { type } = await this.getOne({ id: parentNodes.at(0).id, activeUserId });
         const currentTransactionCategories = await this.findAll({
-            userId,
+            userId: activeUserId,
             type,
             shouldFilterChildTransactionCategories: false,
         });
@@ -247,7 +258,12 @@ export class TransactionCategoriesService {
             for (const parentNode of parentNodes) {
                 await updateReorderingParent({
                     parentNode,
-                    getOneTransactionCategory: this.getOne.bind(this),
+                    getOneTransactionCategory: (id, relations) =>
+                        this.getOne({
+                            id,
+                            activeUserId,
+                            relations,
+                        }),
                     updateTransactionCategory: (id, transactionCategory) =>
                         queryRunner.manager.update(TransactionCategory, id, transactionCategory),
                 });
@@ -256,7 +272,7 @@ export class TransactionCategoriesService {
             await queryRunner.commitTransaction();
 
             return this.findAll({
-                userId,
+                userId: activeUserId,
                 type,
             });
         } catch (err) {
