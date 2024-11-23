@@ -317,7 +317,7 @@ export class TransactionCategoriesService {
                 excludeId: id,
             });
 
-            if (shouldRemoveChildTransactionCategories && !!children?.length) {
+            if (!shouldRemoveChildTransactionCategories && !!children?.length) {
                 extractChildrenTransactionCategories({
                     children,
                     currentParentsLength: siblingsTransactionCategories.length,
