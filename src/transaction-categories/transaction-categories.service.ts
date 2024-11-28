@@ -146,7 +146,16 @@ export class TransactionCategoriesService {
                 }),
         });
 
-        return this.transactionCategoryRepository.save(transactionCategoryTemplate);
+        const { id } = await this.transactionCategoryRepository.save(transactionCategoryTemplate);
+
+        return this.getOne({
+            id,
+            activeUserId: userId,
+            relations: {
+                parent: true,
+                children: true,
+            },
+        });
     }
 
     async edit({
