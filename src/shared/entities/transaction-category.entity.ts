@@ -76,6 +76,12 @@ export class TransactionCategory {
     @Column({ default: 0 })
     order: number;
 
+    @Column({ nullable: true })
+    iconName: string;
+
+    @Column({ nullable: true })
+    iconColor: string;
+
     @CreateDateColumn()
     createdAt: Date;
 }

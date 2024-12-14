@@ -1,4 +1,4 @@
-import { IsNumber as IsNumberBase, IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { OmitType } from '@nestjs/swagger';
 
 import { PreloadTransactionCategoryDto } from 'shared/dtos/preload-transaction-category.dto';
@@ -7,10 +7,18 @@ export class CreateTransactionCategoryDto extends OmitType(PreloadTransactionCat
     'order',
     'children',
 ]) {
-    @IsNumberBase()
+    @IsNumber()
     readonly userId: number;
 
-    @IsNumberBase()
+    @IsNumber()
     @IsOptional()
     readonly parentId?: number;
+
+    @IsString()
+    @IsOptional()
+    readonly iconName?: string;
+
+    @IsString()
+    @IsOptional()
+    readonly iconColor?: string;
 }
