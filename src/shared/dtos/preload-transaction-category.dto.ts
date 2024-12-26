@@ -26,4 +26,8 @@ export class PreloadTransactionCategoryDto {
     @Type(() => PreloadTransactionCategoryDto)
     @IsOptional()
     children?: PreloadTransactionCategoryDto[];
+
+    @IsString()
+    @IsOptional()
+    readonly iconName?: string;
 }

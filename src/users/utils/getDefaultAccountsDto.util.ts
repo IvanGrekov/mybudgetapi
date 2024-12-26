@@ -19,6 +19,7 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({ currency, langua
             balance: 0,
             shouldHideFromOverallBalance: false,
             order: 0,
+            iconName: 'wallet',
         },
         {
             name: isUa ? 'Банківський рахунок' : 'Bank Account',
@@ -27,6 +28,7 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({ currency, langua
             balance: 0,
             shouldHideFromOverallBalance: false,
             order: 1,
+            iconName: 'banking-card',
         },
         {
             name: isUa ? 'Збереження' : 'Savings',
@@ -35,6 +37,7 @@ export const getDefaultAccountsDto: TGetDefaultAccountsDto = ({ currency, langua
             balance: 100,
             shouldHideFromOverallBalance: false,
             order: 0,
+            iconName: 'cash',
         },
     ];
 };

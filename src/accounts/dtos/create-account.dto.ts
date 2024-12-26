@@ -9,9 +9,5 @@ export class CreateAccountDto extends OmitType(PreloadAccountDto, ['order']) {
 
     @IsString()
     @IsOptional()
-    readonly iconName?: string;
-
-    @IsString()
-    @IsOptional()
     readonly iconColor?: string;
 }

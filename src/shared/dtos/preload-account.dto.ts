@@ -35,4 +35,8 @@ export class PreloadAccountDto {
     @IsNumber()
     @IsOptional()
     readonly order?: number;
+
+    @IsString()
+    @IsOptional()
+    readonly iconName?: string;
 }
