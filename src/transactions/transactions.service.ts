@@ -60,6 +60,7 @@ export class TransactionsService {
             page: offset,
             itemsPerPage: limit,
             total,
+            hasMore: total > offset * limit,
         };
     }
 

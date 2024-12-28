@@ -132,7 +132,7 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
     });
 
     const newFromAccountBalance = fromAccount.balance - value - fee;
-    const newToAccountBalance = fromAccount.balance + value * (currencyRate || 1);
+    const newToAccountBalance = toAccount.balance + value * (currencyRate || 1);
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
