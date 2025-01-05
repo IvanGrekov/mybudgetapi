@@ -146,7 +146,7 @@ export class TransactionsService {
 
         try {
             if (fromAccount) {
-                const newFromAccountBalance = fromAccount.balance + value + fee;
+                const newFromAccountBalance = fromAccount.balance + value + (fee || 0);
                 queryRunner.manager.update(Account, fromAccount.id, {
                     balance: newFromAccountBalance,
                 });

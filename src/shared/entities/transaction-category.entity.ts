@@ -43,13 +43,13 @@ export class TransactionCategory {
         cascade: true,
         nullable: true,
     })
-    children: TransactionCategory[];
+    children?: TransactionCategory[] | null;
 
     @ManyToOne(() => TransactionCategory, ({ children }) => children, {
         nullable: true,
         onDelete: 'CASCADE',
     })
-    parent: TransactionCategory;
+    parent?: TransactionCategory | null;
 
     @Column()
     name: string;
@@ -77,10 +77,10 @@ export class TransactionCategory {
     order: number;
 
     @Column({ nullable: true })
-    iconName: string;
+    iconName?: string | null;
 
     @Column({ nullable: true })
-    iconColor: string;
+    iconColor?: string | null;
 
     @CreateDateColumn()
     createdAt: Date;

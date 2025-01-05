@@ -29,5 +29,5 @@ export class PreloadTransactionCategoryDto {
 
     @IsString()
     @IsOptional()
-    readonly iconName?: string;
+    readonly iconName?: string | null;
 }

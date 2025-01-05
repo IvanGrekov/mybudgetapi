@@ -77,10 +77,10 @@ export class Account {
     order: number;
 
     @Column({ nullable: true })
-    iconName: string;
+    iconName?: string | null;
 
     @Column({ nullable: true })
-    iconColor: string;
+    iconColor?: string | null;
 
     @CreateDateColumn()
     createdAt: Date;

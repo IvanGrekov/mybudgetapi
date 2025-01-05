@@ -17,7 +17,7 @@ export class User {
     id: number;
 
     @Column({ nullable: true })
-    googleId: string;
+    googleId?: string | null;
 
     @Column({ unique: true })
     email: string;
@@ -25,14 +25,14 @@ export class User {
     // NOTE: password is nullable because of included google authentication
     @Column({ nullable: true })
     @Exclude()
-    password: string;
+    password?: string | null;
 
     @Column({ default: false })
     isTfaEnabled: boolean;
 
     @Column({ nullable: true })
     @Exclude()
-    tfaSecret: string;
+    tfaSecret?: string | null;
 
     @Column({
         type: 'enum',

@@ -117,7 +117,7 @@ export const createIncomeTransaction: TCreateIncomeTransaction = async ({
         fromCategoryId,
         currencyRate,
         value,
-        fee = 0,
+        fee,
         description,
     },
     queryRunner,
@@ -148,7 +148,8 @@ export const createIncomeTransaction: TCreateIncomeTransaction = async ({
         fromCategory,
     });
 
-    const newToAccountBalance = toAccount.balance + value - fee;
+    const valueWithoutFee = (value - (fee || 0)) * (currencyRate || 1);
+    const newToAccountBalance = toAccount.balance + valueWithoutFee;
 
     await queryRunner.connect();
     await queryRunner.startTransaction();

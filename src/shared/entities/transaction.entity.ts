@@ -30,7 +30,7 @@ export class Transaction {
         nullable: true,
         onDelete: 'CASCADE',
     })
-    fromAccount?: Account;
+    fromAccount?: Account | null;
 
     @Column({ nullable: true, type: 'real' })
     fromAccountUpdatedBalance?: number;
@@ -39,22 +39,22 @@ export class Transaction {
         nullable: true,
         onDelete: 'CASCADE',
     })
-    toAccount?: Account;
+    toAccount?: Account | null;
 
     @Column({ nullable: true, type: 'real' })
-    toAccountUpdatedBalance?: number;
+    toAccountUpdatedBalance?: number | null;
 
     @ManyToOne(() => TransactionCategory, ({ outgoingTransactions }) => outgoingTransactions, {
         nullable: true,
         onDelete: 'CASCADE',
     })
-    fromCategory?: TransactionCategory;
+    fromCategory?: TransactionCategory | null;
 
     @ManyToOne(() => TransactionCategory, ({ incomingTransactions }) => incomingTransactions, {
         nullable: true,
         onDelete: 'CASCADE',
     })
-    toCategory?: TransactionCategory;
+    toCategory?: TransactionCategory | null;
 
     @Column({
         type: 'enum',
@@ -66,7 +66,7 @@ export class Transaction {
     value: number;
 
     @Column({ type: 'real', nullable: true })
-    fee?: number;
+    fee?: number | null;
 
     @Column({
         type: 'enum',
@@ -75,7 +75,7 @@ export class Transaction {
     currency: ECurrency;
 
     @Column({ type: 'real', nullable: true })
-    currencyRate?: number;
+    currencyRate?: number | null;
 
     @Column({ default: '' })
     description: string;

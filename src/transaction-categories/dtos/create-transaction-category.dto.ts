@@ -16,5 +16,5 @@ export class CreateTransactionCategoryDto extends OmitType(PreloadTransactionCat
 
     @IsString()
     @IsOptional()
-    readonly iconColor?: string;
+    readonly iconColor?: string | null;
 }

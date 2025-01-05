@@ -112,7 +112,7 @@ export const createExpenseTransaction: TCreateExpenseTransaction = async ({
         toCategoryId,
         currencyRate,
         value,
-        fee = 0,
+        fee,
         description,
     },
     queryRunner,
@@ -143,7 +143,7 @@ export const createExpenseTransaction: TCreateExpenseTransaction = async ({
         toCategory,
     });
 
-    const newFromAccountBalance = fromAccount.balance - value - fee;
+    const newFromAccountBalance = fromAccount.balance - value - (fee || 0);
 
     await queryRunner.connect();
     await queryRunner.startTransaction();

@@ -38,5 +38,5 @@ export class PreloadAccountDto {
 
     @IsString()
     @IsOptional()
-    readonly iconName?: string;
+    readonly iconName?: string | null;
 }
