@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { FindOneOptions, QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm';
 
 import ArchivedEntityException from 'shared/exceptions/archived-entity.exception';
 import NotFoundException from 'shared/exceptions/not-found.exception';
@@ -104,10 +104,8 @@ type TCreateIncomeTransaction = (args: {
     createTransactionDto: CreateTransactionDto;
     queryRunner: QueryRunner;
     getUserById(id: number): Promise<User>;
-    findAccountById(options: FindOneOptions<Account>): Promise<Account>;
-    findTransactionCategoryById(
-        options: FindOneOptions<TransactionCategory>,
-    ): Promise<TransactionCategory>;
+    findAccountById(id: number): Promise<Account>;
+    findTransactionCategoryById(id: number): Promise<TransactionCategory>;
 }) => Promise<Transaction>;
 
 export const createIncomeTransaction: TCreateIncomeTransaction = async ({
@@ -126,18 +124,8 @@ export const createIncomeTransaction: TCreateIncomeTransaction = async ({
     findTransactionCategoryById,
 }) => {
     const user = await getUserById(userId);
-    const toAccount = await findAccountById({
-        where: { id: toAccountId },
-        relations: {
-            user: true,
-        },
-    });
-    const fromCategory = await findTransactionCategoryById({
-        where: { id: fromCategoryId },
-        relations: {
-            user: true,
-        },
-    });
+    const toAccount = await findAccountById(toAccountId);
+    const fromCategory = await findTransactionCategoryById(fromCategoryId);
 
     validateCreateIncomeTransactionDto({
         userId,

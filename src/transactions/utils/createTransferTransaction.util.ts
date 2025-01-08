@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { FindOneOptions, QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm';
 
 import ArchivedEntityException from 'shared/exceptions/archived-entity.exception';
 import NotFoundException from 'shared/exceptions/not-found.exception';
@@ -91,7 +91,7 @@ type TCreateTransferTransaction = (args: {
     createTransactionDto: CreateTransactionDto;
     queryRunner: QueryRunner;
     getUserById(id: number): Promise<User>;
-    findAccountById(options: FindOneOptions<Account>): Promise<Account>;
+    findAccountById(id: number): Promise<Account>;
 }) => Promise<Transaction>;
 
 export const createTransferTransaction: TCreateTransferTransaction = async ({
@@ -109,18 +109,8 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
     findAccountById,
 }) => {
     const user = await getUserById(userId);
-    const fromAccount = await findAccountById({
-        where: { id: fromAccountId },
-        relations: {
-            user: true,
-        },
-    });
-    const toAccount = await findAccountById({
-        where: { id: toAccountId },
-        relations: {
-            user: true,
-        },
-    });
+    const fromAccount = await findAccountById(fromAccountId);
+    const toAccount = await findAccountById(toAccountId);
 
     validateCreateTransferTransactionDto({
         userId,

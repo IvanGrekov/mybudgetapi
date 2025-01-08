@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { FindOneOptions, QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm';
 
 import ArchivedEntityException from 'shared/exceptions/archived-entity.exception';
 import NotFoundException from 'shared/exceptions/not-found.exception';
@@ -18,10 +18,7 @@ import { ETransactionType } from 'shared/enums/transaction.enums';
 import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
 
 type TValidateCreateExpenseTransactionDto = (
-    args: Pick<
-        CreateTransactionDto,
-        'userId' | 'fromAccountId' | 'toCategoryId' | 'currencyRate'
-    > & {
+    args: Pick<CreateTransactionDto, 'userId' | 'fromAccountId' | 'toCategoryId'> & {
         fromAccount?: Account;
         toCategory?: TransactionCategory;
     },
@@ -31,7 +28,6 @@ const validateCreateExpenseTransactionDto: TValidateCreateExpenseTransactionDto 
     userId,
     fromAccountId,
     toCategoryId,
-    currencyRate,
     fromAccount,
     toCategory,
 }) => {
@@ -41,18 +37,8 @@ const validateCreateExpenseTransactionDto: TValidateCreateExpenseTransactionDto 
         throw new NotFoundException(model, notFoundId);
     }
 
-    const {
-        user: fromAccountUser,
-        status: fromAccountStatus,
-        currency: fromAccountCurrency,
-        type: fromAccountType,
-    } = fromAccount;
-    const {
-        user: toCategoryUser,
-        status: toCategoryStatus,
-        currency: toCategoryCurrency,
-        type: toCategoryType,
-    } = toCategory;
+    const { user: fromAccountUser, status: fromAccountStatus, type: fromAccountType } = fromAccount;
+    const { user: toCategoryUser, status: toCategoryStatus, type: toCategoryType } = toCategory;
 
     if (userId !== fromAccountUser.id) {
         throw new BadRequestException(
@@ -72,17 +58,6 @@ const validateCreateExpenseTransactionDto: TValidateCreateExpenseTransactionDto 
         throw new ArchivedEntityException('the `toCategory`');
     }
 
-    if (fromAccountCurrency !== toCategoryCurrency && !currencyRate) {
-        throw new BadRequestException(
-            'The `rate` must be provided for Transaction between Account and TransactionCategory with different `currency`',
-        );
-    }
-    if (fromAccountCurrency === toCategoryCurrency && currencyRate) {
-        throw new BadRequestException(
-            'The `rate` must be provided only for Transaction between Account and TransactionCategory with different `currency`',
-        );
-    }
-
     if (fromAccountType === EAccountType.I_OWE) {
         throw new BadRequestException(
             'The `fromAccount` must not be of type `I_OWE` for Expense Transaction',
@@ -99,46 +74,25 @@ type TCreateExpenseTransaction = (args: {
     createTransactionDto: CreateTransactionDto;
     queryRunner: QueryRunner;
     getUserById(id: number): Promise<User>;
-    findAccountById(options: FindOneOptions<Account>): Promise<Account>;
-    findTransactionCategoryById(
-        options: FindOneOptions<TransactionCategory>,
-    ): Promise<TransactionCategory>;
+    findAccountById(id: number): Promise<Account>;
+    findTransactionCategoryById(id: number): Promise<TransactionCategory>;
 }) => Promise<Transaction>;
 
 export const createExpenseTransaction: TCreateExpenseTransaction = async ({
-    createTransactionDto: {
-        userId,
-        fromAccountId,
-        toCategoryId,
-        currencyRate,
-        value,
-        fee,
-        description,
-    },
+    createTransactionDto: { userId, fromAccountId, toCategoryId, value, fee, description },
     queryRunner,
     getUserById,
     findAccountById,
     findTransactionCategoryById,
 }) => {
     const user = await getUserById(userId);
-    const fromAccount = await findAccountById({
-        where: { id: fromAccountId },
-        relations: {
-            user: true,
-        },
-    });
-    const toCategory = await findTransactionCategoryById({
-        where: { id: toCategoryId },
-        relations: {
-            user: true,
-        },
-    });
+    const fromAccount = await findAccountById(fromAccountId);
+    const toCategory = await findTransactionCategoryById(toCategoryId);
 
     validateCreateExpenseTransactionDto({
         userId,
         fromAccountId,
         toCategoryId,
-        currencyRate,
         fromAccount,
         toCategory,
     });
@@ -161,7 +115,6 @@ export const createExpenseTransaction: TCreateExpenseTransaction = async ({
             fee,
             description,
             currency: fromAccount.currency,
-            currencyRate,
         });
         const transaction = await queryRunner.manager.save(Transaction, transactionTemplate);
 

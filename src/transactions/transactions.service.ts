@@ -29,7 +29,7 @@ export class TransactionsService {
     constructor(
         @InjectRepository(Account)
         private readonly accountRepository: Repository<Account>,
-        @InjectRepository(Account)
+        @InjectRepository(TransactionCategory)
         private readonly transactionCategoryRepository: Repository<TransactionCategory>,
         @InjectRepository(Transaction)
         private readonly transactionRepository: Repository<Transaction>,
@@ -88,29 +88,45 @@ export class TransactionsService {
     async create(createTransactionDto: CreateTransactionDto): Promise<Transaction> {
         validateCreateTransactionProperties(createTransactionDto);
 
+        const getUserById = (id: number) => this.usersService.getOne(id);
+        const findAccountById = (id: number) =>
+            this.accountRepository.findOne({
+                where: { id },
+                relations: {
+                    user: true,
+                },
+            });
+        const findTransactionCategoryById = (id: number) =>
+            this.transactionCategoryRepository.findOne({
+                where: { id },
+                relations: {
+                    user: true,
+                },
+            });
+
         switch (createTransactionDto.type) {
             case ETransactionType.TRANSFER:
                 return createTransferTransaction({
                     createTransactionDto,
                     queryRunner: this.dataSource.createQueryRunner(),
-                    getUserById: this.usersService.getOne,
-                    findAccountById: this.accountRepository.findOne,
+                    getUserById,
+                    findAccountById,
                 });
             case ETransactionType.EXPENSE:
                 return createExpenseTransaction({
                     createTransactionDto,
                     queryRunner: this.dataSource.createQueryRunner(),
-                    getUserById: this.usersService.getOne,
-                    findAccountById: this.accountRepository.findOne,
-                    findTransactionCategoryById: this.transactionCategoryRepository.findOne,
+                    getUserById,
+                    findAccountById,
+                    findTransactionCategoryById,
                 });
             case ETransactionType.INCOME:
                 return createIncomeTransaction({
                     createTransactionDto,
                     queryRunner: this.dataSource.createQueryRunner(),
-                    getUserById: this.usersService.getOne,
-                    findAccountById: this.accountRepository.findOne,
-                    findTransactionCategoryById: this.transactionCategoryRepository.findOne,
+                    getUserById,
+                    findAccountById,
+                    findTransactionCategoryById,
                 });
             default:
                 throw new BadRequestException('Unsupported Transaction type');
