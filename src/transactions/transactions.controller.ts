@@ -24,8 +24,6 @@ import { ActiveUser } from 'iam/decorators/active-user.decorator';
 import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
 import { UserRole } from 'iam/authorization/decorators/user-role.decorator';
 
-import log from 'shared/utils/log';
-
 import { TransactionsService } from 'transactions/transactions.service';
 import { FindAllTransactionsDto } from 'transactions/dtos/find-all-transactions.dto';
 import { FindMyTransactionsDto } from 'transactions/dtos/find-my-transactions.dto';
@@ -46,8 +44,6 @@ export class TransactionsController {
         @ActiveUser('sub') activeUserId: IActiveUser['sub'],
         @Query() dto: FindMyTransactionsDto,
     ): Promise<PaginatedItemsResultDto<Transaction>> {
-        log('activeUserId', activeUserId);
-
         return this.transactionsService.findAll({ userId: activeUserId, ...dto });
     }
 
