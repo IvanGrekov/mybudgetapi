@@ -8,11 +8,13 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 
+import jwtConfig from 'config/jwt.config';
+
 import { User } from 'shared/entities/user.entity';
 import NotFoundException from 'shared/exceptions/not-found.exception';
+import log from 'shared/utils/log';
 
 import { UsersService } from 'users/users.service';
-import jwtConfig from 'config/jwt.config';
 
 import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
 
@@ -69,7 +71,7 @@ export class TokensService {
 
             return { accessToken, refreshToken };
         } catch (e) {
-            console.log('Tokens Signing Failed', JSON.stringify(e, null, 2));
+            log('Tokens Signing Failed', JSON.stringify(e, null, 2));
             throw new InternalServerErrorException();
         }
     }
@@ -96,11 +98,11 @@ export class TokensService {
             return this.generateTokens(user);
         } catch (e) {
             if (e instanceof InvalidatedToken) {
-                console.log('Refresh Token Is Invalid');
+                log('Refresh Token Is Invalid');
                 throw new UnauthorizedException('Access Denied');
             }
 
-            console.log('Refresh Token Verifying Failed', JSON.stringify(e, null, 2));
+            log('Refresh Token Verifying Failed', JSON.stringify(e, null, 2));
 
             throw new UnauthorizedException();
         }

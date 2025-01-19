@@ -11,6 +11,8 @@ import { Request } from 'express';
 
 import jwtConfig from 'config/jwt.config';
 
+import log from 'shared/utils/log';
+
 import { REQUEST_USER_KEY } from 'iam/iam.constants';
 
 import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
@@ -50,7 +52,7 @@ export class AccessTokenGuard implements CanActivate {
 
             return true;
         } catch (e) {
-            console.log('Access Token Verifying Failed', JSON.stringify(e, null, 2));
+            log('Access Token Verifying Failed', JSON.stringify(e, null, 2));
             throw new UnauthorizedException();
         }
     }

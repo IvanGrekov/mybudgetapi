@@ -10,9 +10,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigType } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 
-import { User } from 'shared/entities/user.entity';
-
 import googleAuthenticationConfig from 'config/google-authentication.config';
+
+import { User } from 'shared/entities/user.entity';
+import log from 'shared/utils/log';
 
 import { UsersService } from 'users/users.service';
 
@@ -60,7 +61,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
             if (e?.['code'] === '23505') {
                 throw new ConflictException('User with this email already exists');
             }
-            console.log('Google Authentication Failed', JSON.stringify(e, null, 2));
+            log('Google Authentication Failed', JSON.stringify(e, null, 2));
             throw new UnauthorizedException();
         }
     }

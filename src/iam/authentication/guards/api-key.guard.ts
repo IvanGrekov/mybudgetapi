@@ -5,6 +5,7 @@ import { Request } from 'express';
 
 import { ApiKey } from 'shared/entities/api-key.entity';
 import NotFoundException from 'shared/exceptions/not-found.exception';
+import log from 'shared/utils/log';
 
 import { REQUEST_USER_KEY } from 'iam/iam.constants';
 import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
@@ -54,7 +55,7 @@ export class ApiKeyGuard implements CanActivate {
             };
             request[REQUEST_USER_KEY] = payload;
         } catch (e) {
-            console.log('API Key Verifying Failed', JSON.stringify(e, null, 2));
+            log('API Key Verifying Failed', JSON.stringify(e, null, 2));
             throw new UnauthorizedException();
         }
 

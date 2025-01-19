@@ -10,13 +10,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
 
-import { User } from 'shared/entities/user.entity';
-import NotFoundException from 'shared/exceptions/not-found.exception';
-
-import { UsersService } from 'users/users.service';
-
 import jwtConfig from 'config/jwt.config';
 import emailConfig from 'config/email.config';
+
+import { User } from 'shared/entities/user.entity';
+import NotFoundException from 'shared/exceptions/not-found.exception';
+import log from 'shared/utils/log';
+
+import { UsersService } from 'users/users.service';
 
 import { HashingService } from 'iam/hashing/hashing.service';
 
@@ -64,7 +65,7 @@ export class ResetPasswordService {
                 html: `<h1>Verification Code:</h1><h2>${verificationCode}</h2>`,
             })
             .catch((e) => {
-                console.log('Failed to send mail', JSON.stringify(e, null, 2));
+                log('Failed to send mail', JSON.stringify(e, null, 2));
                 throw new ServiceUnavailableException();
             });
 
@@ -117,7 +118,7 @@ export class ResetPasswordService {
 
             return this.tokensService.generateTokens(user);
         } catch (e) {
-            console.log('Reset Password Failed', JSON.stringify(e, null, 2));
+            log('Reset Password Failed', JSON.stringify(e, null, 2));
             if (e instanceof InvalidatedToken) {
                 throw new ForbiddenException('Verification Code Is Invalid');
             }
