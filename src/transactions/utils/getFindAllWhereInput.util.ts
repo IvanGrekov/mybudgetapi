@@ -28,17 +28,24 @@ export const getFindAllWhereInput = ({
     search,
     from,
     to,
-}: FindAllTransactionsDto): FindOptionsWhere<Transaction> => {
-    const where: FindOptionsWhere<Transaction> = {
+}: FindAllTransactionsDto): FindOptionsWhere<Transaction>[] => {
+    const baseWhereOptions: FindOptionsWhere<Transaction> = {
         type: types ? In(types) : undefined,
         user: userId ? { id: userId } : undefined,
-        fromAccount: accountId ? { id: accountId } : undefined,
-        toAccount: accountId ? { id: accountId } : undefined,
-        fromCategory: transactionCategoryId ? { id: transactionCategoryId } : undefined,
-        toCategory: transactionCategoryId ? { id: transactionCategoryId } : undefined,
         description: search ? Like(`%${search}%`) : undefined,
         createdAt: getCreatedAtFilter(from, to),
     };
 
-    return where;
+    const whereWithRelations: FindOptionsWhere<Transaction> = {
+        ...baseWhereOptions,
+        fromAccount: accountId ? { id: accountId } : undefined,
+        fromCategory: transactionCategoryId ? { id: transactionCategoryId } : undefined,
+    };
+    const whereWithNullableRelations: FindOptionsWhere<Transaction> = {
+        ...baseWhereOptions,
+        toAccount: accountId ? { id: accountId } : undefined,
+        toCategory: transactionCategoryId ? { id: transactionCategoryId } : undefined,
+    };
+
+    return [whereWithRelations, whereWithNullableRelations];
 };
