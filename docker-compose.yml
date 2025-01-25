@@ -16,11 +16,10 @@ services:
 
     redis:
         image: ${REDIS_IMAGE_NAME}
-        # ports:
-        #     - "${REDIS_CONTAINER_PORT}:${REDIS_CONTAINER_PORT}"
         restart: always
 
     api:
+        image: mybudgetapi_api:${SHA}
         build: 
             .
         ports:

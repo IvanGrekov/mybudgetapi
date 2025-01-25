@@ -51,9 +51,13 @@ jobs:
         echo EMAIL_USERNAME=${{ secrets.EMAIL_USERNAME }} >> .env
         echo EMAIL_SENDER_DOMAIN=${{ secrets.EMAIL_SENDER_DOMAIN }} >> .env
         echo EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }} >> .env
+        echo SHA=${{ github.sha }} >> .env
 
     - name: Build and deploy
       run: docker-compose up -d --build
 
     - name: Docker network connect app
       run: docker network connect --ip 172.18.0.3 multi-host-network mybudgetapi_api_1
+    
+    - name: Remove all other "mybudgetapi_api" images except this one
+      run: docker rmi $(docker images --filter=reference='mybudgetapi_api' --filter "before=mybudgetapi_api:${{ github.sha }}" -q)
