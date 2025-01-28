@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import appConfig, { validationSchema } from 'config/app.config';
 import databaseConfig from 'config/database.config';
 import { SharedModule } from 'shared/shared.module';
+
 import { UsersModule } from 'users/users.module';
 import { AccountsModule } from 'accounts/accounts.module';
 import { TransactionCategoriesModule } from 'transaction-categories/transaction-categories.module';
@@ -22,6 +23,7 @@ import { IamModule } from 'iam/iam.module';
             ) => ({
                 ...config,
                 type: 'postgres',
+                entities: isDevelopment ? ['*.entity.ts'] : ['*.entity.js'],
                 synchronize: isDevelopment,
                 autoLoadEntities: isDevelopment,
             }),

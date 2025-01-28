@@ -14,7 +14,6 @@ import { TransactionCategory } from 'shared/entities/transaction-category.entity
 import { ECurrency } from 'shared/enums/currency.enums';
 import { ETransactionType } from 'shared/enums/transaction.enums';
 
-@Index(['createdAt'])
 @Entity()
 export class Transaction {
     @PrimaryGeneratedColumn()
@@ -26,6 +25,7 @@ export class Transaction {
     })
     user: User;
 
+    @Index()
     @ManyToOne(() => Account, ({ outgoingTransactions }) => outgoingTransactions, {
         nullable: true,
         onDelete: 'CASCADE',
@@ -35,6 +35,7 @@ export class Transaction {
     @Column({ nullable: true, type: 'real' })
     fromAccountUpdatedBalance?: number;
 
+    @Index()
     @ManyToOne(() => Account, ({ incomingTransactions }) => incomingTransactions, {
         nullable: true,
         onDelete: 'CASCADE',
@@ -44,12 +45,14 @@ export class Transaction {
     @Column({ nullable: true, type: 'real' })
     toAccountUpdatedBalance?: number | null;
 
+    @Index()
     @ManyToOne(() => TransactionCategory, ({ outgoingTransactions }) => outgoingTransactions, {
         nullable: true,
         onDelete: 'CASCADE',
     })
     fromCategory?: TransactionCategory | null;
 
+    @Index()
     @ManyToOne(() => TransactionCategory, ({ incomingTransactions }) => incomingTransactions, {
         nullable: true,
         onDelete: 'CASCADE',
@@ -80,6 +83,7 @@ export class Transaction {
     @Column({ default: '' })
     description: string;
 
+    @Index()
     @CreateDateColumn()
     createdAt: Date;
 }
