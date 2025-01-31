@@ -3,7 +3,6 @@ import {
     Get,
     Post,
     Patch,
-    Delete,
     Query,
     Param,
     Body,
@@ -77,14 +76,5 @@ export class TransactionsController {
         @Body() editTransactionDto: EditTransactionDto,
     ): Promise<Transaction> {
         return this.transactionsService.edit({ id, activeUserId, editTransactionDto });
-    }
-
-    @ApiOkResponse({ type: Transaction })
-    @Delete(':id')
-    delete(
-        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
-        @Param('id', CustomParseIntPipe) id: number,
-    ): Promise<Transaction> {
-        return this.transactionsService.delete({ id, activeUserId });
     }
 }

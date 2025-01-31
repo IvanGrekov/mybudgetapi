@@ -32,7 +32,7 @@ export const getOldAccountNewOrder: TGetOldAccountNewOrder = async ({
 
     const accountsByType = await findAllAccounts({
         userId: user.id,
-        type,
+        types: [type],
     });
 
     return accountsByType.length;

@@ -12,6 +12,7 @@ import { User } from 'shared/entities/user.entity';
 import { Transaction } from 'shared/entities/transaction.entity';
 import { ECurrency } from 'shared/enums/currency.enums';
 import { EAccountType, EAccountStatus } from 'shared/enums/account.enums';
+import TwoDecimalsNumericColumn from 'shared/property-decorators/two-decimals-numeric-column.decorator';
 
 @Entity()
 export class Account {
@@ -58,10 +59,10 @@ export class Account {
     })
     currency: ECurrency;
 
-    @Column({ type: 'real' })
+    @TwoDecimalsNumericColumn()
     balance: number;
 
-    @Column({ type: 'real' })
+    @TwoDecimalsNumericColumn()
     initBalance: number;
 
     @Column({ default: false })

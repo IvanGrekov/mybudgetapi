@@ -24,7 +24,7 @@ const syncAccountsOrder: TSyncAccountsOrder = async ({
 }) => {
     const accountsByType = await findAllAccounts({
         userId,
-        type,
+        types: [type],
         excludeId,
     });
 

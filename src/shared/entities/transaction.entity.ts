@@ -13,6 +13,7 @@ import { Account } from 'shared/entities/account.entity';
 import { TransactionCategory } from 'shared/entities/transaction-category.entity';
 import { ECurrency } from 'shared/enums/currency.enums';
 import { ETransactionType } from 'shared/enums/transaction.enums';
+import TwoDecimalsNumericColumn from 'shared/property-decorators/two-decimals-numeric-column.decorator';
 
 @Entity()
 export class Transaction {
@@ -32,7 +33,7 @@ export class Transaction {
     })
     fromAccount?: Account | null;
 
-    @Column({ nullable: true, type: 'real' })
+    @TwoDecimalsNumericColumn({ nullable: true })
     fromAccountUpdatedBalance?: number;
 
     @Index()
@@ -42,7 +43,7 @@ export class Transaction {
     })
     toAccount?: Account | null;
 
-    @Column({ nullable: true, type: 'real' })
+    @TwoDecimalsNumericColumn({ nullable: true })
     toAccountUpdatedBalance?: number | null;
 
     @Index()
@@ -65,10 +66,10 @@ export class Transaction {
     })
     type: ETransactionType;
 
-    @Column({ type: 'real' })
+    @TwoDecimalsNumericColumn()
     value: number;
 
-    @Column({ type: 'real', nullable: true })
+    @TwoDecimalsNumericColumn({ nullable: true })
     fee?: number | null;
 
     @Column({

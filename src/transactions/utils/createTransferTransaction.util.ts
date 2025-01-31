@@ -10,6 +10,8 @@ import { Account } from 'shared/entities/account.entity';
 import { EAccountStatus, EAccountType } from 'shared/enums/account.enums';
 import { ETransactionType } from 'shared/enums/transaction.enums';
 
+import { validateNewFromAccountBalance } from 'transactions/utils/validateNewFromAccountBalance';
+import { validateNewToIOweAccountBalance } from 'transactions/utils/validateNewToIOweAccountBalance';
 import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
 
 type TValidateCreateTransferTransactionDto = (
@@ -39,14 +41,8 @@ const validateCreateTransferTransactionDto: TValidateCreateTransferTransactionDt
         user: fromAccountUser,
         status: fromAccountStatus,
         currency: fromAccountCurrency,
-        type: fromAccountType,
     } = fromAccount;
-    const {
-        user: toAccountUser,
-        status: toAccountStatus,
-        currency: toAccountCurrency,
-        type: toAccountType,
-    } = toAccount;
+    const { user: toAccountUser, status: toAccountStatus, currency: toAccountCurrency } = toAccount;
 
     if (userId !== fromAccountUser.id) {
         throw new BadRequestException(
@@ -68,21 +64,12 @@ const validateCreateTransferTransactionDto: TValidateCreateTransferTransactionDt
 
     if (fromAccountCurrency !== toAccountCurrency && !currencyRate) {
         throw new BadRequestException(
-            'The `rate` must be provided for Transaction between Accounts with different `currency`',
+            'The `currencyRate` must be provided for Transaction between Accounts with different `currency`',
         );
     }
     if (fromAccountCurrency === toAccountCurrency && currencyRate) {
         throw new BadRequestException(
-            'The `rate` must be provided only for Transaction between Accounts with different `currency`',
-        );
-    }
-
-    if (fromAccountType === EAccountType.I_OWE || toAccountType === EAccountType.I_OWE) {
-        throw new BadRequestException('`I_OWE` Account type is forbidden for Transfer Transaction');
-    }
-    if (toAccountType === EAccountType.OWE_ME) {
-        throw new BadRequestException(
-            'The `toAccountType` must not be of type `OWE_ME` for Transfer Transaction',
+            'The `currencyRate` must be provided only for Transaction between Accounts with different `currency`',
         );
     }
 };
@@ -121,8 +108,20 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
         toAccount,
     });
 
-    const newFromAccountBalance = fromAccount.balance - value - (fee || 0);
-    const newToAccountBalance = toAccount.balance + value * (currencyRate || 1);
+    let newFromAccountBalance = fromAccount.balance - value - (fee || 0);
+
+    if (fromAccount.type === EAccountType.I_OWE) {
+        newFromAccountBalance = fromAccount.balance + value + (fee || 0);
+    }
+
+    validateNewFromAccountBalance(newFromAccountBalance);
+
+    let newToAccountBalance = toAccount.balance + value * (currencyRate || 1);
+
+    if (toAccount.type === EAccountType.I_OWE) {
+        newToAccountBalance = toAccount.balance - value * (currencyRate || 1);
+        validateNewToIOweAccountBalance(newToAccountBalance);
+    }
 
     await queryRunner.connect();
     await queryRunner.startTransaction();

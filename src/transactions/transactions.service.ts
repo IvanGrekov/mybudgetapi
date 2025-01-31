@@ -9,8 +9,9 @@ import { Account } from 'shared/entities/account.entity';
 import { TransactionCategory } from 'shared/entities/transaction-category.entity';
 import { PaginatedItemsResultDto } from 'shared/dtos/paginated-items-result.dto';
 import { ETransactionType } from 'shared/enums/transaction.enums';
-import { UsersService } from 'users/users.service';
 import { validateUserOwnership } from 'shared/utils/validateUserOwnership';
+
+import { UsersService } from 'users/users.service';
 
 import { FindAllTransactionsDto } from 'transactions/dtos/find-all-transactions.dto';
 import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
@@ -22,7 +23,6 @@ import { createExpenseTransaction } from 'transactions/utils/createExpenseTransa
 import { createIncomeTransaction } from 'transactions/utils/createIncomeTransaction.util';
 import { IGetOneTransactionArgs } from 'transactions/interfaces/get-one-transaction-args.interface';
 import { IEditTransactionArgs } from 'transactions/interfaces/edit-transaction-args.interface';
-import { IDeleteTransactionArgs } from 'transactions/interfaces/delete-transaction-args.interface';
 
 @Injectable()
 export class TransactionsService {
@@ -146,45 +146,5 @@ export class TransactionsService {
         });
 
         return this.transactionRepository.save(transactionTemplate);
-    }
-
-    async delete({ id, activeUserId }: IDeleteTransactionArgs): Promise<Transaction> {
-        const transaction = await this.getOne({
-            id,
-            activeUserId,
-        });
-        const { value, fee, fromAccount, toAccount } = transaction;
-
-        const queryRunner = this.dataSource.createQueryRunner();
-
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
-        try {
-            if (fromAccount) {
-                const newFromAccountBalance = fromAccount.balance + value + (fee || 0);
-                queryRunner.manager.update(Account, fromAccount.id, {
-                    balance: newFromAccountBalance,
-                });
-            }
-
-            if (toAccount) {
-                const newToAccountBalance = toAccount.balance - value;
-                queryRunner.manager.update(Account, toAccount.id, {
-                    balance: newToAccountBalance,
-                });
-            }
-
-            queryRunner.manager.remove(transaction);
-
-            await queryRunner.commitTransaction();
-
-            return transaction;
-        } catch (err) {
-            await queryRunner.rollbackTransaction();
-            throw err;
-        } finally {
-            await queryRunner.release();
-        }
     }
 }

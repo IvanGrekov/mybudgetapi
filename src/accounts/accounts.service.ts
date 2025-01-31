@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, Not } from 'typeorm';
+import { Repository, DataSource, Not, In } from 'typeorm';
 
 import NotFoundException from 'shared/exceptions/not-found.exception';
 import MaximumEntitiesNumberException from 'shared/exceptions/maximum-entities-number.exception';
@@ -39,7 +39,7 @@ export class AccountsService {
 
     async findAll({
         userId,
-        type,
+        types,
         status = EAccountStatus.ACTIVE,
         excludeId,
     }: FindAllAccountsDto): Promise<Account[]> {
@@ -47,7 +47,7 @@ export class AccountsService {
             where: {
                 id: typeof excludeId === 'number' ? Not(excludeId) : undefined,
                 user: { id: userId },
-                type,
+                type: types ? In(types) : undefined,
                 status,
             },
             order: { type: 'ASC', order: 'ASC' },
@@ -211,7 +211,7 @@ export class AccountsService {
 
             const accountsByType = await this.findAll({
                 userId,
-                type,
+                types: [type],
                 excludeId: id,
             });
 
@@ -227,7 +227,7 @@ export class AccountsService {
 
             return this.findAll({
                 userId,
-                type,
+                types: [type],
             });
         } catch (err) {
             await queryRunner.rollbackTransaction();
@@ -252,7 +252,7 @@ export class AccountsService {
 
             const accountsByType = await this.findAll({
                 userId,
-                type,
+                types: [type],
                 excludeId: id,
             });
 
@@ -266,7 +266,7 @@ export class AccountsService {
 
             return this.findAll({
                 userId,
-                type,
+                types: [type],
             });
         } catch (err) {
             await queryRunner.rollbackTransaction();

@@ -16,6 +16,7 @@ import {
 import { ETransactionType } from 'shared/enums/transaction.enums';
 
 import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
+import { validateNewToIOweAccountBalance } from 'transactions/utils/validateNewToIOweAccountBalance';
 
 type TValidateCreateIncomeTransactionDto = (
     args: Pick<
@@ -41,12 +42,7 @@ const validateCreateIncomeTransactionDto: TValidateCreateIncomeTransactionDto = 
         throw new NotFoundException(model, notFoundId);
     }
 
-    const {
-        user: toAccountUser,
-        status: toAccountStatus,
-        currency: toAccountCurrency,
-        type: toAccountType,
-    } = toAccount;
+    const { user: toAccountUser, status: toAccountStatus, currency: toAccountCurrency } = toAccount;
     const {
         user: fromCategoryUser,
         status: fromCategoryStatus,
@@ -54,45 +50,35 @@ const validateCreateIncomeTransactionDto: TValidateCreateIncomeTransactionDto = 
         type: fromCategoryType,
     } = fromCategory;
 
-    if (userId !== toAccountUser.id) {
-        throw new BadRequestException(
-            `The \`toAccount\` doesn't belong to User ${getIdPointer(userId)}`,
-        );
-    }
     if (userId !== fromCategoryUser.id) {
         throw new BadRequestException(
             `The \`fromCategory\` doesn't belong to User ${getIdPointer(userId)}`,
         );
     }
-
-    if (toAccountStatus === EAccountStatus.ARCHIVED) {
-        throw new ArchivedEntityException('the `toAccount`');
+    if (userId !== toAccountUser.id) {
+        throw new BadRequestException(
+            `The \`toAccount\` doesn't belong to User ${getIdPointer(userId)}`,
+        );
     }
+
     if (fromCategoryStatus === ETransactionCategoryStatus.ARCHIVED) {
         throw new ArchivedEntityException('the `fromCategory`');
     }
-
-    if (toAccountCurrency !== fromCategoryCurrency && !currencyRate) {
-        throw new BadRequestException(
-            'The `rate` must be provided for Transaction between Account and TransactionCategory with different `currency`',
-        );
-    }
-    if (toAccountCurrency === fromCategoryCurrency && currencyRate) {
-        throw new BadRequestException(
-            'The `rate` must be provided only for Transaction between Account and TransactionCategory with different `currency`',
-        );
+    if (toAccountStatus === EAccountStatus.ARCHIVED) {
+        throw new ArchivedEntityException('the `toAccount`');
     }
 
-    if (toAccountType === EAccountType.I_OWE) {
+    if (fromCategoryCurrency !== toAccountCurrency && !currencyRate) {
         throw new BadRequestException(
-            'The `toAccount` must not be of type `I_OWE` for Income Transaction',
+            'The `currencyRate` must be provided for Transaction between TransactionCategory and Account with different `currency`',
         );
     }
-    if (toAccountType === EAccountType.OWE_ME) {
+    if (fromCategoryCurrency === toAccountCurrency && currencyRate) {
         throw new BadRequestException(
-            'The `toAccount` must not be of type `OWE_ME` for Income Transaction',
+            'The `currencyRate` must be provided only for Transaction between TransactionCategory and Account with different `currency`',
         );
     }
+
     if (fromCategoryType !== ETransactionCategoryType.INCOME) {
         throw new BadRequestException(
             'The `fromCategory` must be of type `INCOME` for Income Transaction',
@@ -137,7 +123,12 @@ export const createIncomeTransaction: TCreateIncomeTransaction = async ({
     });
 
     const valueWithoutFee = (value - (fee || 0)) * (currencyRate || 1);
-    const newToAccountBalance = toAccount.balance + valueWithoutFee;
+    let newToAccountBalance = toAccount.balance + valueWithoutFee;
+
+    if (toAccount.type === EAccountType.I_OWE) {
+        newToAccountBalance = toAccount.balance - (value + (fee || 0)) * (currencyRate || 1);
+        validateNewToIOweAccountBalance(newToAccountBalance);
+    }
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -154,7 +145,7 @@ export const createIncomeTransaction: TCreateIncomeTransaction = async ({
             value,
             fee,
             description,
-            currency: toAccount.currency,
+            currency: fromCategory.currency,
             currencyRate,
         });
         const transaction = await queryRunner.manager.save(Transaction, transactionTemplate);

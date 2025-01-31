@@ -16,6 +16,7 @@ import {
 import { ETransactionType } from 'shared/enums/transaction.enums';
 
 import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
+import { validateNewFromAccountBalance } from 'transactions/utils/validateNewFromAccountBalance';
 
 type TValidateCreateExpenseTransactionDto = (
     args: Pick<CreateTransactionDto, 'userId' | 'fromAccountId' | 'toCategoryId'> & {
@@ -37,7 +38,7 @@ const validateCreateExpenseTransactionDto: TValidateCreateExpenseTransactionDto 
         throw new NotFoundException(model, notFoundId);
     }
 
-    const { user: fromAccountUser, status: fromAccountStatus, type: fromAccountType } = fromAccount;
+    const { user: fromAccountUser, status: fromAccountStatus } = fromAccount;
     const { user: toCategoryUser, status: toCategoryStatus, type: toCategoryType } = toCategory;
 
     if (userId !== fromAccountUser.id) {
@@ -58,11 +59,6 @@ const validateCreateExpenseTransactionDto: TValidateCreateExpenseTransactionDto 
         throw new ArchivedEntityException('the `toCategory`');
     }
 
-    if (fromAccountType === EAccountType.I_OWE) {
-        throw new BadRequestException(
-            'The `fromAccount` must not be of type `I_OWE` for Expense Transaction',
-        );
-    }
     if (toCategoryType !== ETransactionCategoryType.EXPENSE) {
         throw new BadRequestException(
             'The `toCategory` must be of type `EXPENSE` for Expense Transaction',
@@ -97,7 +93,13 @@ export const createExpenseTransaction: TCreateExpenseTransaction = async ({
         toCategory,
     });
 
-    const newFromAccountBalance = fromAccount.balance - value - (fee || 0);
+    let newFromAccountBalance = fromAccount.balance - value - (fee || 0);
+
+    if (fromAccount.type === EAccountType.I_OWE) {
+        newFromAccountBalance = fromAccount.balance + value + (fee || 0);
+    }
+
+    validateNewFromAccountBalance(newFromAccountBalance);
 
     await queryRunner.connect();
     await queryRunner.startTransaction();

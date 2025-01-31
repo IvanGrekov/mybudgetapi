@@ -1,5 +1,5 @@
 import { IsNumber as IsNumberBase, IsEnum, IsOptional } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 import { EAccountType, EAccountStatus } from 'shared/enums/account.enums';
 
@@ -8,9 +8,10 @@ export class FindAllAccountsDto {
     @IsNumberBase()
     readonly userId: number;
 
-    @IsEnum(EAccountType)
+    @Transform(({ value }) => value.split(','))
+    @IsEnum(EAccountType, { each: true })
     @IsOptional()
-    readonly type?: EAccountType;
+    readonly types?: EAccountType[];
 
     @IsEnum(EAccountStatus)
     @IsOptional()
