@@ -12,7 +12,7 @@ export default function TwoDecimalsNumericColumn(options?: ITwoDecimalsNumericCo
         Column({
             nullable,
             type: 'numeric',
-            precision: 10,
+            precision: 32,
             scale: 2,
             transformer: { to: (value) => value, from: (value) => parseFloat(value) },
         }),
