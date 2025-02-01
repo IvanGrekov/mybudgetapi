@@ -29,16 +29,37 @@ export class TokedIdsStorage implements OnApplicationBootstrap, OnApplicationShu
         return this.redisClient.quit();
     }
 
-    async insert(userId: User['id'], tokenId: string, keyPrefix?: string): Promise<void> {
-        await this.redisClient.set(this.getKey(userId, keyPrefix), tokenId);
+    async insert({
+        userId,
+        tokenId,
+        keyPrefix,
+    }: {
+        userId: User['id'];
+        tokenId: string;
+        keyPrefix?: string;
+    }): Promise<void> {
+        const key = this.getKey(userId, keyPrefix);
+
+        await this.redisClient.set(key, tokenId);
     }
 
     async get(userId: User['id'], keyPrefix?: string): Promise<string> {
-        return this.redisClient.get(this.getKey(userId, keyPrefix));
+        const key = this.getKey(userId, keyPrefix);
+
+        return this.redisClient.get(key);
     }
 
-    async validate(userId: User['id'], tokenId: string): Promise<boolean> {
-        const storedTokenId = await this.redisClient.get(this.getKey(userId));
+    async validate({
+        userId,
+        tokenId,
+        keyPrefix,
+    }: {
+        userId: User['id'];
+        tokenId: string;
+        keyPrefix?: string;
+    }): Promise<boolean> {
+        const key = this.getKey(userId, keyPrefix);
+        const storedTokenId = await this.redisClient.get(key);
 
         if (tokenId !== storedTokenId) {
             throw new InvalidatedToken();
@@ -48,7 +69,9 @@ export class TokedIdsStorage implements OnApplicationBootstrap, OnApplicationShu
     }
 
     async invalidate(userId: User['id'], keyPrefix?: string): Promise<void> {
-        await this.redisClient.del(this.getKey(userId, keyPrefix));
+        const key = this.getKey(userId, keyPrefix);
+
+        await this.redisClient.del(key);
     }
 
     private getKey(userId: User['id'], prefix = ''): string {

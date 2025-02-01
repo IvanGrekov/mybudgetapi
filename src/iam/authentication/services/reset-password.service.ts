@@ -69,11 +69,11 @@ export class ResetPasswordService {
                 throw new ServiceUnavailableException();
             });
 
-        return this.tokenIdsStorage.insert(
-            user.id,
-            resetPasswordToken,
-            RESET_PASSWORD_TOKEN_STORE_PREFIX,
-        );
+        return this.tokenIdsStorage.insert({
+            userId: user.id,
+            tokenId: resetPasswordToken,
+            keyPrefix: RESET_PASSWORD_TOKEN_STORE_PREFIX,
+        });
     }
 
     async resetPassword({
@@ -89,11 +89,11 @@ export class ResetPasswordService {
 
         try {
             const userId = user.id;
-            const storedToken = await this.tokenIdsStorage.get(
+            const storedResetPasswordToken = await this.tokenIdsStorage.get(
                 userId,
                 RESET_PASSWORD_TOKEN_STORE_PREFIX,
             );
-            const { sub } = await this.jwtService.verifyAsync(storedToken, {
+            const { sub } = await this.jwtService.verifyAsync(storedResetPasswordToken, {
                 secret: this.jwtConfiguration.secret,
                 audience: this.jwtConfiguration.audience,
                 issuer: this.jwtConfiguration.issuer,

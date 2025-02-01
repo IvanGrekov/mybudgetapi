@@ -47,7 +47,11 @@ export class TokensService {
         });
     }
 
-    async generateTokens({ id, email, role }: User): Promise<GeneratedTokensDto> {
+    async generateTokens({
+        id,
+        email,
+        role,
+    }: Pick<User, 'id' | 'email' | 'role'>): Promise<GeneratedTokensDto> {
         try {
             const payload: IActiveUser = {
                 sub: id,
@@ -67,7 +71,10 @@ export class TokensService {
                 }),
             ]);
 
-            await this.tokenIdsStorage.insert(id, refreshTokenId);
+            await this.tokenIdsStorage.insert({
+                userId: id,
+                tokenId: refreshTokenId,
+            });
 
             return { accessToken, refreshToken };
         } catch (e) {
@@ -93,7 +100,10 @@ export class TokensService {
             }
 
             const userId = user.id;
-            await this.tokenIdsStorage.validate(userId, refreshTokenId);
+            await this.tokenIdsStorage.validate({
+                userId,
+                tokenId: refreshTokenId,
+            });
 
             return this.generateTokens(user);
         } catch (e) {
