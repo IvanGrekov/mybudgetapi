@@ -3,8 +3,6 @@ import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 import { Response } from 'express';
 import { toDataURL } from 'qrcode';
 
-import { CreateUserDto } from 'shared/dtos/create-user.dto';
-
 import { ActiveUser } from 'iam/decorators/active-user.decorator';
 import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
 
@@ -16,10 +14,11 @@ import { GoogleAuthenticationService } from 'iam/authentication/services/google-
 import { TfaAuthenticationService } from 'iam/authentication/services/tfa-authentication.service';
 
 import { EAuthType } from 'iam/authentication/enums/auth-type.enum';
+import { SignUpDto } from 'iam/authentication/dtos/sign-up.dto';
 import { SignInDto } from 'iam/authentication/dtos/sign-in.dto';
 import { GeneratedTokensDto } from 'iam/authentication/dtos/generated-tokens.dto';
 import { RefreshTokenDto } from 'iam/authentication/dtos/refresh-token.dto';
-import { GoogleIdTokenDto } from 'iam/authentication/dtos/google-id-token.dto';
+import { GoogleSignInDto } from 'iam/authentication/dtos/google-sign-in.dto';
 import { InitiateResetPasswordDto } from 'iam/authentication/dtos/initiate-reset-password.dto';
 import { ResetPasswordDto } from 'iam/authentication/dtos/reset-password.dto';
 import { InitiateResetPasswordResultDto } from 'iam/authentication/dtos/initiate-reset-password-result.dto';
@@ -40,8 +39,8 @@ export class AuthenticationController {
 
     @ApiOkResponse({ type: GeneratedTokensDto })
     @Post('sign-up')
-    async signUp(@Body() createUserDto: CreateUserDto): Promise<GeneratedTokensDto> {
-        return this.authenticationService.signUp(createUserDto);
+    async signUp(@Body() signUpDto: SignUpDto): Promise<GeneratedTokensDto> {
+        return this.authenticationService.signUp(signUpDto);
     }
 
     @ApiOkResponse({ type: GeneratedTokensDto })
@@ -53,16 +52,16 @@ export class AuthenticationController {
 
     @ApiOkResponse({ type: GeneratedTokensDto })
     @HttpCode(HttpStatus.OK)
-    @Post('refresh-token')
-    async refreshToken(@Body() refreshTokenDto: RefreshTokenDto): Promise<GeneratedTokensDto> {
-        return this.tokensService.refreshToken(refreshTokenDto);
+    @Post('google')
+    async googleSignIn(@Body() signInDto: GoogleSignInDto): Promise<GeneratedTokensDto> {
+        return this.googleAuthenticationService.authenticate(signInDto);
     }
 
     @ApiOkResponse({ type: GeneratedTokensDto })
     @HttpCode(HttpStatus.OK)
-    @Post('google')
-    async googleSignIn(@Body() { token }: GoogleIdTokenDto): Promise<GeneratedTokensDto> {
-        return this.googleAuthenticationService.authenticate(token);
+    @Post('refresh-token')
+    async refreshToken(@Body() refreshTokenDto: RefreshTokenDto): Promise<GeneratedTokensDto> {
+        return this.tokensService.refreshToken(refreshTokenDto);
     }
 
     @ApiOkResponse()

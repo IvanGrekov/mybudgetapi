@@ -17,6 +17,7 @@ import log from 'shared/utils/log';
 
 import { UsersService } from 'users/users.service';
 
+import { GoogleSignInDto } from 'iam/authentication/dtos/google-sign-in.dto';
 import { TokensService } from 'iam/authentication/services/tokens.service';
 import { GeneratedTokensDto } from 'iam/authentication/dtos/generated-tokens.dto';
 
@@ -41,7 +42,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
         this.oauthClient = new OAuth2Client(clientId, clientSecret);
     }
 
-    async authenticate(idToken: string): Promise<GeneratedTokensDto> {
+    async authenticate({ token: idToken, deviceId }: GoogleSignInDto): Promise<GeneratedTokensDto> {
         try {
             const ticket = await this.oauthClient.verifyIdToken({
                 idToken,
@@ -56,7 +57,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
                 });
             }
 
-            return this.tokensService.generateTokens(user);
+            return this.tokensService.generateTokens({ ...user, deviceId });
         } catch (e) {
             if (e?.['code'] === '23505') {
                 throw new ConflictException('User with this email already exists');

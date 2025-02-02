@@ -1,12 +1,16 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
-
-import { CreateUserDto } from 'shared/dtos/create-user.dto';
+import {
+    Injectable,
+    ConflictException,
+    UnauthorizedException,
+    BadRequestException,
+} from '@nestjs/common';
 
 import { UsersService } from 'users/users.service';
 
 import { HashingService } from 'iam/hashing/hashing.service';
 
 import { TokensService } from 'iam/authentication/services/tokens.service';
+import { SignUpDto } from 'iam/authentication/dtos/sign-up.dto';
 import { SignInDto } from 'iam/authentication/dtos/sign-in.dto';
 import { GeneratedTokensDto } from 'iam/authentication/dtos/generated-tokens.dto';
 import { TfaAuthenticationService } from 'iam/authentication/services/tfa-authentication.service';
@@ -20,8 +24,8 @@ export class AuthenticationService {
         private readonly tokensService: TokensService,
     ) {}
 
-    async signUp(createUserDto: CreateUserDto): Promise<GeneratedTokensDto> {
-        const { email, password } = createUserDto;
+    async signUp(signUpDto: SignUpDto): Promise<GeneratedTokensDto> {
+        const { email, password, deviceId } = signUpDto;
 
         const user = await this.usersService.findByEmail(email);
         if (user) {
@@ -31,18 +35,26 @@ export class AuthenticationService {
         const hashedPassword = await this.hashingService.hash(password);
 
         const newUser = await this.usersService.create({
-            ...createUserDto,
+            ...signUpDto,
             password: hashedPassword,
         });
 
-        return this.tokensService.generateTokens(newUser);
+        return this.tokensService.generateTokens({ ...newUser, deviceId });
     }
 
     async signIn(signInDto: SignInDto): Promise<GeneratedTokensDto> {
-        const { email, password, tfaToken } = signInDto;
+        const { email, password, tfaToken, deviceId } = signInDto;
 
         const user = await this.usersService.findByEmail(email);
         if (!user) {
+            throw new UnauthorizedException('Invalid email or password');
+        }
+
+        if (!user.password && user.googleId) {
+            throw new BadRequestException('Invalid email or password. Try signing in with Google');
+        }
+
+        if (!user.password) {
             throw new UnauthorizedException('Invalid email or password');
         }
 
@@ -62,6 +74,6 @@ export class AuthenticationService {
             }
         }
 
-        return this.tokensService.generateTokens(user);
+        return this.tokensService.generateTokens({ ...user, deviceId });
     }
 }

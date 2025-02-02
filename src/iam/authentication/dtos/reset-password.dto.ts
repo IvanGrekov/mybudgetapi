@@ -1,4 +1,4 @@
-import { IsEmail, IsDefined, IsNumber } from 'class-validator';
+import { IsEmail, IsDefined, IsNumber, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import IsString from 'shared/property-decorators/is-string.decorator';
@@ -18,4 +18,7 @@ export class ResetPasswordDto {
     @Type(() => Number)
     @IsNumber()
     readonly verificationCode: string;
+
+    @IsNotEmpty()
+    deviceId: string;
 }

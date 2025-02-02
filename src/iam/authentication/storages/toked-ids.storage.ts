@@ -3,6 +3,7 @@ import { ConfigType } from '@nestjs/config';
 import Redis from 'ioredis';
 
 import { User } from 'shared/entities/user.entity';
+import log from 'shared/utils/log';
 
 import redisConfig from 'config/redis.config';
 
@@ -33,20 +34,24 @@ export class TokedIdsStorage implements OnApplicationBootstrap, OnApplicationShu
         userId,
         tokenId,
         keyPrefix,
+        expiresIn = 2_592_000, // 30 days
     }: {
         userId: User['id'];
         tokenId: string;
         keyPrefix?: string;
+        expiresIn?: number;
     }): Promise<void> {
         const key = this.getKey(userId, keyPrefix);
 
-        await this.redisClient.set(key, tokenId);
+        log(new Date().toISOString(), '- insert key:', key);
+
+        await this.redisClient.set(key, tokenId, 'EX', expiresIn);
     }
 
     async get(userId: User['id'], keyPrefix?: string): Promise<string> {
         const key = this.getKey(userId, keyPrefix);
 
-        return this.redisClient.get(key);
+        return this.redisClient.get(key) ?? '';
     }
 
     async validate({
@@ -60,18 +65,24 @@ export class TokedIdsStorage implements OnApplicationBootstrap, OnApplicationShu
     }): Promise<boolean> {
         const key = this.getKey(userId, keyPrefix);
         const storedTokenId = await this.redisClient.get(key);
+        const isTokenValid = tokenId === storedTokenId;
 
-        if (tokenId !== storedTokenId) {
+        log(new Date().toISOString(), '- validate key:', key, `| isTokenValid: ${isTokenValid}`);
+
+        if (!isTokenValid) {
             throw new InvalidatedToken();
         }
 
         return true;
     }
 
-    async invalidate(userId: User['id'], keyPrefix?: string): Promise<void> {
-        const key = this.getKey(userId, keyPrefix);
+    async invalidateUserKeys(userId: User['id']): Promise<void> {
+        const pattern = `*${this.getKey(userId)}*`;
+        const keys = await this.redisClient.keys(pattern);
 
-        await this.redisClient.del(key);
+        log(new Date().toISOString(), '- remove keys:', keys);
+
+        await this.redisClient.del(keys);
     }
 
     private getKey(userId: User['id'], prefix = ''): string {

@@ -24,6 +24,7 @@ import { RefreshTokenDto } from 'iam/authentication/dtos/refresh-token.dto';
 import { TokedIdsStorage } from 'iam/authentication/storages/toked-ids.storage';
 import { IRefreshTokenPayload } from 'iam/authentication/interfaces/refresh-token-payload.interface';
 import InvalidatedToken from 'iam/authentication/exceptions/invalidated-token.exception';
+import { REFRESH_TOKEN_ID_STORE_PREFIX } from 'iam/authentication/constants/refresh-token-id-store-prefix';
 
 @Injectable()
 export class TokensService {
@@ -51,12 +52,16 @@ export class TokensService {
         id,
         email,
         role,
-    }: Pick<User, 'id' | 'email' | 'role'>): Promise<GeneratedTokensDto> {
+        deviceId,
+    }: Pick<User, 'id' | 'email' | 'role'> & {
+        deviceId: string;
+    }): Promise<GeneratedTokensDto> {
         try {
             const payload: IActiveUser = {
                 sub: id,
                 email,
                 role,
+                deviceId,
             };
             const refreshTokenId = randomUUID();
 
@@ -74,6 +79,8 @@ export class TokensService {
             await this.tokenIdsStorage.insert({
                 userId: id,
                 tokenId: refreshTokenId,
+                keyPrefix: this.getRefreshTokenIdKeyPrefix(deviceId),
+                expiresIn: this.jwtConfiguration.refreshTokenExpiresIn,
             });
 
             return { accessToken, refreshToken };
@@ -83,7 +90,7 @@ export class TokensService {
         }
     }
 
-    async refreshToken({ refreshToken }: RefreshTokenDto): Promise<GeneratedTokensDto> {
+    async refreshToken({ refreshToken, deviceId }: RefreshTokenDto): Promise<GeneratedTokensDto> {
         try {
             const { sub, refreshTokenId } = await this.jwtService.verifyAsync<IRefreshTokenPayload>(
                 refreshToken,
@@ -102,10 +109,11 @@ export class TokensService {
             const userId = user.id;
             await this.tokenIdsStorage.validate({
                 userId,
+                keyPrefix: this.getRefreshTokenIdKeyPrefix(deviceId),
                 tokenId: refreshTokenId,
             });
 
-            return this.generateTokens(user);
+            return this.generateTokens({ ...user, deviceId });
         } catch (e) {
             if (e instanceof InvalidatedToken) {
                 log('Refresh Token Is Invalid');
@@ -116,5 +124,9 @@ export class TokensService {
 
             throw new UnauthorizedException();
         }
+    }
+
+    private getRefreshTokenIdKeyPrefix(deviceId: string): string {
+        return `${REFRESH_TOKEN_ID_STORE_PREFIX}-${deviceId}`;
     }
 }

@@ -73,6 +73,7 @@ export class ResetPasswordService {
             userId: user.id,
             tokenId: resetPasswordToken,
             keyPrefix: RESET_PASSWORD_TOKEN_STORE_PREFIX,
+            expiresIn: this.jwtConfiguration.resetPasswordTokenExpiresIn,
         });
     }
 
@@ -80,6 +81,7 @@ export class ResetPasswordService {
         email,
         newPassword,
         verificationCode,
+        deviceId,
     }: ResetPasswordDto): Promise<GeneratedTokensDto> {
         const user = await this.usersService.findByEmail(email);
 
@@ -88,7 +90,8 @@ export class ResetPasswordService {
         }
 
         try {
-            const userId = user.id;
+            const { id: userId, email, role } = user;
+
             const storedResetPasswordToken = await this.tokenIdsStorage.get(
                 userId,
                 RESET_PASSWORD_TOKEN_STORE_PREFIX,
@@ -114,9 +117,14 @@ export class ResetPasswordService {
                 },
             );
 
-            await this.tokenIdsStorage.invalidate(userId, RESET_PASSWORD_TOKEN_STORE_PREFIX);
+            await this.tokenIdsStorage.invalidateUserKeys(userId);
 
-            return this.tokensService.generateTokens(user);
+            return this.tokensService.generateTokens({
+                id: userId,
+                email,
+                role,
+                deviceId,
+            });
         } catch (e) {
             log('Reset Password Failed', JSON.stringify(e, null, 2));
             if (e instanceof InvalidatedToken) {

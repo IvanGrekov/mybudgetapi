@@ -3,6 +3,7 @@ const log = (message: string, ...data: unknown[]): void => {
         return;
     }
 
+    console.log('------------');
     console.log(message, ...data);
 };
 
