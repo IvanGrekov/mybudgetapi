@@ -36,16 +36,16 @@ export const getFindAllWhereInput = ({
         createdAt: getCreatedAtFilter(from, to),
     };
 
-    const whereWithRelations: FindOptionsWhere<Transaction> = {
+    const fromAccountWhereOptions: FindOptionsWhere<Transaction> = {
         ...baseWhereOptions,
         fromAccount: accountId ? { id: accountId } : undefined,
-        fromCategory: transactionCategoryId ? { id: transactionCategoryId } : undefined,
-    };
-    const whereWithNullableRelations: FindOptionsWhere<Transaction> = {
-        ...baseWhereOptions,
-        toAccount: accountId ? { id: accountId } : undefined,
         toCategory: transactionCategoryId ? { id: transactionCategoryId } : undefined,
     };
+    const toAccountWhereOptions: FindOptionsWhere<Transaction> = {
+        ...baseWhereOptions,
+        toAccount: accountId ? { id: accountId } : undefined,
+        fromCategory: transactionCategoryId ? { id: transactionCategoryId } : undefined,
+    };
 
-    return [whereWithRelations, whereWithNullableRelations];
+    return [fromAccountWhereOptions, toAccountWhereOptions];
 };
