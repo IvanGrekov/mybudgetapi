@@ -68,6 +68,9 @@ export class TransactionCategoriesController {
         return this.transactionCategoriesService.getOne({
             id,
             activeUserId,
+            relations: {
+                children: true,
+            },
         });
     }
 
