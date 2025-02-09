@@ -1,46 +1,40 @@
-import {
-    IsNumber as IsNumberBase,
-    IsEnum,
-    IsOptional,
-    IsPositive,
-    IsString,
-} from 'class-validator';
+import { IsNumber, IsEnum, IsOptional, IsPositive, IsString } from 'class-validator';
 
 import { ETransactionType } from 'shared/enums/transaction.enums';
 
 export class CreateTransactionDto {
-    @IsNumberBase()
+    @IsNumber()
     readonly userId: number;
 
-    @IsNumberBase()
+    @IsNumber()
     @IsOptional()
     readonly fromAccountId?: number;
 
-    @IsNumberBase()
+    @IsNumber()
     @IsOptional()
     readonly toAccountId?: number;
 
-    @IsNumberBase()
+    @IsNumber()
     @IsOptional()
     readonly fromCategoryId?: number;
 
-    @IsNumberBase()
+    @IsNumber()
     @IsOptional()
     readonly toCategoryId?: number;
 
     @IsEnum(ETransactionType)
     readonly type: ETransactionType;
 
-    @IsNumberBase()
+    @IsNumber()
     @IsPositive()
     readonly value: number;
 
-    @IsNumberBase()
+    @IsNumber()
     @IsPositive()
     @IsOptional()
     readonly fee?: number;
 
-    @IsNumberBase()
+    @IsNumber()
     @IsPositive()
     @IsOptional()
     readonly currencyRate?: number;

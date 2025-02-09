@@ -28,6 +28,8 @@ import { FindAllTransactionsDto } from 'transactions/dtos/find-all-transactions.
 import { FindMyTransactionsDto } from 'transactions/dtos/find-my-transactions.dto';
 import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
 import { EditTransactionDto } from 'transactions/dtos/edit-transaction.dto';
+import { CalculatedTransactionValuesDto } from 'transactions/dtos/calculated-transaction-values.dto';
+import { GetCalculatedTransactionValuesDto } from 'transactions/dtos/get-calculated-transaction-values.dto';
 
 @ApiTags('transactions')
 @Auth(EAuthType.Bearer, EAuthType.ApiKey)
@@ -51,6 +53,15 @@ export class TransactionsController {
     @UserRole(EUserRole.ADMIN)
     findAll(@Query() dto: FindAllTransactionsDto): Promise<PaginatedItemsResultDto<Transaction>> {
         return this.transactionsService.findAll(dto);
+    }
+
+    @ApiOkResponse({ type: CalculatedTransactionValuesDto })
+    @Get('calculated-transaction-values')
+    getCalculatedTransactionValues(
+        @ActiveUser('sub') activeUserId: IActiveUser['sub'],
+        @Query() dto: GetCalculatedTransactionValuesDto,
+    ): Promise<CalculatedTransactionValuesDto> {
+        return this.transactionsService.getCalculatedTransactionValues(dto, activeUserId);
     }
 
     @ApiOkResponse({ type: Transaction })
