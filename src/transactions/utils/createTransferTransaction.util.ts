@@ -10,8 +10,8 @@ import { Account } from 'shared/entities/account.entity';
 import { EAccountStatus, EAccountType } from 'shared/enums/account.enums';
 import { ETransactionType } from 'shared/enums/transaction.enums';
 
-import { validateNewFromAccountBalance } from 'transactions/utils/validateNewFromAccountBalance';
-import { validateNewToIOweAccountBalance } from 'transactions/utils/validateNewToIOweAccountBalance';
+import { validateNewFromAccountBalance } from 'transactions/utils/validateNewFromAccountBalance.util';
+import { validateNewToIOweAccountBalance } from 'transactions/utils/validateNewToIOweAccountBalance.util';
 import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
 
 type TValidateCreateTransferTransactionDto = (
@@ -127,10 +127,12 @@ export const createTransferTransaction: TCreateTransferTransaction = async ({
     await queryRunner.startTransaction();
 
     try {
-        queryRunner.manager.update(Account, fromAccountId, { balance: newFromAccountBalance });
-        queryRunner.manager.update(Account, toAccountId, { balance: newToAccountBalance });
+        await queryRunner.manager.update(Account, fromAccountId, {
+            balance: newFromAccountBalance,
+        });
+        await queryRunner.manager.update(Account, toAccountId, { balance: newToAccountBalance });
 
-        const transactionTemplate = queryRunner.manager.create(Transaction, {
+        const transactionTemplate = await queryRunner.manager.create(Transaction, {
             user,
             fromAccount,
             fromAccountUpdatedBalance: newFromAccountBalance,

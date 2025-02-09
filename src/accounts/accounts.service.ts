@@ -220,9 +220,9 @@ export class AccountsService {
             }
 
             accountsByType.splice(order, 0, account);
-            accountsByType.forEach(({ id: accountId }, i) => {
-                queryRunner.manager.update(Account, accountId, { order: i });
-            });
+            for (let order = 0; order < accountsByType.length; order++) {
+                await queryRunner.manager.update(Account, accountsByType[order].id, { order });
+            }
             await queryRunner.commitTransaction();
 
             return this.findAll({
@@ -256,11 +256,11 @@ export class AccountsService {
                 excludeId: id,
             });
 
-            accountsByType.forEach(({ id: accountId }, i) => {
-                queryRunner.manager.update(Account, accountId, { order: i });
-            });
+            for (let order = 0; order < accountsByType.length; order++) {
+                await queryRunner.manager.update(Account, accountsByType[order].id, { order });
+            }
 
-            queryRunner.manager.remove(account);
+            await queryRunner.manager.remove(account);
 
             await queryRunner.commitTransaction();
 

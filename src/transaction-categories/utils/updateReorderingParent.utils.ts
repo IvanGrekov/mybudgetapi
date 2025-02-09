@@ -37,7 +37,7 @@ const updateReorderingChild: TUpdateReorderingChild = async ({
         throw new ArchivedEntityException('child transactionCategory', id);
     }
 
-    updateTransactionCategory(id, {
+    await updateTransactionCategory(id, {
         order,
         parent: parentTransactionCategory,
     });
@@ -63,7 +63,7 @@ export const updateReorderingParent: TUpdateReorderingParent = async ({
         throw new ArchivedEntityException('parent transactionCategory', id);
     }
 
-    updateTransactionCategory(id, {
+    await updateTransactionCategory(id, {
         order,
         parent: null,
     });

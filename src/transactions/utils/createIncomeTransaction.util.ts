@@ -16,7 +16,7 @@ import {
 import { ETransactionType } from 'shared/enums/transaction.enums';
 
 import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
-import { validateNewToIOweAccountBalance } from 'transactions/utils/validateNewToIOweAccountBalance';
+import { validateNewToIOweAccountBalance } from 'transactions/utils/validateNewToIOweAccountBalance.util';
 
 type TValidateCreateIncomeTransactionDto = (
     args: Pick<
@@ -134,9 +134,9 @@ export const createIncomeTransaction: TCreateIncomeTransaction = async ({
     await queryRunner.startTransaction();
 
     try {
-        queryRunner.manager.update(Account, toAccountId, { balance: newToAccountBalance });
+        await queryRunner.manager.update(Account, toAccountId, { balance: newToAccountBalance });
 
-        const transactionTemplate = queryRunner.manager.create(Transaction, {
+        const transactionTemplate = await queryRunner.manager.create(Transaction, {
             user,
             toAccount,
             toAccountUpdatedBalance: newToAccountBalance,

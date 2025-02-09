@@ -28,9 +28,9 @@ const syncAccountsOrder: TSyncAccountsOrder = async ({
         excludeId,
     });
 
-    accountsByType.forEach(({ id }, i) => {
-        updateAccount(id, { order: i });
-    });
+    for (let order = 0; order < accountsByType.length; order++) {
+        await updateAccount(accountsByType[order].id, { order });
+    }
 };
 
 type TArchiveAccountArgs = (args: {
@@ -55,7 +55,7 @@ export const archiveAccount: TArchiveAccountArgs = async ({
     await queryRunner.startTransaction();
 
     try {
-        queryRunner.manager.update(Account, accountId, account);
+        await queryRunner.manager.update(Account, accountId, account);
 
         await syncAccountsOrder({
             userId,

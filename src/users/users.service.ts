@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindOptionsRelations, Repository } from 'typeorm';
+import { DataSource, FindOptionsRelations, Repository, IsNull } from 'typeorm';
 
 import { User } from 'shared/entities/user.entity';
 import { Account } from 'shared/entities/account.entity';
@@ -101,7 +101,7 @@ export class UsersService {
         await queryRunner.startTransaction();
 
         try {
-            const userTemplate = queryRunner.manager.create(User, {
+            const userTemplate = await queryRunner.manager.create(User, {
                 ...createUserDto,
                 email,
                 nickname,
@@ -110,9 +110,9 @@ export class UsersService {
 
             const user = await queryRunner.manager.save(User, userTemplate);
 
-            getChildrenTransactionCategories(user.transactionCategories).forEach(({ id }) => {
-                queryRunner.manager.update(TransactionCategory, id, { user });
-            });
+            for (const { id } of getChildrenTransactionCategories(user.transactionCategories)) {
+                await queryRunner.manager.update(TransactionCategory, id, { user });
+            }
 
             await queryRunner.commitTransaction();
 
@@ -149,7 +149,6 @@ export class UsersService {
         }
 
         const {
-            isAccountsCurrencySoftUpdate,
             isTransactionCategoriesCurrencySoftUpdate,
             isTransactionCategoriesCurrencyForceUpdate,
         } = args;
@@ -168,24 +167,46 @@ export class UsersService {
         await queryRunner.startTransaction();
 
         try {
-            queryRunner.manager.update(User, userId, { defaultCurrency });
+            const getAccountsWithoutTransactions = async () =>
+                this.accountRepository.find({
+                    where: {
+                        user: { id: userId },
+                        currency: oldDefaultCurrency,
+                        incomingTransactions: { id: IsNull() },
+                        outgoingTransactions: { id: IsNull() },
+                    },
+                });
 
-            updateRelationsCurrency({
+            const getTransactionCategoriesWithoutTransactions = async () => {
+                const where = isTransactionCategoriesCurrencySoftUpdate
+                    ? {
+                          user: { id: userId },
+                          currency: oldDefaultCurrency,
+                          incomingTransactions: { id: IsNull() },
+                          outgoingTransactions: { id: IsNull() },
+                      }
+                    : {
+                          user: { id: userId },
+                          incomingTransactions: { id: IsNull() },
+                          outgoingTransactions: { id: IsNull() },
+                      };
+
+                return this.transactionCategoryRepository.find({ where });
+            };
+
+            await queryRunner.manager.update(User, userId, { defaultCurrency });
+
+            await updateRelationsCurrency({
                 queryRunner,
-                userId,
-                oldCurrency: oldDefaultCurrency,
                 currency: defaultCurrency,
+                getAccountsWithoutTransactions,
+                getTransactionCategoriesWithoutTransactions,
                 ...args,
             });
 
             await queryRunner.commitTransaction();
 
-            return this.getOne(userId, {
-                accounts: isAccountsCurrencySoftUpdate,
-                transactionCategories:
-                    isTransactionCategoriesCurrencySoftUpdate ||
-                    isTransactionCategoriesCurrencyForceUpdate,
-            });
+            return this.getOne(userId);
         } catch (err) {
             await queryRunner.rollbackTransaction();
             throw err;

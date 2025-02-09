@@ -16,10 +16,13 @@ import {
 import { ETransactionType } from 'shared/enums/transaction.enums';
 
 import { CreateTransactionDto } from 'transactions/dtos/create-transaction.dto';
-import { validateNewFromAccountBalance } from 'transactions/utils/validateNewFromAccountBalance';
+import { validateNewFromAccountBalance } from 'transactions/utils/validateNewFromAccountBalance.util';
 
 type TValidateCreateExpenseTransactionDto = (
-    args: Pick<CreateTransactionDto, 'userId' | 'fromAccountId' | 'toCategoryId'> & {
+    args: Pick<
+        CreateTransactionDto,
+        'userId' | 'fromAccountId' | 'toCategoryId' | 'currencyRate'
+    > & {
         fromAccount?: Account;
         toCategory?: TransactionCategory;
     },
@@ -29,6 +32,7 @@ const validateCreateExpenseTransactionDto: TValidateCreateExpenseTransactionDto 
     userId,
     fromAccountId,
     toCategoryId,
+    currencyRate,
     fromAccount,
     toCategory,
 }) => {
@@ -38,8 +42,17 @@ const validateCreateExpenseTransactionDto: TValidateCreateExpenseTransactionDto 
         throw new NotFoundException(model, notFoundId);
     }
 
-    const { user: fromAccountUser, status: fromAccountStatus } = fromAccount;
-    const { user: toCategoryUser, status: toCategoryStatus, type: toCategoryType } = toCategory;
+    const {
+        user: fromAccountUser,
+        status: fromAccountStatus,
+        currency: fromAccountCurrency,
+    } = fromAccount;
+    const {
+        user: toCategoryUser,
+        status: toCategoryStatus,
+        currency: toCategoryCurrency,
+        type: toCategoryType,
+    } = toCategory;
 
     if (userId !== fromAccountUser.id) {
         throw new BadRequestException(
@@ -59,6 +72,17 @@ const validateCreateExpenseTransactionDto: TValidateCreateExpenseTransactionDto 
         throw new ArchivedEntityException('the `toCategory`');
     }
 
+    if (fromAccountCurrency !== toCategoryCurrency && !currencyRate) {
+        throw new BadRequestException(
+            'The `currencyRate` must be provided for Transaction between TransactionCategory and Account with different `currency`',
+        );
+    }
+    if (fromAccountCurrency === toCategoryCurrency && currencyRate) {
+        throw new BadRequestException(
+            'The `currencyRate` must be provided only for Transaction between TransactionCategory and Account with different `currency`',
+        );
+    }
+
     if (toCategoryType !== ETransactionCategoryType.EXPENSE) {
         throw new BadRequestException(
             'The `toCategory` must be of type `EXPENSE` for Expense Transaction',
@@ -75,7 +99,15 @@ type TCreateExpenseTransaction = (args: {
 }) => Promise<Transaction>;
 
 export const createExpenseTransaction: TCreateExpenseTransaction = async ({
-    createTransactionDto: { userId, fromAccountId, toCategoryId, value, fee, description },
+    createTransactionDto: {
+        userId,
+        fromAccountId,
+        toCategoryId,
+        currencyRate,
+        value,
+        fee,
+        description,
+    },
     queryRunner,
     getUserById,
     findAccountById,
@@ -89,6 +121,7 @@ export const createExpenseTransaction: TCreateExpenseTransaction = async ({
         userId,
         fromAccountId,
         toCategoryId,
+        currencyRate,
         fromAccount,
         toCategory,
     });
@@ -105,9 +138,11 @@ export const createExpenseTransaction: TCreateExpenseTransaction = async ({
     await queryRunner.startTransaction();
 
     try {
-        queryRunner.manager.update(Account, fromAccountId, { balance: newFromAccountBalance });
+        await queryRunner.manager.update(Account, fromAccountId, {
+            balance: newFromAccountBalance,
+        });
 
-        const transactionTemplate = queryRunner.manager.create(Transaction, {
+        const transactionTemplate = await queryRunner.manager.create(Transaction, {
             user,
             fromAccount,
             fromAccountUpdatedBalance: newFromAccountBalance,
@@ -117,6 +152,7 @@ export const createExpenseTransaction: TCreateExpenseTransaction = async ({
             fee,
             description,
             currency: fromAccount.currency,
+            currencyRate,
         });
         const transaction = await queryRunner.manager.save(Transaction, transactionTemplate);
 

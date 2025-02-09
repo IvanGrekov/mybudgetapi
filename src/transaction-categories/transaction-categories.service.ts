@@ -327,7 +327,7 @@ export class TransactionCategoriesService {
             });
 
             if (!shouldRemoveChildTransactionCategories && !!children?.length) {
-                extractChildrenTransactionCategories({
+                await extractChildrenTransactionCategories({
                     children,
                     currentParentsLength: siblingsTransactionCategories.length,
                     updateTransactionCategory: (id, transactionCategory) =>
@@ -335,13 +335,17 @@ export class TransactionCategoriesService {
                 });
             }
 
-            siblingsTransactionCategories.forEach(({ id: transactionCategoryId }, i) => {
-                queryRunner.manager.update(TransactionCategory, transactionCategoryId, {
-                    order: i,
-                });
-            });
+            for (let order = 0; order < siblingsTransactionCategories.length; order++) {
+                await queryRunner.manager.update(
+                    TransactionCategory,
+                    siblingsTransactionCategories[order].id,
+                    {
+                        order,
+                    },
+                );
+            }
 
-            queryRunner.manager.remove(transactionCategory);
+            await queryRunner.manager.remove(transactionCategory);
 
             await queryRunner.commitTransaction();
 

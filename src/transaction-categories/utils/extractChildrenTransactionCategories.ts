@@ -11,17 +11,17 @@ type TExtractChildrenTransactionCategories = (args: {
     children: TransactionCategory[];
     currentParentsLength: number;
     updateTransactionCategory: TUpdateTransactionCategory;
-}) => void;
+}) => Promise<void>;
 
-export const extractChildrenTransactionCategories: TExtractChildrenTransactionCategories = ({
+export const extractChildrenTransactionCategories: TExtractChildrenTransactionCategories = async ({
     children,
     currentParentsLength,
     updateTransactionCategory,
 }) => {
-    children.forEach(({ id: transactionCategoryId }, i) => {
-        updateTransactionCategory(transactionCategoryId, {
+    for (let i = 0; i < children.length; i++) {
+        await updateTransactionCategory(children[i].id, {
             order: currentParentsLength + i,
             parent: null,
         });
-    });
+    }
 };

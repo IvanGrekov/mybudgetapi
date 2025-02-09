@@ -6,13 +6,13 @@ import { ECurrency } from 'shared/enums/currency.enums';
 
 type TUpdateRelationsCurrency = (args: {
     queryRunner: QueryRunner;
-    userId: number;
     currency: ECurrency;
-    oldCurrency: ECurrency;
     rate: number;
     isAccountsCurrencySoftUpdate?: boolean;
     isTransactionCategoriesCurrencySoftUpdate?: boolean;
     isTransactionCategoriesCurrencyForceUpdate?: boolean;
+    getAccountsWithoutTransactions: () => Promise<Account[]>;
+    getTransactionCategoriesWithoutTransactions: () => Promise<TransactionCategory[]>;
 }) => Promise<void>;
 
 const getCalculateNewAccountBalance = (rate: number, isInitBalance?: boolean) => {
@@ -23,33 +23,44 @@ const getCalculateNewAccountBalance = (rate: number, isInitBalance?: boolean) =>
 
 export const updateRelationsCurrency: TUpdateRelationsCurrency = async ({
     queryRunner,
-    userId,
     currency,
-    oldCurrency,
     rate,
     isAccountsCurrencySoftUpdate,
     isTransactionCategoriesCurrencySoftUpdate,
     isTransactionCategoriesCurrencyForceUpdate,
+    getAccountsWithoutTransactions,
+    getTransactionCategoriesWithoutTransactions,
 }) => {
     if (isAccountsCurrencySoftUpdate) {
-        queryRunner.manager.update(
-            Account,
-            { user: { id: userId }, currency: oldCurrency },
-            {
-                currency,
-                balance: getCalculateNewAccountBalance(rate),
-                initBalance: getCalculateNewAccountBalance(rate, true),
-            },
-        );
+        const accountsWithoutTransactions = await getAccountsWithoutTransactions();
+
+        for (const { id } of accountsWithoutTransactions) {
+            await queryRunner.manager.update(
+                Account,
+                {
+                    id,
+                },
+                {
+                    currency,
+                    balance: getCalculateNewAccountBalance(rate),
+                    initBalance: getCalculateNewAccountBalance(rate, true),
+                },
+            );
+        }
     }
 
     if (isTransactionCategoriesCurrencySoftUpdate || isTransactionCategoriesCurrencyForceUpdate) {
-        const criteria = isTransactionCategoriesCurrencySoftUpdate
-            ? { user: { id: userId }, currency: oldCurrency }
-            : { user: { id: userId } };
+        const transactionCategoriesWithoutTransactions =
+            await getTransactionCategoriesWithoutTransactions();
 
-        queryRunner.manager.update(TransactionCategory, criteria, {
-            currency,
-        });
+        for (const { id } of transactionCategoriesWithoutTransactions) {
+            await queryRunner.manager.update(
+                TransactionCategory,
+                { id },
+                {
+                    currency,
+                },
+            );
+        }
     }
 };

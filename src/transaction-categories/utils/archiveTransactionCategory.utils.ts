@@ -83,13 +83,13 @@ const unassignChildrenFromParent: TUnassignChildrenFromParent = async ({
     });
     const length = transactionCategoriesByType.length - 1;
 
-    children.forEach(({ id }, i) => {
+    for (let i = 0; i < children.length; i++) {
         const newOrder = length + i;
-        updateTransactionCategory(id, {
+        await updateTransactionCategory(children[i].id, {
             order: newOrder,
             parent: null,
         });
-    });
+    }
 };
 
 export const archiveTransactionCategory: TArchiveTransactionCategory = async ({
@@ -116,7 +116,7 @@ export const archiveTransactionCategory: TArchiveTransactionCategory = async ({
             transactionCategory.parent = null;
         }
 
-        const updateTransactionCategory = async (
+        const updateTransactionCategory = (
             id: number,
             transactionCategory: Partial<TransactionCategory>,
         ) => queryRunner.manager.update(TransactionCategory, id, transactionCategory);
@@ -130,7 +130,7 @@ export const archiveTransactionCategory: TArchiveTransactionCategory = async ({
             });
         }
 
-        updateTransactionCategory(transactionCategoryId, transactionCategory);
+        await updateTransactionCategory(transactionCategoryId, transactionCategory);
 
         await syncTransactionCategoriesOrder({
             userId,
