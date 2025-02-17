@@ -12,7 +12,7 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
     }
 
     private getErrorDetails(exception: T): { statusCode: number; body: object } {
-        const isDev = process.env.NODE_ENV === 'development';
+        const isDev = ['development', 'test'].includes(process.env.NODE_ENV);
         const statusCode = exception.getStatus();
         const errorResponse = exception.getResponse();
 

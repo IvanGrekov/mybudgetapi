@@ -8,6 +8,9 @@ export class LoggingMiddleware implements NestMiddleware {
         const startTime = Date.now();
 
         res.on('finish', () => {
+            if (process.env.NODE_ENV !== 'development') {
+                return;
+            }
             console.log('------------');
             console.group(new Date().toISOString(), `- ${method}`);
             console.log('url:', originalUrl);

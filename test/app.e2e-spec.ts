@@ -7,7 +7,7 @@ import { AppModule } from 'app.module';
 describe('AppController (e2e)', () => {
     let app: INestApplication;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
         }).compile();
@@ -16,7 +16,18 @@ describe('AppController (e2e)', () => {
         await app.init();
     });
 
-    it('/ (GET)', () => {
-        return request(app.getHttpServer()).get('/').expect(200).expect('Hello World!');
+    describe('GET /users/name', () => {
+        it('return 200 status', async () => {
+            request(app.getHttpServer()).get('/users/name').expect(200);
+        });
+
+        it('return new user name', async () => {
+            const response = await request(app.getHttpServer()).get('/users/name');
+            expect(response.text).toMatch(/User#/);
+        });
+    });
+
+    afterAll(async () => {
+        await app.close();
     });
 });

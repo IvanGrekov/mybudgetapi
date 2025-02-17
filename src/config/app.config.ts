@@ -2,11 +2,11 @@ import { registerAs } from '@nestjs/config';
 import * as Joi from '@hapi/joi';
 
 export default registerAs('app', () => ({
-    isDevelopment: process.env.NODE_ENV === 'development',
+    isDevelopment: ['development', 'test'].includes(process.env.NODE_ENV),
 }));
 
 export const validationSchema = Joi.object({
-    NODE_ENV: Joi.string().valid('development', 'production').required(),
+    NODE_ENV: Joi.string().valid('development', 'production', 'test').required(),
 
     DB_HOST: Joi.string().required(),
     DB_NAME: Joi.string().required(),

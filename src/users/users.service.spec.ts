@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
-import { TRepositoryMock } from 'test/mock.types';
+import { TRepositoryMock } from 'testing/mock.types';
 
 import { User } from 'shared/entities/user.entity';
 import { Account } from 'shared/entities/account.entity';
