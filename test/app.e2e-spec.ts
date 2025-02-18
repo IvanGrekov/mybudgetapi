@@ -16,6 +16,10 @@ describe('AppController (e2e)', () => {
         await app.init();
     });
 
+    afterAll(async () => {
+        await app.close();
+    });
+
     describe('GET /users/name', () => {
         it('return 200 status', async () => {
             request(app.getHttpServer()).get('/users/name').expect(200);
@@ -25,9 +29,5 @@ describe('AppController (e2e)', () => {
             const response = await request(app.getHttpServer()).get('/users/name');
             expect(response.text).toMatch(/User#/);
         });
-    });
-
-    afterAll(async () => {
-        await app.close();
     });
 });

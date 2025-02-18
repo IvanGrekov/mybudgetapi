@@ -154,12 +154,7 @@ export class TransactionsService {
         let transactionCategory: TransactionCategory | null = null;
 
         if (accountId) {
-            account = await this.accountRepository.findOne({
-                where: { id: accountId },
-                relations: {
-                    user: true,
-                },
-            });
+            account = await this.findAccountById(accountId);
 
             if (!account) {
                 throw new NotFoundException('Account', accountId);
@@ -172,12 +167,7 @@ export class TransactionsService {
         }
 
         if (transactionCategoryId) {
-            transactionCategory = await this.transactionCategoryRepository.findOne({
-                where: { id: transactionCategoryId },
-                relations: {
-                    user: true,
-                },
-            });
+            transactionCategory = await this.findTransactionCategoryById(transactionCategoryId);
 
             if (!transactionCategory) {
                 throw new NotFoundException('Transaction Category', transactionCategoryId);
