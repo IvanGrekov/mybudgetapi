@@ -24,7 +24,7 @@ import { HashingService } from 'iam/hashing/hashing.service';
 import { TokensService } from 'iam/authentication/services/tokens.service';
 import { GeneratedTokensDto } from 'iam/authentication/dtos/generated-tokens.dto';
 import { ResetPasswordDto } from 'iam/authentication/dtos/reset-password.dto';
-import { TokedIdsStorage } from 'iam/authentication/storages/toked-ids.storage';
+import { TokenIdsStorage } from 'iam/authentication/storages/token-ids.storage';
 import InvalidatedToken from 'iam/authentication/exceptions/invalidated-token.exception';
 import { RESET_PASSWORD_TOKEN_STORE_PREFIX } from 'iam/authentication/constants/reset-password-token-store-prefix';
 
@@ -40,7 +40,7 @@ export class ResetPasswordService {
         private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
         @Inject(emailConfig.KEY)
         private readonly emailConfiguration: ConfigType<typeof emailConfig>,
-        private readonly tokenIdsStorage: TokedIdsStorage,
+        private readonly tokenIdsStorage: TokenIdsStorage,
         private readonly tokensService: TokensService,
         private readonly mailService: MailerService,
     ) {}

@@ -21,7 +21,7 @@ import { IActiveUser } from 'iam/interfaces/active-user-data.interface';
 import { SignTokenDto } from 'iam/authentication/dtos/sign-token.dto';
 import { GeneratedTokensDto } from 'iam/authentication/dtos/generated-tokens.dto';
 import { RefreshTokenDto } from 'iam/authentication/dtos/refresh-token.dto';
-import { TokedIdsStorage } from 'iam/authentication/storages/toked-ids.storage';
+import { TokenIdsStorage } from 'iam/authentication/storages/token-ids.storage';
 import { IRefreshTokenPayload } from 'iam/authentication/interfaces/refresh-token-payload.interface';
 import InvalidatedToken from 'iam/authentication/exceptions/invalidated-token.exception';
 import { REFRESH_TOKEN_ID_STORE_PREFIX } from 'iam/authentication/constants/refresh-token-id-store-prefix';
@@ -33,7 +33,7 @@ export class TokensService {
         private readonly jwtService: JwtService,
         @Inject(jwtConfig.KEY)
         private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
-        private readonly tokenIdsStorage: TokedIdsStorage,
+        private readonly tokenIdsStorage: TokenIdsStorage,
     ) {}
 
     async signToken<T extends { sub: number }>({

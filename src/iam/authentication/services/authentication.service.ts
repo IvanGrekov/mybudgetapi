@@ -24,6 +24,8 @@ export class AuthenticationService {
         private readonly tokensService: TokensService,
     ) {}
 
+    private readonly defaultErrorMessage = 'Invalid email or password';
+
     async signUp(signUpDto: SignUpDto): Promise<GeneratedTokensDto> {
         const { email, password, deviceId } = signUpDto;
 
@@ -47,20 +49,22 @@ export class AuthenticationService {
 
         const user = await this.usersService.findByEmail(email);
         if (!user) {
-            throw new UnauthorizedException('Invalid email or password');
+            throw new UnauthorizedException(this.defaultErrorMessage);
         }
 
         if (!user.password && user.googleId) {
-            throw new BadRequestException('Invalid email or password. Try signing in with Google');
+            throw new BadRequestException(
+                `${this.defaultErrorMessage}. Try signing in with Google`,
+            );
         }
 
         if (!user.password) {
-            throw new UnauthorizedException('Invalid email or password');
+            throw new UnauthorizedException(this.defaultErrorMessage);
         }
 
         const isPasswordValid = await this.hashingService.compare(password, user.password);
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid email or password');
+            throw new UnauthorizedException(this.defaultErrorMessage);
         }
 
         const { isTfaEnabled, tfaSecret } = user;

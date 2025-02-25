@@ -26,7 +26,7 @@ import { ApiKeysService } from 'iam/authentication/services/api-keys.service';
 import { AuthenticationGuard } from 'iam/authentication/guards/authentication.guard';
 import { AccessTokenGuard } from 'iam/authentication/guards/access-token.guard';
 import { ApiKeyGuard } from 'iam/authentication/guards/api-key.guard';
-import { TokedIdsStorage } from 'iam/authentication/storages/toked-ids.storage';
+import { TokenIdsStorage } from 'iam/authentication/storages/token-ids.storage';
 import { GoogleAuthenticationService } from 'iam/authentication/services/google-authentication.service';
 import { TfaAuthenticationService } from 'iam/authentication/services/tfa-authentication.service';
 import { UserRoleGuard } from 'iam/authorization/guards/user-role.guard';
@@ -82,7 +82,7 @@ import { OnlyMeGuard } from 'iam/authorization/guards/only-me.guard';
         ResetPasswordService,
         GoogleAuthenticationService,
         TfaAuthenticationService,
-        TokedIdsStorage,
+        TokenIdsStorage,
     ],
     controllers: [AuthenticationController, ApiKeysController],
 })

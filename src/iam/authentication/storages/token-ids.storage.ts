@@ -10,7 +10,7 @@ import redisConfig from 'config/redis.config';
 import InvalidatedToken from 'iam/authentication/exceptions/invalidated-token.exception';
 
 @Injectable()
-export class TokedIdsStorage implements OnApplicationBootstrap, OnApplicationShutdown {
+export class TokenIdsStorage implements OnApplicationBootstrap, OnApplicationShutdown {
     constructor(
         @Inject(redisConfig.KEY)
         private readonly redisConfiguration: ConfigType<typeof redisConfig>,
@@ -19,7 +19,7 @@ export class TokedIdsStorage implements OnApplicationBootstrap, OnApplicationShu
     private redisClient: Redis;
 
     onApplicationBootstrap(): void {
-        // TODO: Ideally, we should move this to the dedicated "RedisModule"
+        // NOTE: Ideally, we should move this to the dedicated "RedisModule"
         this.redisClient = new Redis({
             host: this.redisConfiguration.host,
             port: this.redisConfiguration.port,
@@ -34,7 +34,7 @@ export class TokedIdsStorage implements OnApplicationBootstrap, OnApplicationShu
         userId,
         tokenId,
         keyPrefix,
-        expiresIn = 2_592_000, // 30 days
+        expiresIn = this.redisConfiguration.expiresIn,
     }: {
         userId: User['id'];
         tokenId: string;
